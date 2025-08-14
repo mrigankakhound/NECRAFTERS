@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .stem { fill: hsla(100, 60%, 30%, 0.8); }
+    .chili-body { fill: hsla(0, 68%, 27%, 0.8); }
+    .highlight { fill: hsla(0, 68%, 40%, 0.8); }
+  </style>
+  <!-- Stem and Leaf -->
+  <path class="stem" d="M100,40 C100,40 95,35 90,38 C85,41 88,45 90,48 C92,51 98,50 100,48 C102,46 105,42 100,40Z"/>
+  <!-- Chili Body -->
+  <path class="chili-body" d="M100,50 C85,50 75,60 75,80 C75,120 85,150 100,160 C115,150 125,120 125,80 C125,60 115,50 100,50Z"/>
+  <!-- Highlight -->
+  <path class="highlight" d="M90,60 C85,65 82,75 82,85 C82,115 88,140 100,150 C95,125 95,95 95,85 C95,75 93,65 90,60Z"/>
+</svg>
