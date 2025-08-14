@@ -5,21 +5,19 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 import { toast } from "sonner";
 import { useCart } from "@/store/useCart";
 import { validateCoupon } from "@/app/actions/coupons";
-import { createOrder } from "@/app/actions/orders";
-import Cookies from "js-cookie";
+
+
 import {
-  CreditCard,
   Truck,
   MapPin,
   Phone,
   User2,
   Building2,
   Home,
-  CreditCardIcon,
   IndianRupee,
   Tag,
   ShoppingBag,
@@ -29,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { getAuthenticatedUserId } from "@/app/actions/auth";
 import CouponList from "@/components/checkout/CouponList";
 
-type PaymentMethod = "razorpay" | "stripe" | "cod";
+type PaymentMethod = "razorpay";
 
 interface ShippingAddress {
   firstName: string;
@@ -149,13 +147,13 @@ export default function CheckoutClient({
       setFormErrors({});
 
       // Save shipping address to database
-      const response = await fetch("/api/user/shipping-address", {
+      const addressResponse = await fetch("/api/user/shipping-address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(shippingData),
       });
 
-      if (!response.ok) {
+      if (!addressResponse.ok) {
         throw new Error("Failed to save shipping address");
       }
 
@@ -185,89 +183,64 @@ export default function CheckoutClient({
         totalSaved: discount,
       };
 
-      if (paymentMethod === "cod") {
-        const result = await createOrder(orderData);
-        if (result.error) {
-          toast.error(result.error);
-        } else {
-          clearCart();
-          toast.success("Order placed successfully!");
-          router.push(`/order/${result.data?.id}`);
-        }
-      } else if (paymentMethod === "razorpay") {
-        const res = await initializeRazorpay();
-        if (!res) {
-          toast.error("Razorpay SDK failed to load");
-          return;
-        }
-
-        const response = await fetch("/api/razorpay", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: total,
-          }),
-        });
-
-        const data = await response.json();
-
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: Number(data.amount), // Ensure amount is a number
-          currency: "INR",
-          name: "Your Store Name",
-          description: "Thank you for your purchase",
-          order_id: data.id,
-          handler: async (response: any) => {
-            const verifyResponse = await fetch("/api/razorpay/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                orderData,
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-            if (verifyData.success) {
-              clearCart();
-              toast.success("Payment successful and order placed!");
-              router.push(`/order/${verifyData.orderId}`);
-            }
-          },
-          prefill: {
-            name: `${shippingData.firstName} ${shippingData.lastName}`,
-            contact: shippingData.phoneNumber,
-          },
-          theme: {
-            color: "#000000",
-          },
-        };
-
-        const paymentObject = new (window as any).Razorpay(options);
-        paymentObject.open();
-      } else if (paymentMethod === "stripe") {
-        const response = await fetch("/api/stripe", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            orderData,
-          }),
-        });
-
-        const data = await response.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
+      // Initialize Razorpay
+      const res = await initializeRazorpay();
+      if (!res) {
+        toast.error("Razorpay SDK failed to load");
+        return;
       }
+
+      const razorpayResponse = await fetch("/api/razorpay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: total,
+        }),
+      });
+
+      const data = await razorpayResponse.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: Number(data.amount), // Ensure amount is a number
+        currency: "INR",
+        name: "Your Store Name",
+        description: "Thank you for your purchase",
+        order_id: data.id,
+        handler: async (response: any) => {
+          const verifyResponse = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              orderData,
+            }),
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyData.success) {
+            clearCart();
+            toast.success("Payment successful and order placed!");
+            router.push(`/order/${verifyData.orderId}`);
+          }
+        },
+        prefill: {
+          name: `${shippingData.firstName} ${shippingData.lastName}`,
+          contact: shippingData.phoneNumber,
+        },
+        theme: {
+          color: "#000000",
+        },
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Something went wrong during checkout");
@@ -278,16 +251,7 @@ export default function CheckoutClient({
 
   const getButtonText = () => {
     if (isLoading) return "Processing...";
-    switch (paymentMethod) {
-      case "cod":
-        return "Continue with COD";
-      case "razorpay":
-        return `Pay ₹${total.toFixed(2)} with Razorpay`;
-      case "stripe":
-        return `Pay ₹${total.toFixed(2)} with Stripe`;
-      default:
-        return `Pay ₹${total.toFixed(2)}`;
-    }
+    return `Pay ₹${total.toFixed(2)} with Razorpay`;
   };
 
   return (
@@ -534,69 +498,40 @@ export default function CheckoutClient({
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
                       <div className="bg-primary/10 p-2 rounded-lg">
-                        <CreditCard className="h-6 w-6 text-primary" />
+                        <IndianRupee className="h-6 w-6 text-primary" />
                       </div>
                       <h2 className="text-2xl font-semibold text-gray-900">
                         Payment Method
                       </h2>
                     </div>
 
-                    <RadioGroup
-                      value={paymentMethod}
-                      onValueChange={(value) =>
-                        setPaymentMethod(value as PaymentMethod)
-                      }
-                      className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                    >
-                      <div
-                        className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                          paymentMethod === "razorpay"
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200"
-                        }`}
-                      >
-                        <RadioGroupItem value="razorpay" id="razorpay" />
-                        <Label
-                          htmlFor="razorpay"
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="flex items-center gap-4 p-4 rounded-lg border-2 border-primary bg-primary/5">
+                        <input
+                          type="radio"
+                          checked={true}
+                          readOnly
+                          className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary"
+                        />
+                        <Label className="flex items-center gap-2 cursor-pointer">
                           <IndianRupee className="h-5 w-5" />
                           <span>Razorpay</span>
                         </Label>
                       </div>
-                      <div
-                        className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                          paymentMethod === "stripe"
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200"
-                        }`}
-                      >
-                        <RadioGroupItem value="stripe" id="stripe" />
-                        <Label
-                          htmlFor="stripe"
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <CreditCardIcon className="h-5 w-5" />
-                          <span>Stripe</span>
-                        </Label>
-                      </div>
-                      <div
-                        className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                          paymentMethod === "cod"
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200"
-                        }`}
-                      >
-                        <RadioGroupItem value="cod" id="cod" />
-                        <Label
-                          htmlFor="cod"
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
+                      
+                      <div className="flex items-center gap-4 p-4 rounded-lg border-2 border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed">
+                        <input
+                          type="radio"
+                          disabled
+                          className="w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed"
+                        />
+                        <Label className="flex items-center gap-2 cursor-not-allowed text-gray-400">
                           <Banknote className="h-5 w-5" />
                           <span>Cash on Delivery</span>
+                          <span className="text-xs text-red-500 ml-2">(Unavailable)</span>
                         </Label>
                       </div>
-                    </RadioGroup>
+                    </div>
 
                     <Button
                       type="submit"
