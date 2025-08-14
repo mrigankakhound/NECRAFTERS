@@ -3,14 +3,14 @@ import crypto from "crypto";
 import { createOrder } from "@/app/actions/orders";
 import Razorpay from "razorpay";
 
-// Initialize Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 export async function POST(request: Request) {
   try {
+    // Initialize Razorpay instance inside the function
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
+
     const {
       razorpay_payment_id,
       razorpay_order_id,
