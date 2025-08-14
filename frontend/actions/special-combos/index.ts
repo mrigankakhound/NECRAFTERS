@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { OfferType } from "@prisma/client";
 
 export async function getSpecialCombos() {

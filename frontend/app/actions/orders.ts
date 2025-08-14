@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { CartItem } from "@/store/useCart";
 import { render } from "@react-email/render";
 import nodemailer from "nodemailer";

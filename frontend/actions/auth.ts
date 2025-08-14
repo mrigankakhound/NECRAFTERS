@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { render } from "@react-email/render";
 import { VerificationEmail } from "@/emails/VerificationEmail";

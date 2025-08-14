@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUserId } from "@/app/actions/auth";
 
 export async function validateCoupon(couponCode: string) {

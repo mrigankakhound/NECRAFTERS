@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { OfferType } from "@/lib/generated/prisma";
 
 export async function getCrazyDeals() {
