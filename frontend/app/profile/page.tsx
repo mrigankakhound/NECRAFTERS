@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import ProfileClient from "./ProfileClient";
 
 export default async function ProfilePage() {

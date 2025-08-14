@@ -43,7 +43,7 @@ async function ProductPage({ params }: ProductPageProps) {
           🎁 Buy Any 3 products and get 1 gift for free
         </p>
         <p className="para mx-4">
-          1 Body wash cleanser + 5 SKINCARE PRODUCTS @ ₹1500
+        Premium Masala Combo + 5 SPICES @ ₹999
         </p>
       </Marquee>
 

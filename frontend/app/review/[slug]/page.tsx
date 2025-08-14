@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 interface PageProps {
   params: {
