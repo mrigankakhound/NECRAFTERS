@@ -13,16 +13,32 @@ export interface ProductFilters {
 }
 
 type ProductWithIncludes = {
-  include: {
-    images: true;
-    sizes: true;
-    productSubCategories: {
-      include: {
-        subCategory: true;
-      };
+  id: string;
+  name: string;
+  description: string | null;
+  slug: string;
+  rating: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  images: Array<{
+    id: string;
+    url: string | null;
+    public_url: string | null;
+  }>;
+  sizes: Array<{
+    id: string;
+    size: string;
+    price: number;
+    stock: number;
+  }>;
+  productSubCategories: Array<{
+    subCategory: {
+      id: string;
+      name: string;
+      slug: string;
     };
-  };
-}>;
+  }>;
+};
 
 export async function getProducts(filters: ProductFilters = {}) {
   try {

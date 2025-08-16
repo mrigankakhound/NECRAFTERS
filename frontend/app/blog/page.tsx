@@ -1,29 +1,33 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function BlogPage() {
   const blogPosts = [
     {
       title: "The Art of Making Chili Oil",
+      slug: "the-art-of-making-chili-oil",
       excerpt: "Discover the traditional methods and secrets behind crafting the perfect chili oil. From selecting the finest ingredients to mastering the temperature control, learn how our artisans create the perfect balance of heat and flavor.",
       date: "March 15, 2024",
       category: "Techniques",
-      image: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a",
+      image: "https://img.freepik.com/premium-photo/glass-jar-filled-with-vibrant-red-chili-oil-light-pervading-translucency-spicy-liquid_997580-1829.jpg",
       readTime: "5 min read"
     },
     {
       title: "Understanding Heat Levels",
+      slug: "understanding-heat-levels",
       excerpt: "A comprehensive guide to different types of chilies and their heat levels. Learn about the Scoville scale, flavor profiles, and how to choose the right chili oil for your palate.",
       date: "March 12, 2024",
       category: "Education",
-      image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5",
+      image: "https://plus.unsplash.com/premium_photo-1668440163167-e477c6c24c64?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       readTime: "4 min read"
     },
     {
       title: "Health Benefits of Chili Oil",
+      slug: "health-benefits-of-chili-oil",
       excerpt: "Exploring the numerous health benefits of incorporating chili oil in your diet. From boosting metabolism to providing essential nutrients, discover why chili oil is more than just a condiment.",
       date: "March 10, 2024",
       category: "Health",
-      image: "https://images.unsplash.com/photo-1628527304948-06157ee3c8a6",
+      image: "https://images.herzindagi.info/image/2023/Jul/how-to-make-chilli-oil.jpg",
       readTime: "6 min read"
     }
   ];
@@ -84,12 +88,15 @@ export default function BlogPage() {
                 {post.excerpt}
               </p>
 
-              <button className="group flex items-center text-primary font-display">
+              <Link 
+                href={`/blog/${post.slug}`}
+                className="group flex items-center text-primary font-display hover:text-primary/80 transition-colors"
+              >
                 Read More 
                 <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">
                   →
                 </span>
-              </button>
+              </Link>
             </div>
           </article>
         ))}

@@ -22,19 +22,16 @@ import SearchModal from "./SearchModal";
 import Link from "next/link";
 import CartDrawer from "./CartDrawer";
 import FavoritesDrawer from "./FavoritesDrawer";
-import { hamburgerMenuState } from "./store";
-import { useAtom, useStore } from "jotai";
 import { useRouter } from "next/navigation";
 import { getAuthenticatedUser } from "@/lib/auth";
+import MobileNav from "./MobileNav";
 
 const Navbar = () => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hamMenuOpen, setHamMenuOpen] = useAtom(hamburgerMenuState, {
-    store: useStore(),
-  });
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Manage submenu visibility
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -48,7 +45,45 @@ const Navbar = () => {
   }, []);
 
   const handleOnClickHamburgerMenu = () => {
-    setHamMenuOpen(true);
+    setIsMobileNavOpen(true);
+  };
+
+  const handleNavigation = (link: string) => {
+    if (link.startsWith('/#')) {
+      // Hash link - check if we're on homepage
+      if (window.location.pathname === '/') {
+        // Already on homepage, scroll to section
+        const sectionId = link.substring(2);
+        console.log('Scrolling to section:', sectionId);
+        
+        // Wait a bit for any dynamic content to load
+        setTimeout(() => {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            console.log('Element found, scrolling...');
+            element.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            console.log('Element not found, trying alternative selectors...');
+            // Try alternative selectors
+            const alternativeElement = document.querySelector(`[data-section="${sectionId}"]`) || 
+                                    document.querySelector(`[id*="${sectionId}"]`);
+            if (alternativeElement) {
+              console.log('Alternative element found, scrolling...');
+              alternativeElement.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              console.log('No element found for section:', sectionId);
+            }
+          }
+        }, 100);
+      } else {
+        // Not on homepage, navigate to homepage with hash
+        console.log('Navigating to homepage with hash:', link);
+        router.push(link);
+      }
+    } else {
+      // Regular link, navigate normally
+      router.push(link);
+    }
   };
 
   const toggleSubmenu = (name: any) => {
@@ -79,7 +114,7 @@ const Navbar = () => {
       link: "/shop"
     },
     { 
-      name: "BESTSELLERS", 
+      name: "BEST SELLERS", 
       icon: <GrLike size={24} />,
       link: "/#best-sellers"
     },
@@ -109,15 +144,20 @@ const Navbar = () => {
     <nav className="w-full bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Left side: Empty for mobile centering */}
+          {/* Left side: Hamburger menu for mobile */}
           <div className="flex items-center lg:hidden">
-            <div className="w-16"></div>
+            <button
+              onClick={handleOnClickHamburgerMenu}
+              className="p-2 rounded-md text-primary hover:text-primary/80 hover:bg-primary/10 transition-colors duration-200"
+            >
+              <Menu size={24} />
+            </button>
           </div>
 
           {/* Center: Logo */}
           <div className="flex items-center justify-center flex-1 lg:flex-none">
             <Link href={"/"} className="group">
-              <div className="relative">
+              <div className="relative lg:translate-x-0 translate-x-7">
                 <img
                   src="/images/logo.png"
                   alt="NE CRAFTERS Logo"
@@ -170,18 +210,24 @@ const Navbar = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-center py-4">
               {navItems.map((item) => (
-                <Link
+                <button
                   key={item.name}
-                  href={item.link}
-                  className="mx-6 text-base font-semibold text-gray-600 hover:text-primary transition-colors duration-200 relative group"
+                  onClick={() => handleNavigation(item.link)}
+                  className="mx-6 text-base font-semibold text-gray-600 hover:text-primary transition-colors duration-200 relative group cursor-pointer"
                 >
                   {item.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </Link>
+                </button>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        <MobileNav 
+          isOpen={isMobileNavOpen} 
+          onClose={() => setIsMobileNavOpen(false)} 
+        />
       </div>
     </nav>
   );

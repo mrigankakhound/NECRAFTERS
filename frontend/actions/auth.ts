@@ -100,20 +100,20 @@ export async function verifyCode(
     });
 
     // Set cookies
-    const cookieStore = cookies();
-    cookieStore.set("userId", user.id, {
+    const cookieStore = await cookies();
+    await cookieStore.set("userId", user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
-    cookieStore.set("userEmail", user.email, {
+    await cookieStore.set("userEmail", user.email, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
-    cookieStore.set("username", user.username, {
+    await cookieStore.set("username", user.username, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

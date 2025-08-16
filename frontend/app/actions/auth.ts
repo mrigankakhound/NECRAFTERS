@@ -7,13 +7,13 @@ import { render } from "@react-email/render";
 import { VerificationEmail } from "@/emails/VerificationEmail";
 
 export async function logout() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   // Remove all authentication related cookies
-  cookieStore.delete("userId");
-  cookieStore.delete("userEmail");
-  cookieStore.delete("username");
-  cookieStore.delete("token");
+  await cookieStore.delete("userId");
+  await cookieStore.delete("userEmail");
+  await cookieStore.delete("username");
+  await cookieStore.delete("token");
 
   return { success: true };
 }

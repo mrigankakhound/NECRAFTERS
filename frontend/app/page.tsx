@@ -7,6 +7,7 @@ import ProductCard from "@/components/home/ProductCard";
 import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
 import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
+import HashScrollHandler from "@/components/HashScrollHandler";
 import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
 import { getSpecialCombos } from "@/actions/special-combos";
@@ -28,6 +29,7 @@ const HomePage = async () => {
 
   return (
     <div>
+      <HashScrollHandler />
       <BannerCarousel
         banners={website_banners.data ?? []}
         app_banners={app_banners.data ?? []}

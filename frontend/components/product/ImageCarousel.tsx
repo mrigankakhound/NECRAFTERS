@@ -27,7 +27,7 @@ const ImageCarousel = ({ images, title }: ImageCarouselProps) => {
               key={index}
               className={index === currentIndex ? "block" : "hidden"}
             >
-              <div className="relative aspect-square">
+              <div className="relative aspect-square w-full max-w-[calc(100%-90px)] mx-auto">
                 <img
                   src={imgSrc}
                   alt={`${title} Image ${index + 1}`}

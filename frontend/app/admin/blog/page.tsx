@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, Calendar, Tag, User, Clock, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Calendar, Tag, User, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 interface BlogPost {
@@ -106,7 +106,7 @@ export default function AdminBlogPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
           <div className="space-y-4">
@@ -120,7 +120,7 @@ export default function AdminBlogPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <div>
@@ -128,8 +128,8 @@ export default function AdminBlogPage() {
           <p className="text-gray-600">Create, edit, and manage your blog posts</p>
         </div>
         <Link
-          href="/blog/new"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          href="/admin/blog/new"
+          className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
         >
           <Plus size={20} />
           New Post
@@ -142,41 +142,35 @@ export default function AdminBlogPage() {
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search posts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search posts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
           </div>
 
           {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category === 'all' ? 'All Categories' : category}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category === 'all' ? 'All Categories' : category}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Stats */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Stats</label>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary">
               {filteredPosts.length} posts
             </div>
           </div>
@@ -242,14 +236,14 @@ export default function AdminBlogPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                       {post.category}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-800">
+                      <div className="flex-shrink-0 h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary">
                           {post.author.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
@@ -286,7 +280,7 @@ export default function AdminBlogPage() {
                         <Eye size={16} />
                       </Link>
                       <Link
-                        href={`/blog/${post.id}/edit`}
+                        href={`/admin/blog/${post.id}/edit`}
                         className="text-blue-400 hover:text-blue-600 transition-colors"
                         title="Edit Post"
                       >

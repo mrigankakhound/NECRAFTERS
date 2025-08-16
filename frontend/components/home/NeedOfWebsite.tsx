@@ -36,7 +36,7 @@ const NeedOfWebsite = () => {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h2 className="heading text-center mb-12">WHY NE CRAFTERS</h2>
+      <h2 className="heading text-center mb-12">WHY NE CRAFTERS?</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col items-center text-center p-4 sm:p-6">

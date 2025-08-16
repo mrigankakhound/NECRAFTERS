@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import MobileBottomBar from "@/components/MobileBottomBar";
+
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Toaster } from "sonner";
@@ -37,7 +37,6 @@ export default function RootLayout({
         <TopBar />
         <Navbar />
         {children}
-        <MobileBottomBar />
         <Footer />
         <WhatsAppButton />
         <Toaster richColors position="top-center" />

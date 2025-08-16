@@ -9,7 +9,7 @@ import { RiDiscountPercentFill } from "react-icons/ri";
 const navItems = [
   { name: "CRAZY DEALS", icon: <RiDiscountPercentFill size={24} /> },
   { name: "SHOP ALL", icon: <LuStore size={24} /> },
-  { name: "BESTSELLERS", icon: <GrLike size={24} /> },
+  { name: "BEST SELLERS", icon: <GrLike size={24} /> },
   {
     name: "PERFUMES",
     icon: <GiPerfumeBottle size={24} />,
