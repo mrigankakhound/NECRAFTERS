@@ -9,12 +9,9 @@ export async function getBestSellerProducts(limit: number = 10) {
       },
       take: limit,
       include: {
+        images: true,
+        sizes: true,
         category: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
-          },
-        },
       },
     });
 
@@ -69,6 +66,8 @@ export async function getNewArrivals(limit?: number) {
         createdAt: "desc", // Order by creation date, newest first
       },
       include: {
+        images: true,
+        sizes: true,
         category: {
           select: {
             name: true,
@@ -114,11 +113,6 @@ export async function getAllProducts() {
     const products = await prisma.product.findMany({
       include: {
         category: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
-          },
-        },
       },
     });
     return { success: true, data: products };
@@ -140,11 +134,6 @@ export async function sortProducts(sortBy: string) {
         const productsAsc = await prisma.product.findMany({
           include: {
             category: true,
-            productSubCategories: {
-              include: {
-                subCategory: true,
-              },
-            },
           },
         });
         return {
@@ -189,11 +178,6 @@ export async function sortProducts(sortBy: string) {
       orderBy,
       include: {
         category: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
-          },
-        },
       },
     });
 
@@ -346,11 +330,6 @@ export async function getFilteredProducts(filters: {
       where: whereClause,
       include: {
         category: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
-          },
-        },
       },
     });
 

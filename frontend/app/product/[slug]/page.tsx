@@ -16,7 +16,10 @@ interface ProductPageProps {
 }
 
 async function ProductPage({ params }: ProductPageProps) {
-  const productResult = await getProductBySlug(params.slug);
+  // Await params for Next.js 15+ compatibility
+  const { slug } = await params;
+  
+  const productResult = await getProductBySlug(slug);
 
   if (!productResult.success || !productResult.data) {
     notFound();

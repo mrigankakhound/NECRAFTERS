@@ -63,6 +63,49 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    scroll-behavior: smooth;
+    data-scroll-behavior: smooth;
+  }
+}
+
+/* Custom modal animations */
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalExit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation-name: modalEnter;
+}
+
+.zoom-in-95 {
+  animation-name: modalEnter;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: modalEnter;
 }
 .ownContainer {
   @apply w-full mx-auto px-4 xs:max-w-lg sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[96rem] sm:px-6 lg:px-8;

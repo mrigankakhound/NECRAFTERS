@@ -12,7 +12,7 @@ export interface ProductFilters {
   pageSize?: number;
 }
 
-type ProductWithIncludes = Prisma.ProductGetPayload<{
+type ProductWithIncludes = {
   include: {
     images: true;
     sizes: true;
@@ -73,7 +73,7 @@ export async function getProducts(filters: ProductFilters = {}) {
       ],
     };
 
-    const orderBy: Prisma.ProductOrderByWithRelationInput =
+    const orderBy: any =
       sort === "price-asc"
         ? { sizes: { _count: "asc" } }
         : sort === "price-desc"

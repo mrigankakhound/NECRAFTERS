@@ -71,7 +71,7 @@ const Navbar = () => {
     { 
       name: "CRAZY DEALS", 
       icon: <RiDiscountPercentFill size={24} />,
-      link: "/#special-combos"
+      link: "/#crazy-deals"
     },
     { 
       name: "SHOP ALL", 
@@ -106,133 +106,77 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="w-full bg-background relative">
-      <div className="absolute inset-0 bg-chili-pattern opacity-5"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <nav className="w-full bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center lg:w-1/3">
-            <Sheet open={hamMenuOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="lg:hidden mr-2 hover:bg-primary/10"
-                  onClick={() => handleOnClickHamburgerMenu()}
-                >
-                  <Menu size={24} className="text-primary" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side={"left"}
-                className="w-[300px] sm:w-[400px] overflow-y-auto bg-background"
-              >
-                <div className="flex items-center space-x-4 mb-2">
-                  <User
-                    size={40}
-                    className="border-2 border-primary p-1 rounded-full text-primary"
-                  />
-                  <div className="">
-                    <p className="text-sm font-display font-medium text-primary">Download our app</p>
-                    <p className="text-sm text-muted-foreground font-sans">
-                      and get 10% OFF!
-                    </p>
-                  </div>
-                </div>
-                <Button className="w-full mb-2 spicy-button font-display">
-                  Download App
-                </Button>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <Button
-                    value={"outline"}
-                    className="flex items-center justify-center space-x-2 bg-secondary/10 hover:bg-secondary/20 text-secondary font-display transition-colors"
-                  >
-                    <Package size={20} />
-                    <span>MY ORDERS</span>
-                  </Button>
-                  <Button
-                    value={"outline"}
-                    className="flex items-center justify-center space-x-2 bg-secondary/10 hover:bg-secondary/20 text-secondary font-display transition-colors"
-                  >
-                    <Truck size={20} />
-                    <span>TRACK ORDER</span>
-                  </Button>
-                </div>
-                {/* Menu items with submenus */}
-                <div className="space-y-4">
-                  {navItems.map((item) => (
-                    <div key={item.name}>
-                      <Link
-                        href={item.link}
-                        className="flex items-center justify-between py-3 border-b border-border/20 text-foreground cursor-pointer hover:bg-primary/5 transition-colors px-2"
-                      >
-                        <div className="flex items-center space-x-4 text-primary">
-                          {item.icon}
-                          <span className="font-display font-medium">{item.name}</span>
-                        </div>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            {/* For larger screens */}
-            <div className="hidden lg:block w-full max-w-xs">
-              <div className="relative">
-                <input
-                  type="search"
-                  placeholder="Search for spicy goodness..."
-                  onClick={() => setOpen(true)}
-                  className="pl-10 pr-4 py-2 w-full border-b-2 border-primary/20 focus:border-primary/50 transition-colors font-sans text-foreground/80 focus:outline-none"
-                />
-                {open && <SearchModal setOpen={setOpen} />}
-              </div>
-            </div>
+          {/* Left side: Empty for mobile centering */}
+          <div className="flex items-center lg:hidden">
+            <div className="w-16"></div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center lg:w-1/3">
+          {/* Center: Logo */}
+          <div className="flex items-center justify-center flex-1 lg:flex-none">
             <Link href={"/"} className="group">
               <div className="relative">
                 <img
                   src="/images/logo.png"
                   alt="NE CRAFTERS Logo"
-                  className="h-12 group-hover:opacity-0 transition-opacity duration-300"
-                />
-                <img
-                  src="/images/logo.png"
-                  alt="NE CRAFTERS Logo"
-                  className="h-12 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className="h-20 group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </Link>
           </div>
 
-          <div className="flex items-center justify-end lg:w-1/3 space-x-2">
+          {/* Center: Search Bar - Desktop */}
+          <div className="hidden lg:block flex-1 max-w-2xl mx-8">
+            <div className="relative">
+              <input
+                type="search"
+                placeholder="Search for spicy goodness..."
+                onClick={() => setOpen(true)}
+                className="w-full pl-5 pr-5 py-3 rounded-full border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 font-sans text-gray-700 placeholder-gray-400 focus:outline-none bg-gray-50 focus:bg-white shadow-sm hover:shadow-md"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              {open && <SearchModal setOpen={setOpen} />}
+            </div>
+          </div>
+
+          {/* Right side: User actions */}
+          <div className="flex items-center space-x-1">
+            {/* Profile Button - Hidden on mobile */}
             <Button
               onClick={handleProfileClick}
               variant={"ghost"}
               size={"icon"}
-              className="lg:flex hover:bg-primary/10 text-primary"
+              className="hidden lg:flex hover:bg-primary/10 text-primary"
             >
               <User size={24} />
             </Button>
-            <FavoritesDrawer />
-            <CartDrawer />
+            <div className="relative">
+              <FavoritesDrawer />
+            </div>
+            <div className="relative">
+              <CartDrawer />
+            </div>
           </div>
         </div>
 
-        {/* For larger screens */}
-        <div className="hidden lg:block border-t border-border/20 mt-4">
+        {/* Navigation Menu - Desktop */}
+        <div className="hidden lg:block border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-evenly py-3">
+            <div className="flex justify-center py-4">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.link}
-                  className="text-sm font-display font-medium text-foreground/70 hover:text-primary group transition duration-300"
+                  className="mx-6 text-base font-semibold text-gray-600 hover:text-primary transition-colors duration-200 relative group"
                 >
                   {item.name}
-                  <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-gradient-to-r from-primary via-secondary to-accent"></span>
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </Link>
               ))}
             </div>

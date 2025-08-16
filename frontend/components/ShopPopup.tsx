@@ -1,117 +1,140 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { useEffect, useState, useRef } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface PopupContent {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  isActive: boolean;
+interface ShopPopupProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-interface ApiResponse {
-  success: boolean;
-  data?: PopupContent;
-  error?: string;
-}
-
-export default function ShopPopup() {
-  const [open, setOpen] = useState(false);
-  const [popupContent, setPopupContent] = useState<PopupContent | null>(null);
-  const [loading, setLoading] = useState(true);
+const ShopPopup = ({ isOpen, onClose }: ShopPopupProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const fetchAndShowPopup = async () => {
-      console.log("ShopPopup: Starting to fetch popup...");
-      try {
-        setLoading(true);
-        
-        // Temporarily disable localStorage check for debugging
-        // const hasSeenPopup = localStorage.getItem('hasSeenShopPopup');
-        // if (hasSeenPopup) {
-        //   console.log("ShopPopup: User has already seen popup");
-        //   return;
-        // }
-        
-        console.log("ShopPopup: Fetching from API...");
-        const response = await fetch('/api/shop-popup');
-        console.log("ShopPopup: API Response status:", response.status);
-        
-        const responseText = await response.text();
-        console.log("ShopPopup: Raw API response:", responseText);
-        
-        const result: ApiResponse = JSON.parse(responseText);
-        console.log("ShopPopup: Image URL from response:", result.data?.imageUrl);
-        
-        // Log the full image URL for debugging
-        if (result.data?.imageUrl) {
-          const fullUrl = result.data.imageUrl.startsWith('http')
-            ? result.data.imageUrl
-            : `${window.location.origin}${result.data.imageUrl}`;
-          console.log("ShopPopup: Full image URL will be:", fullUrl);
+    if (isOpen) {
+      // Focus trap: focus the close button when modal opens
+      closeButtonRef.current?.focus();
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+      
+      // Handle ESC key press
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
         }
-        console.log("ShopPopup: Parsed API response:", result);
-        
-        if (result.success && result.data) {
-          console.log("ShopPopup: Setting popup content:", result.data);
-          setPopupContent(result.data);
-          setOpen(true);
-          // localStorage.setItem('hasSeenShopPopup', 'true');
-        } else {
-          console.log("ShopPopup: No valid popup data in response");
-        }
-      } catch (error) {
-        console.error('ShopPopup: Error fetching popup:', error);
-      } finally {
-        setLoading(false);
-        console.log("ShopPopup: Finished fetching");
-      }
-    };
+      };
+      
+      document.addEventListener('keydown', handleEscape);
+      
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [isOpen, onClose]);
 
-    fetchAndShowPopup();
-  }, []);
+  // Handle click outside modal to close
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
-  if (loading || !popupContent) return null;
+  if (!isOpen) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent 
-        className="sm:max-w-[425px]"
-        aria-describedby="popup-description"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="popup-title"
+      aria-describedby="popup-description"
+    >
+      {/* Backdrop with blur effect */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      
+      {/* Modal */}
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl transform transition-all duration-300 ease-out animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4"
+        style={{
+          animation: 'modalEnter 0.3s ease-out forwards'
+        }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold mb-4">{popupContent.title}</DialogTitle>
-          {popupContent.imageUrl && (
-            <div className="w-full h-[200px] overflow-hidden rounded-lg mb-4 bg-gray-100">
-              {/* Regular img tag for testing */}
-              <img
-                src={popupContent.imageUrl}
-                alt={popupContent.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  console.error("ShopPopup: Image failed to load in component");
-                  console.log("ShopPopup: Image URL:", popupContent.imageUrl);
-                  e.currentTarget.style.display = 'none';
-                }}
-                onLoad={() => console.log("ShopPopup: Image loaded successfully in component")}
-                style={{ maxWidth: '100%' }}
-              />
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 pb-4">
+          <div>
+            <h2 
+              id="popup-title" 
+              className="text-xl font-bold text-gray-900"
+            >
+              🎉 Welcome to Our Shop!
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Discover amazing products
+            </p>
+          </div>
+          
+          {/* Close button */}
+          <Button
+            ref={closeButtonRef}
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close popup"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 pb-6">
+          <div id="popup-description" className="space-y-4">
+            <p className="text-gray-700 leading-relaxed">
+              We're excited to have you here! Explore our curated collection of premium products, 
+              from authentic spices to innovative food solutions.
+            </p>
+            
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-100">
+              <h3 className="font-semibold text-blue-900 mb-2">✨ What's Special:</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Premium quality products</li>
+                <li>• Fast & secure shipping</li>
+                <li>• 100% satisfaction guarantee</li>
+              </ul>
             </div>
-          )}
-          <DialogDescription id="popup-description" className="text-sm text-muted-foreground">
-            {popupContent.description}
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={onClose}
+              className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-xl transition-all duration-200 hover:scale-105"
+            >
+              Start Shopping
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200"
+            >
+              Maybe Later
+            </Button>
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-60 animate-pulse" />
+        <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-pink-400 to-red-400 rounded-full opacity-60 animate-pulse" style={{animationDelay: '0.5s'}} />
+      </div>
+    </div>
   );
-}
+};
+
+export default ShopPopup;

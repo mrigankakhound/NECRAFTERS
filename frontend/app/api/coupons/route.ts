@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         endDate: data.endDate,
         discount: data.discount,
         minimumOrderValue: data.minimumOrderValue,
-        globalUsageLimit: data.globalUsageLimit,
+        maxUsers: data.maxUsers,
         perUserLimit: data.perUserLimit,
       },
     });

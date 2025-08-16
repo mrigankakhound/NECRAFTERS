@@ -35,9 +35,6 @@ export default function ProductReviewComponent({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const router = useRouter();
 
-  const verifiedReviews = reviews.filter((r) => r.review.verified);
-  const displayedReviews = verifiedReviews.slice(0, 3);
-
   const handleWriteReview = async () => {
     const { userId, error } = await getAuthenticatedUserId();
     if (error || !userId) {
@@ -46,6 +43,37 @@ export default function ProductReviewComponent({
     }
     setIsReviewModalOpen(true);
   };
+
+  // Handle case where reviews might be undefined or null
+  if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
+    return (
+      <div className="space-y-8">
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold">RATINGS</h2>
+              <Star className="w-5 h-5" />
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleWriteReview}
+              className="border-2"
+            >
+              Write a Review
+            </Button>
+          </div>
+          
+          <div className="text-center py-8">
+            <div className="text-2xl font-bold text-gray-400 mb-2">No Reviews Yet</div>
+            <p className="text-gray-500">Be the first to review this product!</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const verifiedReviews = reviews.filter((r) => r.review.verified);
+  const displayedReviews = verifiedReviews.slice(0, 3);
 
   const ratingCounts = verifiedReviews.reduce(
     (acc, review) => {

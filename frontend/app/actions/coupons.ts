@@ -5,6 +5,12 @@ import { getAuthenticatedUserId } from "@/app/actions/auth";
 
 export async function validateCoupon(couponCode: string) {
   try {
+    // Check if prisma is available
+    if (!prisma) {
+      console.error("Prisma client is not available");
+      return { success: false, error: "Database connection error" };
+    }
+
     // Get authenticated user
     const { userId, error: userError } = await getAuthenticatedUserId();
     if (userError || !userId) {
@@ -15,11 +21,18 @@ export async function validateCoupon(couponCode: string) {
       where: {
         coupon: couponCode,
       },
-      include: {
-        usedByUsers: {
-          where: {
-            userId: userId,
-          },
+    });
+
+    if (!coupon) {
+      return { success: false, error: "Invalid coupon code" };
+    }
+
+    // Check if user has already used this coupon
+    const existingUsage = await prisma.couponUsage.findUnique({
+      where: {
+        couponId_userId: {
+          couponId: coupon.id,
+          userId: userId,
         },
       },
     });
@@ -40,7 +53,7 @@ export async function validateCoupon(couponCode: string) {
     }
 
     // Check per-user limit
-    if (coupon.perUserLimit && coupon.usedByUsers.length > 0) {
+    if (coupon.perUserLimit && existingUsage) {
       return { success: false, error: "You have already used this coupon" };
     }
 
@@ -49,11 +62,14 @@ export async function validateCoupon(couponCode: string) {
       where: { id: coupon.id },
       data: {
         currentUserCount: { increment: 1 },
-        usedByUsers: {
-          create: {
-            userId: userId,
-          },
-        },
+      },
+    });
+
+    // Create coupon usage record
+    await prisma.couponUsage.create({
+      data: {
+        couponId: coupon.id,
+        userId: userId,
       },
     });
 
@@ -75,6 +91,12 @@ export async function validateCoupon(couponCode: string) {
 
 export async function getAvailableCoupons() {
   try {
+    // Check if prisma is available
+    if (!prisma) {
+      console.error("Prisma client is not available");
+      return { success: false, error: "Database connection error" };
+    }
+
     const currentDate = new Date().toISOString().split("T")[0];
     
     const coupons = await prisma.coupon.findMany({

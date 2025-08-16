@@ -13,18 +13,19 @@ export async function getProductBySlug(slug: string) {
             subCategory: true,
           },
         },
-        productReviews: {
-          include: {
-            review: {
-              include: {
-                reviewBy: true,
-              },
-            },
-          },
-        },
+        // Temporarily exclude productReviews to avoid the null reviewById issue
+        // productReviews: {
+        //   include: {
+        //     review: {
+        //       include: {
+        //         reviewBy: true,
+        //       },
+        //     },
+        //   },
+        // },
       },
     });
-
+    
     if (!product) {
       return {
         success: false,
@@ -37,7 +38,7 @@ export async function getProductBySlug(slug: string) {
       data: product,
     };
   } catch (error) {
-    console.error("Error fetching product:", error);
+    console.error("💥 Error fetching product:", error);
     return {
       success: false,
       error: "Failed to fetch product",
@@ -69,7 +70,6 @@ export async function getRelatedProducts(
       data: relatedProducts,
     };
   } catch (error) {
-    console.error("Error fetching related products:", error);
     return {
       success: false,
       error: "Failed to fetch related products",

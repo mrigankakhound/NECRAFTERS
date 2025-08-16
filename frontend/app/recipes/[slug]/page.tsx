@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, Users, ChefHat } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
 async function getRecipe(slug: string) {

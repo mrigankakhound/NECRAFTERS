@@ -26,12 +26,16 @@ export async function getAllSubCategories() {
     const subCategories = await prisma.subCategory.findMany({
       include: {
         parent: true,
+        images: true,
       },
     });
+    
+    // Filter out subcategories with null parentId after fetching
+    const validSubCategories = subCategories.filter(sc => sc.parentId && sc.parent);
 
     return {
       success: true,
-      data: subCategories,
+      data: validSubCategories,
     };
   } catch (error) {
     console.error("Error fetching sub-categories:", error);

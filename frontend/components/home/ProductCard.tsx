@@ -1,21 +1,52 @@
-import { Star } from "lucide-react";
+"use client";
+
+import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { Product } from "@/lib/generated/prisma";
+import { Product } from "@prisma/client";
+import { useCart } from "@/store/useCart";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   heading: string;
   products: Product[];
   shop?: boolean;
+  sectionId?: string;
 }
 
-const ProductCard = ({ heading, products, shop }: ProductCardProps) => {
+const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault(); // Prevent navigation when clicking the button
+    e.stopPropagation(); // Stop event bubbling
+    
+    // Get the first available size
+    const firstSize = product.sizes?.[0];
+    if (!firstSize) {
+      toast.error("No size available");
+      return;
+    }
+    
+    const discountedPrice = firstSize.price * (1 - (product.discount || 0) / 100);
+    
+    // Add to cart
+    addToCart({
+      productId: product.id,
+      name: product.title,
+      image: product.images?.[0]?.url || "",
+      size: firstSize.size,
+      quantity: 1,
+      price: discountedPrice,
+      maxQuantity: firstSize.qty || 10,
+    });
+  };
   if (!products || products.length === 0) {
     return null;
   }
 
   return (
-    <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+    <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         <h2 className="section-heading">
           {heading}
@@ -58,6 +89,17 @@ const ProductCard = ({ heading, products, shop }: ProductCardProps) => {
                       />
                     </>
                   )}
+                  {/* Add to Cart Button - appears on hover */}
+                  <div className="absolute inset-0 flex items-end justify-center p-2 sm:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Button
+                      onClick={(e) => handleAddToCart(e, product)}
+                      className="w-full bg-black/80 hover:bg-black text-white backdrop-blur-sm transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+                      size="sm"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Add to Cart
+                    </Button>
+                  </div>
                 </div>
 
                 <div>

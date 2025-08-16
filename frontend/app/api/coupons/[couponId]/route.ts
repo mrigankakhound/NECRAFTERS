@@ -32,7 +32,7 @@ export async function PATCH(
         endDate: data.endDate,
         discount: data.discount,
         minimumOrderValue: data.minimumOrderValue,
-        globalUsageLimit: data.globalUsageLimit,
+        maxUsers: data.maxUsers,
         perUserLimit: data.perUserLimit,
       },
     });

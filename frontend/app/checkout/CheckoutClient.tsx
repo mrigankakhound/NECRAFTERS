@@ -519,13 +519,17 @@ export default function CheckoutClient({
                         </Label>
                       </div>
                       
-                      <div className="flex items-center gap-4 p-4 rounded-lg border-2 border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed">
+                      <div 
+                        className="flex items-center gap-4 p-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => {
+                          toast.error("Unfortunately, Cash on Delivery isn't available at your PIN code right now.");
+                        }}
+                      >
                         <input
                           type="radio"
-                          disabled
-                          className="w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed"
+                          className="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300"
                         />
-                        <Label className="flex items-center gap-2 cursor-not-allowed text-gray-400">
+                        <Label className="flex items-center gap-2 cursor-pointer text-gray-600">
                           <Banknote className="h-5 w-5" />
                           <span>Cash on Delivery</span>
                           <span className="text-xs text-red-500 ml-2">(Unavailable)</span>

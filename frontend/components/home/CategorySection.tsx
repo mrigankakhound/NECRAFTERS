@@ -1,4 +1,4 @@
-import { SubCategory } from "@/lib/generated/prisma";
+import { SubCategory } from "@prisma/client";
 import Link from "next/link";
 
 interface CategorySectionProps {

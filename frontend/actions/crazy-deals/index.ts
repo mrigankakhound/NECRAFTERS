@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { OfferType } from "@/lib/generated/prisma";
+import { OfferType } from "@prisma/client";
 
 export async function getCrazyDeals() {
   try {

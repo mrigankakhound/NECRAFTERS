@@ -6,7 +6,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Image } from "@/lib/generated/prisma";
+import { Image } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface ImageCarouselProps {
@@ -31,7 +31,7 @@ const ImageCarousel = ({ images, title }: ImageCarouselProps) => {
                 <img
                   src={imgSrc}
                   alt={`${title} Image ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-xl"
                 />
               </div>
             </CarouselItem>
@@ -55,7 +55,7 @@ const ImageCarousel = ({ images, title }: ImageCarouselProps) => {
             <img
               src={imgSrc}
               alt={`${title} Thumbnail ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           </button>
         ))}

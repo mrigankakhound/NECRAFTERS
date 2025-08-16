@@ -33,7 +33,7 @@ export default function AboutUsPage() {
               <h1 className="text-[40px] font-display text-[#33475b] mb-8">
                 Our Mission
               </h1>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               At NE CRAFTERS, our mission is to bring the rich, authentic flavours of Northeast India to kitchens across the world, while creating sustainable livelihoods for farmers and food artisans. We are committed to producing pure, high-quality, and innovative food products, free from harmful additives, and deeply rooted in the cultural and agricultural heritage of our region.
               </p>
             </div>
@@ -50,16 +50,16 @@ export default function AboutUsPage() {
               <h2 className="text-[40px] font-display text-[#33475b] mb-8">
                 Our Story
               </h2>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               NE CRAFTERS began with a simple idea: that the unique spices, crops, and traditional recipes of Northeast India deserve a wider audience and that our farmers deserve a fair price for their hard work.
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               Founded by a team with deep roots in Assam and a passion for both food and community development, we started small, sourcing directly from local farmers and experimenting with value-added products. Our journey led to the creation of specialty items like Bhut Jolokia Chili Oil and premium adulteration-free spices, along with nutritious innovations like high-protein breakfast mixes.
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               As we grew, we realised our responsibility went beyond food and it extended to the planet itself. We began transforming agricultural by-products, such as chili stems, into biochar, creating a long-term carbon sink that stores carbon in the soil for extended periods and even captures carbon dioxide from the atmosphere. This step is part of our ongoing mission to become a carbon-negative company, ensuring that our business not only supports livelihoods but also contributes to global climate action.
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               Today, NE CRAFTERS is more than a food processing company. We are a bridge between rural producers and urban markets, between traditional knowledge and modern taste, and between delicious food and a sustainable future.
               </p>
             </div>
@@ -116,16 +116,16 @@ export default function AboutUsPage() {
               <h2 className="text-[40px] font-display text-[#33475b] mb-8">
                 Impact Created
               </h2>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               At NE CRAFTERS, our work goes beyond making great food and now we aim to create lasting change. By sourcing directly from farmers and farmer-producer organisations across Assam, Nagaland, and the Northeast, we ensure fair prices, steady market access, and recognition for indigenous crops like Bhut Jolokia, Lakadong turmeric, and aromatic black rice.
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               We also use the waste and unsellable Bhut Jolokia and convert it to value added oleoresins (A Waste-To-Value initiative).
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               We create employment opportunities for local youth and women, preserve traditional farming practices, and promote healthy living through MSG-free, preservative-free, and protein-rich products.
               </p>
-              <p className="text-lg text-[#5f6b7b] leading-relaxed">
+              <p className="text-lg text-[#5f6b7b] leading-relaxed text-justify">
               Sustainability is at the heart of our operations, and we are now moving towards becoming a carbon-negative company. We do this by transforming agricultural by-products into biochar, which serves as a long-term carbon sink by storing carbon in the soil for decades while also having the ability to capture carbon dioxide directly from the atmosphere. This approach not only reduces waste but also contributes to global efforts against climate change, turning our food business into a force for both community and environmental good.
               </p>
             </div>

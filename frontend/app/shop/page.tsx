@@ -4,6 +4,7 @@
 // Import necessary components and libraries
 import ProductCard from "@/components/home/ProductCard";
 import FilterButton from "@/components/shop/FilterButton";
+import ShopPopup from "@/components/ShopPopup";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -61,7 +62,7 @@ type Product = {
     updatedAt: Date;
     images: Image[];
   };
-  productSubCategories: {
+  productSubCategories?: {
     id: string;
     productId: string;
     subCategoryId: string;
@@ -122,6 +123,31 @@ const ShopPage = () => {
   );
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    // Check if popup should be shown (session-based logic)
+    const shouldShowPopup = () => {
+      try {
+        // Check if popup was dismissed in this session
+        const popupDismissed = sessionStorage.getItem('shopPopupDismissed');
+        return !popupDismissed;
+      } catch (error) {
+        // Fallback if sessionStorage is not available
+        return false;
+      }
+    };
+
+    // Show popup if it hasn't been dismissed in this session
+    if (shouldShowPopup()) {
+      // Small delay to ensure page is fully loaded
+      const timer = setTimeout(() => {
+        setShowPopup(true);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -184,36 +210,61 @@ const ShopPage = () => {
     router.push(`?${params.toString()}`);
   };
 
+  const handlePopupClose = () => {
+    setShowPopup(false);
+    // Mark popup as dismissed in session storage
+    try {
+      sessionStorage.setItem('shopPopupDismissed', 'true');
+    } catch (error) {
+      // Fallback if sessionStorage is not available
+      console.warn('Could not save popup state to session storage');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Shop Popup */}
+      <ShopPopup isOpen={showPopup} onClose={handlePopupClose} />
+      
       {/* Page title */}
       <h1 className="heading mb-8 text-center">Shop All Products</h1>
 
       {/* Container for the filter button and sorting dropdown */}
-      <div className="flex justify-center items-center mb-6">
-        <div className="flex">
+      <div className="flex justify-center items-center mb-8">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           {/* Filter button component to open product filtering options */}
           {/* <FilterButton isLoading={isLoading} /> */}
 
           {/* Sorting dropdown to allow users to sort products by criteria like price or rating */}
-          <div className="relative">
+          <div className="relative group animate-bounce">
+            {/* Animated background glow effect */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out -z-10 animate-pulse"></div>
+            
+            {/* Animated border gradient */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out -z-5"></div>
+
             <select
               value={sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="appearance-none bg-black text-white px-4 py-2 pr-8 border-l border-white disabled:opacity-50"
+              className="relative z-10 appearance-none bg-white text-gray-800 px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:opacity-50 cursor-pointer min-w-[200px] text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg transform-gpu"
               disabled={isLoading}
             >
-              <option>Featured</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Newest</option>
-              <option>Best Sellers</option>
+              <option className="py-2 px-3 bg-white text-gray-800">Featured</option>
+              <option className="py-2 px-3 bg-white text-gray-800">Price: Low to High</option>
+              <option className="py-2 px-3 bg-white text-gray-800">Price: High to Low</option>
+              <option className="py-2 px-3 bg-white text-gray-800">Newest</option>
+              <option className="py-2 px-3 bg-white text-gray-800">Best Sellers</option>
             </select>
 
-            {/* Chevron icon added to the dropdown to indicate it is clickable */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
-              <ChevronDown className="h-4 w-4" />
+            {/* Animated chevron icon */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-500 z-20">
+              <ChevronDown className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-180 group-hover:text-purple-500" />
             </div>
+
+            {/* Floating particles effect */}
+            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
+            <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping" style={{animationDelay: '0.2s'}}></div>
+            <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-pink-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping" style={{animationDelay: '0.4s'}}></div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { HomeScreenOffer } from "@/lib/generated/prisma";
+import { HomeScreenOffer } from "@prisma/client";
 import Link from "next/link";
 
 interface CrazyDealsProps {
@@ -7,7 +7,7 @@ interface CrazyDealsProps {
 
 const CrazyDeals = ({ offers }: CrazyDealsProps) => {
   return (
-    <div className="container mx-auto mb-[20px] px-4">
+    <div id="crazy-deals" className="container mx-auto mb-[20px] px-4">
       <div className="section-container">
         <h2 className="section-heading">
           CRAZY DEALS
