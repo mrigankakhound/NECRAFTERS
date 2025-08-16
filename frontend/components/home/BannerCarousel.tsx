@@ -72,7 +72,7 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
         size={"icon"}
         onClick={prevSlide}
         aria-label="Previous slide"
-        className="absolute top-1/2 left-4 transform -translate-y-1/2 text-black rounded-none"
+        className="absolute top-1/2 left-4 transform -translate-y-1/2 text-black rounded-none bg-transparent border-transparent hover:bg-white/10"
       >
         <ChevronLeft size={24} />
       </Button>
@@ -81,7 +81,7 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
         size={"icon"}
         onClick={nextSlide}
         aria-label="Next slide"
-        className="absolute top-1/2 right-4 transform -translate-y-1/2 text-black rounded-none"
+        className="absolute top-1/2 right-4 transform -translate-y-1/2 text-black rounded-none bg-transparent border-transparent hover:bg-white/10"
       >
         <ChevronRight size={24} />
       </Button>

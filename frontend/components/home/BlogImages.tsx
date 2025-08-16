@@ -16,7 +16,7 @@ const BlogImages = () => {
       <div className="mb-4 overflow-hidden">
         <div className="flex animate-scroll-left">
           {/* First set of images */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img1.jpg"
               alt="Blog image 1"
@@ -54,7 +54,7 @@ const BlogImages = () => {
             />
           </div>
           {/* Second set for seamless loop */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img1.jpg"
               alt="Blog image 1"
@@ -92,7 +92,7 @@ const BlogImages = () => {
             />
           </div>
           {/* Third set to ensure seamless transition */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img1.jpg"
               alt="Blog image 1"
@@ -136,7 +136,7 @@ const BlogImages = () => {
       <div className="overflow-hidden">
         <div className="flex animate-scroll-right">
           {/* First set of images */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img6.jpg"
               alt="Blog image 6"
@@ -174,7 +174,7 @@ const BlogImages = () => {
             />
           </div>
           {/* Second set for seamless loop */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img6.jpg"
               alt="Blog image 6"
@@ -212,7 +212,7 @@ const BlogImages = () => {
             />
           </div>
           {/* Third set to ensure seamless transition */}
-          <div className="flex flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-[5px]">
             <img
               src="/images/photoboot/img6.jpg"
               alt="Blog image 6"
