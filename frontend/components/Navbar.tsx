@@ -104,11 +104,6 @@ const Navbar = () => {
 
   const navItems = [
     { 
-      name: "CRAZY DEALS", 
-      icon: <RiDiscountPercentFill size={24} />,
-      link: "/#crazy-deals"
-    },
-    { 
       name: "SHOP ALL", 
       icon: <LuStore size={24} />,
       link: "/shop"
@@ -118,10 +113,10 @@ const Navbar = () => {
       icon: <GrLike size={24} />,
       link: "/#best-sellers"
     },
-    {
-      name: "ABOUT US",
-      icon: <GiPerfumeBottle size={24} />,
-      link: "/about-us"
+    { 
+      name: "CRAZY DEALS", 
+      icon: <RiDiscountPercentFill size={24} />,
+      link: "/#crazy-deals"
     },
     {
       name: "RECIPES",
@@ -132,11 +127,6 @@ const Navbar = () => {
       name: "BLOG", 
       icon: <PiHighlighterCircleBold size={24} />,
       link: "/blog"
-    },
-    {
-      name: "CONTACT US",
-      icon: <MdFace4 size={24} />,
-      link: "/contact-us"
     },
   ];
 

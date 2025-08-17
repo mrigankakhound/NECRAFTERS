@@ -28,7 +28,7 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
     "Perfume",
     "Bath & Body",
     "Gifting",
-    "Crazy Deals",
+            "Crazy Deals",
     "Combos",
   ];
 

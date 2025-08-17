@@ -20,6 +20,8 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', 'sans-serif'],
         display: ['var(--font-playfair)', 'serif'],
+        caudex: ['Caudex', 'serif'],
+        capriola: ['Capriola', 'sans-serif'],
       },
       backgroundImage: {
         'chili-pattern': "url('/images/chili-pattern.svg')",

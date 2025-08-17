@@ -1,12 +1,13 @@
 import BannerCarousel from "@/components/home/BannerCarousel";
 import BlogImages from "@/components/home/BlogImages";
-import MainCategorySection from "@/components/home/MainCategorySection";
+
 import CrazyDeals from "@/components/home/CrazyDeals";
 import NeedOfWebsite from "@/components/home/NeedOfWebsite";
 import ProductCard from "@/components/home/ProductCard";
 import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
 import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
+import FeaturedReviews from "@/components/home/FeaturedReviews";
 import HashScrollHandler from "@/components/HashScrollHandler";
 import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
@@ -14,6 +15,7 @@ import { getSpecialCombos } from "@/actions/special-combos";
 import { getCrazyDeals } from "@/actions/crazy-deals";
 import { getBestSellerProducts, getNewArrivals } from "@/actions/products";
 import { getMainCategories } from "@/actions/categories/get-main-categories";
+import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
 const HomePage = async () => {
   // Fetch all required data
@@ -23,8 +25,8 @@ const HomePage = async () => {
   const bestSellers = await getBestSellerProducts(8); // Fetch top 8 best sellers
   const mainCategories = await getMainCategories();
   const crazyDeals = await getCrazyDeals();
-  const newArrivals = await getNewArrivals(8); // Fetch 8 newest products
-
+  const newArrivals = await getNewArrivals(4); // Fetch 4 newest products
+  const featuredReviews = await getActiveFeaturedReviews();
 
 
   return (
@@ -41,8 +43,9 @@ const HomePage = async () => {
         products={bestSellers.data ?? []}
         sectionId="best-sellers"
       />
-      <MainCategorySection categories={mainCategories.data ?? []} />
+
       <CrazyDeals offers={crazyDeals.data ?? []} />
+      <FeaturedReviews reviews={featuredReviews.data ?? []} />
       <ProductCard
         shop
         heading="NEW ARRIVALS"

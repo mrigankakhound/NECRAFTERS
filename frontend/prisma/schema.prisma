@@ -403,3 +403,19 @@ model ShopPopup {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model FeaturedReviews {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  image       Image
+  link        String
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+  customerName String?
+  rating      Int     @default(5)
+  reviewText  String?
+  productName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

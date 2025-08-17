@@ -60,9 +60,9 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
 
   const navItems = [
     { 
-      name: "CRAZY DEALS", 
+              name: "CRAZY DEALS", 
       icon: <RiDiscountPercentFill size={20} />,
-      link: "/#crazy-deals"
+              link: "/#crazy-deals"
     },
     { 
       name: "SHOP ALL", 

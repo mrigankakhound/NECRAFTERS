@@ -7,7 +7,7 @@ import { PiHighlighterCircleBold } from "react-icons/pi";
 import { RiDiscountPercentFill } from "react-icons/ri";
 
 const navItems = [
-  { name: "CRAZY DEALS", icon: <RiDiscountPercentFill size={24} /> },
+  { name: "S", icon: <RiDiscountPercentFill size={24} /> },
   { name: "SHOP ALL", icon: <LuStore size={24} /> },
   { name: "BEST SELLERS", icon: <GrLike size={24} /> },
   {

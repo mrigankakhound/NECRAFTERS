@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 interface BannerCarouselProps {
   banners: {
@@ -18,6 +19,7 @@ interface BannerCarouselProps {
 const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -26,6 +28,10 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
     setCurrentIndex(
       (prevIndex) => (prevIndex - 1 + images.length) % images.length
     );
+  };
+
+  const handleBannerClick = () => {
+    router.push("/shop");
   };
 
   useEffect(() => {
@@ -63,7 +69,8 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
           <img
             src={src}
             alt={`Slide ${index + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={handleBannerClick}
           />
         </div>
       ))}

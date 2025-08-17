@@ -9,8 +9,8 @@ const CrazyDeals = ({ offers }: CrazyDealsProps) => {
   return (
     <div id="crazy-deals" className="container mx-auto mb-[20px] px-4">
       <div className="section-container">
-        <h2 className="section-heading">
-          CRAZY DEALS
+        <h2 className="section-heading font-capriola">
+          GIFT HAMPER
         </h2>
       </div>
       <div className="relative flex justify-center">

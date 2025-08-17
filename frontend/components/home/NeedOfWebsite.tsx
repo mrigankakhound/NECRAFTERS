@@ -4,15 +4,15 @@ const NeedOfWebsite = () => {
   const features = [
     {
       image: "/images/icons/No Msg.png",
-      title: "NO MSG",
+      title: "100% NATURAL INGREDIENTS",
       description:
-        "Pure and authentic flavors without any MSG additives.",
+        "Nothing artificial, only nature’s finest crafted for your plate.",
     },
     {
       image: "/images/icons/quality-free.png",
       title: "QUALITY & ADULTERATION FREE",
       description:
-        "Premium products crafted with authentic ingredients and rigorous quality control.",
+        "Nothing added, nothing fake, just honest flavors from the earth.",
     },
     {
       image: "/images/icons/Reducing carbon Footprint.png",
@@ -28,15 +28,15 @@ const NeedOfWebsite = () => {
     },
     {
       image: "/images/icons/No preservatives.png",
-      title: "NO PRESERVATIVES",
+      title: "SMALL BATCHES, FRESHLY MADE",
       description: 
-        "Fresh and natural products free from artificial preservatives.",
+        "(Made with love, limited quantity, always retaining authentic natural flavour",
     },
   ];
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h2 className="heading text-center mb-12">WHY NE CRAFTERS?</h2>
+      <h2 className="heading text-center mb-12 font-capriola">WHY NE CRAFTERS?</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col items-center text-center p-4 sm:p-6">

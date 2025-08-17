@@ -44,7 +44,7 @@ const ReviewSection = () => {
     <div className="w-full bg-[#f2e6e9] py-16 mb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-center text-[#33475b]">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-center text-[#33475b] font-capriola">
             WHAT OUR CUSTOMERS HAVE TO SAY
           </h2>
         </div>

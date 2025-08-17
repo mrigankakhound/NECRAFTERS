@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Caudex:ital,wght@0,400;0,700;1,400;1,700&family=Capriola&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,11 +64,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Caudex', serif;
   }
   html {
     scroll-behavior: smooth;
     data-scroll-behavior: smooth;
   }
+}
+
+.font-capriola {
+  font-family: 'Capriola', sans-serif;
 }
 
 /* Custom modal animations */

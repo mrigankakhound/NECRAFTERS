@@ -48,7 +48,7 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
   return (
     <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        <h2 className="section-heading">
+        <h2 className="section-heading font-capriola">
           {heading}
         </h2>
       </div>
