@@ -2,9 +2,10 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { deleteImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/uploadImage";
 
-export async function createCategory(data: { name: string; image: string }) {
+export async function createCategory(data: { name: string; image: File }) {
   try {
     // Upload image to Cloudinary
     const imageResult = await uploadImage(data.image);
@@ -49,7 +50,7 @@ export async function updateCategory(
   id: string,
   data: {
     name: string;
-    image?: string;
+    image?: File;
     oldImagePublicId?: string;
   }
 ) {

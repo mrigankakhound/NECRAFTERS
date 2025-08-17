@@ -330,23 +330,23 @@ model Coupon {
   maxUsers         Int?           // Maximum number of unique users who can use this coupon
   perUserLimit     Boolean       @default(false) // Whether coupon is one-time per user
   currentUserCount Int          @default(0) // Current number of unique users who used this coupon
-  usedByUsers      CouponUsage[] // Track which users have used this coupon
+  // usedByUsers      CouponUsage[] // Track which users have used this coupon
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// Track coupon usage per user
-model CouponUsage {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  coupon   Coupon   @relation(fields: [couponId], references: [id])
-  couponId String   @db.ObjectId
-  userId   String   @db.ObjectId
+// Track coupon usage per user - temporarily commented out due to duplicate key error
+// model CouponUsage {
+//   id       String   @id @default(auto()) @map("_id") @db.ObjectId
+//   coupon   Coupon   @relation(fields: [couponId], references: [id])
+//   couponId String   @db.ObjectId
+//   userId   String   @db.ObjectId
 
-  createdAt DateTime @default(now())
+//   createdAt DateTime @default(now())
 
-  @@unique([couponId, userId]) // Ensure one usage per user
-}
+//   @@unique([couponId, userId]) // Ensure one usage per user
+// }
 
 model HomeScreenOffer {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
@@ -403,6 +403,22 @@ model ShopPopup {
   description String
   imageUrl    String?
   isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FeaturedReviews {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  image       Image
+  link        String
+  order       Int     @default(0)
+  isActive    Boolean @default(true)
+  customerName String?
+  rating      Int     @default(5)
+  reviewText  String?
+  productName String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

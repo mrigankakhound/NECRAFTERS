@@ -112,6 +112,13 @@ const routes = [
     color: "text-amber-500",
   },
   {
+    label: "Featured Reviews",
+    icon: Star,
+    href: "/featured-reviews",
+    color: "text-orange-500",
+  },
+
+  {
     label: "Blog Management",
     icon: FileText,
     href: "/blog",
@@ -148,18 +155,19 @@ const Sidebar = ({ onCollapse }: SidebarProps) => {
   return (
     <div
       className={cn(
-        "relative space-y-4 py-4 flex flex-col h-full bg-gray-900 text-white transition-all duration-300",
+        "relative flex flex-col h-full bg-gray-900 text-white transition-all duration-300",
         isCollapsed ? "w-[70px]" : "w-[270px]"
       )}
     >
-      <div className="px-3 py-2 flex-1">
-        <div className="flex items-center justify-between mb-14 pl-3">
+      {/* Header */}
+      <div className="flex-shrink-0 px-3 py-4 border-b border-gray-700">
+        <div className="flex items-center justify-between">
           {!isCollapsed && <h1 className="text-2xl font-bold">Admin Panel</h1>}
           <button
             onClick={toggleCollapse}
             className={cn(
-              "p-2 rounded-lg hover:bg-white/10 absolute",
-              isCollapsed ? "right-2" : "right-3"
+              "p-2 rounded-lg hover:bg-white/10 transition-colors",
+              isCollapsed ? "mx-auto" : ""
             )}
           >
             {isCollapsed ? (
@@ -169,28 +177,32 @@ const Sidebar = ({ onCollapse }: SidebarProps) => {
             )}
           </button>
         </div>
-        <div className="space-y-1">
+      </div>
+
+      {/* Scrollable Menu */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="px-3 py-4 space-y-1">
           {routes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200",
                 pathname === route.href
-                  ? "text-white bg-white/10"
-                  : "text-zinc-400"
+                  ? "text-white bg-white/10 border-l-4 border-blue-400"
+                  : "text-zinc-400 hover:text-white"
               )}
             >
               <div className="flex items-center flex-1">
                 <route.icon
                   className={cn(
-                    "h-5 w-5 transition-all duration-300",
+                    "h-5 w-5 transition-all duration-300 flex-shrink-0",
                     route.color,
                     isCollapsed ? "mr-0" : "mr-3"
                   )}
                 />
                 {!isCollapsed && (
-                  <span className="transition-all duration-300">
+                  <span className="transition-all duration-300 whitespace-nowrap">
                     {route.label}
                   </span>
                 )}
@@ -198,6 +210,15 @@ const Sidebar = ({ onCollapse }: SidebarProps) => {
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex-shrink-0 px-3 py-4 border-t border-gray-700">
+        {!isCollapsed && (
+          <div className="text-xs text-gray-400 text-center">
+            NE CRAFTERS Admin
+          </div>
+        )}
       </div>
     </div>
   );

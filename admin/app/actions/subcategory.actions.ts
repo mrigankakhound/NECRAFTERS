@@ -2,12 +2,13 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { deleteImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/uploadImage";
 
 export async function createSubCategory(data: {
   name: string;
   parentId: string;
-  image: string;
+  image: File;
 }) {
   try {
     // Upload image to Cloudinary
@@ -75,7 +76,7 @@ export async function updateSubCategory(
   data: {
     name: string;
     parentId: string;
-    image?: string;
+    image?: File;
     oldImagePublicId?: string;
   }
 ) {

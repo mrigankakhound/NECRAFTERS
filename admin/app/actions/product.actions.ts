@@ -2,7 +2,8 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { deleteImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/uploadImage";
 
 interface ProductSize {
   size: string;
@@ -20,7 +21,7 @@ export async function createProduct(data: {
   benefits: string[];
   ingredients: string[];
   sku: string;
-  images: string[];
+  images: File[];
   sizes: ProductSize[];
   discount: number;
   featured: boolean;
@@ -254,7 +255,7 @@ export async function updateProduct(
     benefits: string[];
     ingredients: string[];
     sku: string;
-    images: string[];
+    images: (string | File)[];
     sizes: ProductSize[];
     discount: number;
     featured: boolean;
@@ -272,16 +273,16 @@ export async function updateProduct(
       await Promise.all(deletePromises);
     }
 
-    // Upload new images to Cloudinary (if they are base64)
+    // Upload new images to Cloudinary (if they are File objects)
     const uploadPromises = data.images
-      .filter((img) => img.startsWith("data:"))
-      .map((image) => uploadImage(image));
+      .filter((img) => img instanceof File)
+      .map((image) => uploadImage(image as File));
     const uploadedImages = await Promise.all(uploadPromises);
 
-    // Combine existing images (not base64) with newly uploaded ones
+    // Combine existing images (not File objects) with newly uploaded ones
     const finalImages = [
       ...data.images
-        .filter((img) => !img.startsWith("data:"))
+        .filter((img) => typeof img === 'string')
         .map((url) => {
           const existingImage = data.imagesToDelete?.find(
             (img) => img.public_id && url.includes(img.public_id)
