@@ -30,17 +30,21 @@ const NeedOfWebsite = () => {
       image: "/images/icons/No preservatives.png",
       title: "SMALL BATCHES, FRESHLY MADE",
       description: 
-        "(Made with love, limited quantity, always retaining authentic natural flavour",
+        "Made with love, limited quantity, always retaining authentic natural flavour",
     },
   ];
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h2 className="heading text-center mb-12 font-capriola">WHY NE CRAFTERS?</h2>
+      <h2 className="text-lg font-bold sm:text-3xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">WHY NE CRAFTERS?</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col items-center text-center p-4 sm:p-6">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6">
+            <div className={`relative mb-4 sm:mb-6 ${
+              index === 4 
+                ? "w-20 h-20 sm:w-24 sm:h-24" 
+                : "w-16 h-16 sm:w-20 sm:h-20"
+            }`}>
               <img 
                 src={feature.image}
                 alt={feature.title}

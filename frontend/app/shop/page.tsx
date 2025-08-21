@@ -227,7 +227,7 @@ const ShopPage = () => {
       <ShopPopup isOpen={showPopup} onClose={handlePopupClose} />
       
       {/* Page title */}
-      <h1 className="heading mb-8 text-center">Shop All Products</h1>
+      <h1 className="text-lg font-bold sm:text-3xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">Shop All Products</h1>
 
       {/* Container for the filter button and sorting dropdown */}
       <div className="flex justify-center items-center mb-8">

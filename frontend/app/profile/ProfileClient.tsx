@@ -298,7 +298,7 @@ export default function ProfileClient({
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-lg">
-                            ${order.total.toFixed(2)}
+                            ₹{order.total.toFixed(2)}
                           </p>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

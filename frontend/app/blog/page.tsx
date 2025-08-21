@@ -34,7 +34,7 @@ export default function BlogPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="section-heading mb-16">Latest Articles</h1>
+      <h1 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase mb-16 font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">Latest Articles</h1>
       
       <div className="max-w-6xl mx-auto space-y-16">
         {blogPosts.map((post, index) => (

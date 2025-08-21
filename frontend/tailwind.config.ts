@@ -18,8 +18,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'sans-serif'],
-        display: ['var(--font-playfair)', 'serif'],
+        sans: ['Caudex', 'serif'],
+        display: ['Caudex', 'serif'],
         caudex: ['Caudex', 'serif'],
         capriola: ['Capriola', 'sans-serif'],
       },

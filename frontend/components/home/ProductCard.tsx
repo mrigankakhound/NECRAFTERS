@@ -48,7 +48,7 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
   return (
     <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        <h2 className="section-heading font-capriola">
+        <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           {heading}
         </h2>
       </div>
@@ -70,7 +70,7 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
 
             return (
               <Link
-                href={`/product/${product.slug}`}
+                href={`/product/${product.slug || ''}`}
                 key={product.id}
                 className="group bg-white rounded-lg p-2 sm:p-3"
               >

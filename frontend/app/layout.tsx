@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Caudex } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
@@ -8,9 +8,9 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Toaster } from "sonner";
 import TopBar from "@/components/TopBar";
 
-const poppins = Poppins({
+const caudex = Caudex({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -33,7 +33,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png" />
         <link rel="manifest" href="/favicon_io/site.webmanifest" />
       </head>
-      <body className={`${poppins.className} antialiased`}>
+      <body className={`${caudex.className} antialiased`}>
         <TopBar />
         <Navbar />
         {children}

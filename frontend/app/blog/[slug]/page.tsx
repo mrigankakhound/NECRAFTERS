@@ -228,7 +228,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <span>By {post.author}</span>
           </div>
 
-          <h1 className="text-4xl lg:text-5xl font-display text-primary mb-6">
+          <h1 className="text-4xl lg:text-5xl font-display mb-6 font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
             {post.title}
           </h1>
 

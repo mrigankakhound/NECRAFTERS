@@ -41,7 +41,7 @@ export default async function RecipePage({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
             {recipe.title}
           </h1>
           <p className="text-lg text-white/80 max-w-2xl">

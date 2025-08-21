@@ -7,21 +7,17 @@ const BlogImages = () => {
     <div className="w-full overflow-hidden bg-white py-8">
       {/* Heading */}
       <div className="text-center mb-9">
-        <h2 className="text-3xl font-bold text-primary tracking-wide font-capriola">
+        <h2 className="text-3xl font-bold tracking-wide font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           MOMENTS OF NE CRAFTERS
         </h2>
       </div>
 
       {/* First row - scrolls right to left */}
       <div className="mb-4 overflow-hidden">
-        <div className="flex animate-scroll-left">
+        <div className="flex animate-scroll-left gap-[5px]">
           {/* First set of images */}
           <div className="flex flex-shrink-0 gap-[5px]">
-            <img
-              src="/images/photoboot/img1.jpg"
-              alt="Blog image 1"
-              className="w-64 h-64 object-cover"
-            />
+            
             <img
               src="/images/photoboot/img2.jpg"
               alt="Blog image 2"
@@ -43,23 +39,24 @@ const BlogImages = () => {
               className="w-64 h-64 object-cover"
             />
             <img
+              src="/images/photoboot/img5-5.jpg"
+              alt="Blog image 5-5"
+              className="w-64 h-64 object-cover"
+            />
+            <img
               src="/images/photoboot/img11.jpg"
-              alt="Blog image 5"
+              alt="Blog image 11"
               className="w-64 h-64 object-cover"
             />
             <img
               src="/images/photoboot/img12.jpg"
-              alt="Blog image 5"
+              alt="Blog image 12"
               className="w-64 h-64 object-cover"
             />
           </div>
-          {/* Second set for seamless loop */}
+                    {/* Second set for seamless loop */}
           <div className="flex flex-shrink-0 gap-[5px]">
-            <img
-              src="/images/photoboot/img1.jpg"
-              alt="Blog image 1"
-              className="w-64 h-64 object-cover"
-            />
+           
             <img
               src="/images/photoboot/img2.jpg"
               alt="Blog image 2"
@@ -81,23 +78,24 @@ const BlogImages = () => {
               className="w-64 h-64 object-cover"
             />
             <img
+              src="/images/photoboot/img5-5.jpg"
+              alt="Blog image 5-5"
+              className="w-64 h-64 object-cover"
+            />
+            <img
               src="/images/photoboot/img11.jpg"
-              alt="Blog image 5"
+              alt="Blog image 11"
               className="w-64 h-64 object-cover"
             />
             <img
               src="/images/photoboot/img12.jpg"
-              alt="Blog image 5"
+              alt="Blog image 12"
               className="w-64 h-64 object-cover"
             />
           </div>
-          {/* Third set to ensure seamless transition */}
+                    {/* Third set to ensure seamless transition */}
           <div className="flex flex-shrink-0 gap-[5px]">
-            <img
-              src="/images/photoboot/img1.jpg"
-              alt="Blog image 1"
-              className="w-64 h-64 object-cover"
-            />
+ 
             <img
               src="/images/photoboot/img2.jpg"
               alt="Blog image 2"
@@ -119,13 +117,18 @@ const BlogImages = () => {
               className="w-64 h-64 object-cover"
             />
             <img
+              src="/images/photoboot/img5-5.jpg"
+              alt="Blog image 5-5"
+              className="w-64 h-64 object-cover"
+            />
+            <img
               src="/images/photoboot/img11.jpg"
-              alt="Blog image 5"
+              alt="Blog image 11"
               className="w-64 h-64 object-cover"
             />
             <img
               src="/images/photoboot/img12.jpg"
-              alt="Blog image 5"
+              alt="Blog image 12"
               className="w-64 h-64 object-cover"
             />
           </div>
@@ -134,7 +137,7 @@ const BlogImages = () => {
 
       {/* Second row - scrolls left to right */}
       <div className="overflow-hidden">
-        <div className="flex animate-scroll-right">
+        <div className="flex animate-scroll-right gap-[5px]">
           {/* First set of images */}
           <div className="flex flex-shrink-0 gap-[5px]">
             <img

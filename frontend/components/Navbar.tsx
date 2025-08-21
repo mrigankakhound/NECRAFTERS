@@ -114,7 +114,7 @@ const Navbar = () => {
       link: "/#best-sellers"
     },
     { 
-      name: "CRAZY DEALS", 
+      name: "GIFT HAMPER", 
       icon: <RiDiscountPercentFill size={24} />,
       link: "/#crazy-deals"
     },
@@ -131,9 +131,9 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="w-full bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+    <nav className="w-full bg-[#f9f7f6] shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           {/* Left side: Hamburger menu for mobile */}
           <div className="flex items-center lg:hidden">
             <button
@@ -195,20 +195,81 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Navigation Menu - Desktop */}
-        <div className="hidden lg:block border-t border-gray-100">
+
+
+        {/* Horizontal Icon Navigation - Desktop */}
+        <div className="hidden lg:block bg-[#f9f7f6]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-center py-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item.link)}
-                  className="mx-6 text-base font-semibold text-gray-600 hover:text-primary transition-colors duration-200 relative group cursor-pointer"
-                >
-                  {item.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </button>
-              ))}
+            <div className="flex items-center justify-center space-x-16 py-3">
+              {/* Shop All */}
+              <Link href="/shop" className="flex flex-col items-center space-y-2 group">
+                <div className="w-16 h-16 p-3 transition-all duration-300">
+                  <img 
+                    src="/images/navicons/shop_all.png" 
+                    alt="Shop All" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-base font-bold uppercase tracking-wide bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-700 group-hover:via-red-700 group-hover:to-orange-700 transition-all duration-300">
+                  Shop All
+                </span>
+              </Link>
+
+              {/* Best Sellers */}
+              <Link href="/#best-sellers" className="flex flex-col items-center space-y-2 group">
+                <div className="w-16 h-16 p-3 transition-all duration-300">
+                  <img 
+                    src="/images/navicons/best_seller.png" 
+                    alt="Best Sellers" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-base font-bold uppercase tracking-wide bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-700 group-hover:via-red-700 group-hover:to-orange-700 transition-all duration-300">
+                  Best Sellers
+                </span>
+              </Link>
+
+              {/* Recipes */}
+              <Link href="/recipes" className="flex flex-col items-center space-y-2 group">
+                <div className="w-16 h-16 p-3 transition-all duration-300">
+                  <img 
+                    src="/images/navicons/recipes.png" 
+                    alt="Recipes" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-base font-bold uppercase tracking-wide bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-700 group-hover:via-red-700 group-hover:to-orange-700 transition-all duration-300">
+                  Recipes
+                </span>
+              </Link>
+
+              {/* Special Combos */}
+              <Link href="/#crazy-deals" className="flex flex-col items-center space-y-2 group">
+                <div className="w-16 h-16 p-3 transition-all duration-300">
+                  <img 
+                    src="/images/navicons/gift_hamper.png" 
+                    alt="Special Combos" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-base font-bold uppercase tracking-wide bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-700 group-hover:via-red-700 group-hover:to-orange-700 transition-all duration-300">
+                  Gift Hamper
+                </span>
+              </Link>
+
+              {/* Blog */}
+              <Link href="/blog" className="flex flex-col items-center space-y-2 group">
+                <div className="w-16 h-16 p-3 transition-all duration-300">
+                  <img 
+                    src="/images/navicons/blog.png" 
+                    alt="Blog" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-base font-bold uppercase tracking-wide bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent group-hover:from-orange-700 group-hover:via-red-700 group-hover:to-orange-700 transition-all duration-300">
+                  Blog
+                </span>
+              </Link>
             </div>
           </div>
         </div>

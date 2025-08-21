@@ -67,7 +67,7 @@ export default async function OrderPage({
         <div className="p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {/* Back to Orders link */}
-            <Link href="/orders" className="flex items-center mb-4">
+            <Link href="/profile" className="flex items-center mb-4">
               <ArrowLeft className="w-5 h-5 mr-2" />
               <span className="text-sm font-medium">My Orders</span>
             </Link>

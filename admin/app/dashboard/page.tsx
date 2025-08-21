@@ -61,7 +61,7 @@ const DashboardPage = () => {
             <div>
               <p className="text-sm text-gray-500">Total Revenue</p>
               <h3 className="text-2xl font-bold">
-                ${data?.totalRevenue?.toFixed(2) || "0.00"}
+                ₹{data?.totalRevenue?.toFixed(2) || "0.00"}
               </h3>
             </div>
           </div>
@@ -117,7 +117,7 @@ const DashboardPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    ${order.total.toFixed(2)}
+                    ₹{order.total.toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -156,7 +156,7 @@ const DashboardPage = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-medium">
-                    ${product.sizes?.[0]?.price.toFixed(2) || "0.00"}
+                    ₹{product.sizes?.[0]?.price.toFixed(2) || "0.00"}
                   </p>
                   <p className="text-sm text-green-500">{product.sold} sold</p>
                 </div>

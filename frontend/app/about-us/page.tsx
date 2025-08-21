@@ -11,7 +11,7 @@ export default function AboutUsPage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-full mb-6">
               <span className="text-3xl">🌿</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-display text-[#33475b] mb-8 leading-tight">
+            <h1 className="text-5xl md:text-6xl font-display mb-8 leading-tight font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               About Us
             </h1>
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
@@ -64,7 +64,7 @@ export default function AboutUsPage() {
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span>WHO WE ARE</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-display text-[#33475b] leading-tight">
+                <h2 className="text-4xl md:text-5xl font-display leading-tight font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
                   Our Mission
                 </h2>
                 <div className="space-y-6">
@@ -102,7 +102,7 @@ export default function AboutUsPage() {
                   <div className="w-2 h-2 bg-accent rounded-full"></div>
                   <span>OUR JOURNEY</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-display text-[#33475b] leading-tight">
+                <h2 className="text-4xl md:text-5xl font-display leading-tight font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
                   Our Story
                 </h2>
                 <div className="space-y-6">
@@ -191,7 +191,7 @@ export default function AboutUsPage() {
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span>MAKING A DIFFERENCE</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-display text-[#33475b] leading-tight">
+                <h2 className="text-4xl md:text-5xl font-display leading-tight font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
                   Impact Created
                 </h2>
                 <div className="space-y-6">

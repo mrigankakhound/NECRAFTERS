@@ -23,7 +23,7 @@ export default async function RecipesPage() {
     <div className="ownContainer py-16">
       {/* Hero Section */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-display font-bold text-primary mb-4">
+        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           Spicy Recipes
         </h1>
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">

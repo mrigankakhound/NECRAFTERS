@@ -13,7 +13,7 @@ const MainCategorySection = ({ categories }: MainCategorySectionProps) => {
   return (
     <div className="container mx-auto mb-[20px] px-4">
       <div className="section-container">
-        <h2 className="section-heading">
+        <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           SHOP BY CATEGORY
         </h2>
       </div>
