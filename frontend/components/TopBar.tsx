@@ -91,7 +91,7 @@ export default function TopBar() {
       }}
     >
       <div className="max-w-7xl mx-auto relative">
-        <div className="flex items-center h-7 relative">
+        <div className="flex items-center h-8 relative">
           {/* Fixed button on the right with gradient overlay */}
           {currentTopBar.button && (
             <>
