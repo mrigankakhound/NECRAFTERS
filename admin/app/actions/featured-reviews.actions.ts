@@ -74,6 +74,36 @@ export async function getFeaturedReviews() {
   }
 }
 
+// Get section configuration
+export async function getFeaturedReviewsSectionConfig() {
+  try {
+    let config = await prisma.featuredReviewsSectionConfig.findFirst();
+    
+    if (!config) {
+      // Create default configuration if none exists
+      config = await prisma.featuredReviewsSectionConfig.create({
+        data: {
+          isActive: false,
+          title: "Featured Reviews",
+          subtitle: "Discover what our customers are saying about our products"
+        }
+      });
+    }
+
+    return {
+      success: true,
+      data: config,
+    };
+  } catch (error) {
+    console.error("Error fetching featured reviews section config:", error);
+    return {
+      success: false,
+      error: "Failed to fetch section config",
+      data: null,
+    };
+  }
+}
+
 // Get active featured reviews for frontend
 export async function getActiveFeaturedReviews() {
   try {
@@ -179,10 +209,26 @@ export async function deleteFeaturedReview(id: string) {
   }
 }
 
-// Toggle section on/off by updating all reviews
+// Toggle section on/off by updating section configuration
 export async function toggleFeaturedReviewsSection(isActive: boolean) {
   try {
-    await prisma.featuredReviews.updateMany({
+    // Get or create section configuration
+    let config = await prisma.featuredReviewsSectionConfig.findFirst();
+    
+    if (!config) {
+      // Create default configuration if none exists
+      config = await prisma.featuredReviewsSectionConfig.create({
+        data: {
+          isActive: false,
+          title: "Featured Reviews",
+          subtitle: "Discover what our customers are saying about our products"
+        }
+      });
+    }
+
+    // Update the section configuration
+    await prisma.featuredReviewsSectionConfig.update({
+      where: { id: config.id },
       data: { isActive },
     });
 
@@ -204,19 +250,28 @@ export async function toggleFeaturedReviewsSection(isActive: boolean) {
 // Update section title and subtitle
 export async function updateFeaturedReviewsConfig(title: string, subtitle?: string) {
   try {
-    const firstReview = await prisma.featuredReviews.findFirst({
-      orderBy: { order: "asc" },
-    });
-
-    if (firstReview) {
-      await prisma.featuredReviews.update({
-        where: { id: firstReview.id },
+    // Get or create section configuration
+    let config = await prisma.featuredReviewsSectionConfig.findFirst();
+    
+    if (!config) {
+      // Create default configuration if none exists
+      config = await prisma.featuredReviewsSectionConfig.create({
         data: {
-          title,
-          description: subtitle,
-        },
+          isActive: false,
+          title: "Featured Reviews",
+          subtitle: "Discover what our customers are saying about our products"
+        }
       });
     }
+
+    // Update the section configuration
+    await prisma.featuredReviewsSectionConfig.update({
+      where: { id: config.id },
+      data: {
+        title,
+        subtitle,
+      },
+    });
 
     revalidatePath("/admin/featured-reviews");
     revalidatePath("/");

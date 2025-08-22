@@ -25,6 +25,7 @@ import {
   toggleFeaturedReviewsSection,
   updateFeaturedReviewsConfig,
   reorderFeaturedReviews,
+  getFeaturedReviewsSectionConfig,
   type FeaturedReview,
   type CreateFeaturedReviewData
 } from "@/app/actions/featured-reviews.actions";
@@ -63,24 +64,33 @@ export default function FeaturedReviewsPage() {
   const loadReviews = async () => {
     try {
       setIsLoading(true);
-      const result = await getFeaturedReviews();
-      if (result.success) {
-        setReviews(result.data || []);
-        // Set section config from first review if available
-        if (result.data && result.data.length > 0) {
-          setSectionConfig({
-            title: result.data[0].title,
-            subtitle: result.data[0].description || ""
-          });
-          // Check if any reviews are active to determine section state
-          const hasActiveReviews = result.data.some(review => review.isActive);
-          setIsSectionActive(hasActiveReviews);
-        } else {
-          // If no reviews, section should be inactive by default
-          setIsSectionActive(false);
-        }
+      
+      // Load both reviews and section configuration
+      const [reviewsResult, configResult] = await Promise.all([
+        getFeaturedReviews(),
+        getFeaturedReviewsSectionConfig()
+      ]);
+      
+      if (reviewsResult.success) {
+        setReviews(reviewsResult.data || []);
       } else {
-        toast.error(result.error || "Failed to load reviews");
+        toast.error(reviewsResult.error || "Failed to load reviews");
+      }
+      
+      if (configResult.success && configResult.data) {
+        const config = configResult.data;
+        setSectionConfig({
+          title: config.title,
+          subtitle: config.subtitle || ""
+        });
+        setIsSectionActive(config.isActive);
+      } else {
+        // Set defaults if config loading fails
+        setSectionConfig({
+          title: "Featured Reviews",
+          subtitle: "Discover what our customers are saying about our products"
+        });
+        setIsSectionActive(false);
       }
     } catch (error) {
       toast.error("Failed to load featured reviews");
@@ -269,10 +279,6 @@ export default function FeaturedReviewsPage() {
       const result = await toggleFeaturedReviewsSection(isActive);
       if (result.success) {
         setIsSectionActive(isActive);
-        // Update the local reviews state to reflect the change
-        setReviews(prevReviews => 
-          prevReviews.map(review => ({ ...review, isActive }))
-        );
         toast.success(`Section ${isActive ? 'enabled' : 'disabled'} successfully`);
       } else {
         toast.error(result.error || "Failed to toggle section");

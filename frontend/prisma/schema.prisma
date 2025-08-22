@@ -419,3 +419,13 @@ model FeaturedReviews {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// Section configuration for featured reviews
+model FeaturedReviewsSectionConfig {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  isActive    Boolean @default(false)
+  title       String  @default("Featured Reviews")
+  subtitle    String? @default("Discover what our customers are saying about our products")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
