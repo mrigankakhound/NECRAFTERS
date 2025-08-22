@@ -136,32 +136,85 @@ export async function updateProductFeatured(
 
 export async function deleteProduct(productId: string) {
   try {
+    console.log(`🗑️  Starting deletion of product: ${productId}`);
+    
     // Get the product to delete its images
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { images: true },
+      select: { images: true, title: true },
     });
 
     if (!product) {
+      console.log(`❌ Product not found: ${productId}`);
       return { success: false, error: "Product not found" };
     }
 
-    // Delete images from Cloudinary
-    const deletePromises = product.images
-      .filter((img) => img.public_id)
-      .map((img) => deleteImage(img.public_id!));
-    await Promise.all(deletePromises);
+    console.log(`📦 Found product: ${product.title} with ${product.images.length} images`);
 
-    // Delete the product
-    await prisma.product.delete({
+    // Delete images from Cloudinary (with error handling)
+    if (product.images.length > 0) {
+      console.log('☁️  Deleting images from Cloudinary...');
+      try {
+        const deletePromises = product.images
+          .filter((img) => img.public_id)
+          .map(async (img) => {
+            try {
+              await deleteImage(img.public_id!);
+              console.log(`✅ Deleted image: ${img.public_id}`);
+            } catch (imgError) {
+              console.warn(`⚠️  Failed to delete image ${img.public_id}:`, imgError);
+              // Continue with deletion even if image deletion fails
+            }
+          });
+        await Promise.all(deletePromises);
+      } catch (cloudinaryError) {
+        console.warn('⚠️  Cloudinary deletion failed, continuing with database cleanup:', cloudinaryError);
+      }
+    }
+
+    // Delete related records first (in the correct order)
+    console.log('🗂️  Deleting related records...');
+    
+    // 1. Delete ProductSubCategory records
+    const deletedSubCategories = await prisma.productSubCategory.deleteMany({
+      where: { productId },
+    });
+    console.log(`✅ Deleted ${deletedSubCategories.count} subcategory records`);
+
+    // 2. Delete ProductReview records
+    const deletedReviews = await prisma.productReview.deleteMany({
+      where: { productId },
+    });
+    console.log(`✅ Deleted ${deletedReviews.count} review records`);
+
+    // 3. Now delete the product
+    console.log('🗑️  Deleting the product...');
+    const deletedProduct = await prisma.product.delete({
       where: { id: productId },
     });
+    console.log(`✅ Product deleted successfully: ${deletedProduct.title}`);
 
     revalidatePath("/products");
+    console.log('🔄 Revalidated products page');
+    
     return { success: true };
   } catch (error) {
-    console.error("Error deleting product:", error);
-    return { success: false, error: "Failed to delete product" };
+    console.error("❌ Error deleting product:", error);
+    
+    // Provide more specific error messages
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const prismaError = error as { code: string };
+      if (prismaError.code === 'P2003') {
+        return { success: false, error: "Foreign key constraint violation - product has related records" };
+      } else if (prismaError.code === 'P2025') {
+        return { success: false, error: "Product not found or already deleted" };
+      } else if (prismaError.code === 'P2014') {
+        return { success: false, error: "Required relation violation - related records need to be deleted first" };
+      }
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: `Failed to delete product: ${errorMessage}` };
   }
 }
 
@@ -291,7 +344,7 @@ export async function updateProduct(
             ? null
             : { url, public_id: url.split("/").pop()?.split(".")[0] };
         })
-        .filter(Boolean),
+        .filter((img): img is { url: string; public_id: string } => img !== null),
       ...uploadedImages.map((img) => ({
         url: img.url,
         public_id: img.public_id,

@@ -209,7 +209,7 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
            style={{ transitionDelay: '400ms' }}>
             <div className="text-center">
               <p className="text-xs text-gray-500">
-                © 2024 NE CRAFTERS. All rights reserved.
+                © 2025 NE CRAFTERS. All rights reserved.
               </p>
             </div>
           </div>

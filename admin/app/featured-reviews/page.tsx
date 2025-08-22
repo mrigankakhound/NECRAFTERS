@@ -39,7 +39,7 @@ export default function FeaturedReviewsPage() {
     title: "Featured Reviews",
     subtitle: "Discover what our customers are saying about our products"
   });
-  const [isSectionActive, setIsSectionActive] = useState(true);
+  const [isSectionActive, setIsSectionActive] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,7 +72,12 @@ export default function FeaturedReviewsPage() {
             title: result.data[0].title,
             subtitle: result.data[0].description || ""
           });
-          setIsSectionActive(result.data[0].isActive);
+          // Check if any reviews are active to determine section state
+          const hasActiveReviews = result.data.some(review => review.isActive);
+          setIsSectionActive(hasActiveReviews);
+        } else {
+          // If no reviews, section should be inactive by default
+          setIsSectionActive(false);
         }
       } else {
         toast.error(result.error || "Failed to load reviews");
@@ -264,12 +269,20 @@ export default function FeaturedReviewsPage() {
       const result = await toggleFeaturedReviewsSection(isActive);
       if (result.success) {
         setIsSectionActive(isActive);
+        // Update the local reviews state to reflect the change
+        setReviews(prevReviews => 
+          prevReviews.map(review => ({ ...review, isActive }))
+        );
         toast.success(`Section ${isActive ? 'enabled' : 'disabled'} successfully`);
       } else {
         toast.error(result.error || "Failed to toggle section");
+        // Revert the toggle if it failed
+        setIsSectionActive(!isActive);
       }
     } catch (error) {
       toast.error("Failed to toggle section");
+      // Revert the toggle if it failed
+      setIsSectionActive(!isActive);
     }
   };
 
@@ -313,6 +326,10 @@ export default function FeaturedReviewsPage() {
             <Settings className="w-5 h-5" />
             Section Configuration
           </CardTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            The section will be visible on the frontend only when at least one review is active. 
+            You can toggle individual reviews on/off or use the section toggle to control all reviews at once.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -342,6 +359,12 @@ export default function FeaturedReviewsPage() {
                 onCheckedChange={handleSectionToggle}
               />
               <Label>Section Active</Label>
+              <span className="text-sm text-gray-500 ml-2">
+                {isSectionActive 
+                  ? "Section is visible on the frontend" 
+                  : "Section is hidden from the frontend"
+                }
+              </span>
             </div>
             <Button onClick={handleConfigUpdate}>Update Configuration</Button>
           </div>
@@ -415,6 +438,37 @@ export default function FeaturedReviewsPage() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={review.isActive}
+                      onCheckedChange={async (checked) => {
+                        try {
+                          const result = await updateFeaturedReview(review.id, { isActive: checked });
+                          if (result.success) {
+                            setReviews(prevReviews => 
+                              prevReviews.map(r => 
+                                r.id === review.id ? { ...r, isActive: checked } : r
+                              )
+                            );
+                            // Update section active state based on whether any reviews are active
+                            const updatedReviews = reviews.map(r => 
+                              r.id === review.id ? { ...r, isActive: checked } : r
+                            );
+                            const hasActiveReviews = updatedReviews.some(r => r.isActive);
+                            setIsSectionActive(hasActiveReviews);
+                            toast.success(`Review ${checked ? 'activated' : 'deactivated'}`);
+                          } else {
+                            toast.error(result.error || "Failed to update review status");
+                          }
+                        } catch (error) {
+                          toast.error("Failed to update review status");
+                        }
+                      }}
+                    />
+                    <span className="text-xs text-gray-500">
+                      {review.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
