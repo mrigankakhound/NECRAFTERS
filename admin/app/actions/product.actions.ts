@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { deleteImage } from "@/lib/cloudinary";
-import { uploadImage } from "@/lib/uploadImage";
+import { uploadImage } from "@/lib/cloudinary";
 
 interface ProductSize {
   size: string;
@@ -21,7 +21,7 @@ export async function createProduct(data: {
   benefits: string[];
   ingredients: string[];
   sku: string;
-  images: File[];
+  images: string[]; // These are base64 strings
   sizes: ProductSize[];
   discount: number;
   featured: boolean;
@@ -29,8 +29,8 @@ export async function createProduct(data: {
   subCategoryIds: string[];
 }) {
   try {
-    // Upload all images to Cloudinary
-    const uploadPromises = data.images.map((image) => uploadImage(image));
+    // Upload all images to Cloudinary using base64 strings
+    const uploadPromises = data.images.map((base64Image) => uploadImage(base64Image, "products"));
     const uploadedImages = await Promise.all(uploadPromises);
 
     // Create product in database

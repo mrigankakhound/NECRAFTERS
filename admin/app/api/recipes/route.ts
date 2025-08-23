@@ -59,7 +59,15 @@ export async function POST(request: Request) {
 
     const recipe = await prisma.recipe.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        ingredients: data.ingredients,
+        instructions: data.instructions,
+        cookingTime: data.cookingTime,
+        servings: data.servings,
+        difficulty: data.difficulty,
+        image: data.image,
+        published: data.published,
         slug
       }
     });

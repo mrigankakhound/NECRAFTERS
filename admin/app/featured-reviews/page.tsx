@@ -29,7 +29,7 @@ import {
   type FeaturedReview,
   type CreateFeaturedReviewData
 } from "@/app/actions/featured-reviews.actions";
-import { uploadImage } from "@/lib/uploadImage";
+import { uploadImage } from "@/lib/cloudinary";
 
 export default function FeaturedReviewsPage() {
   const [reviews, setReviews] = useState<FeaturedReview[]>([]);
@@ -72,7 +72,18 @@ export default function FeaturedReviewsPage() {
       ]);
       
       if (reviewsResult.success) {
-        setReviews(reviewsResult.data || []);
+        const mappedReviews = reviewsResult.data?.map(review => ({
+          ...review,
+          description: review.description || undefined,
+          customerName: review.customerName || undefined,
+          reviewText: review.reviewText || undefined,
+          productName: review.productName || undefined,
+          image: {
+            url: review.image.url || undefined,
+            public_id: review.image.public_id || undefined
+          }
+        })) || [];
+        setReviews(mappedReviews);
       } else {
         toast.error(reviewsResult.error || "Failed to load reviews");
       }
@@ -140,7 +151,10 @@ export default function FeaturedReviewsPage() {
     setFormData({
       title: review.title,
       description: review.description || "",
-      image: review.image,
+      image: {
+        url: review.image.url || "",
+        public_id: review.image.public_id || ""
+      },
       link: review.link,
       order: review.order,
       customerName: review.customerName || "",
@@ -197,24 +211,40 @@ export default function FeaturedReviewsPage() {
 
     try {
       const loadingToast = toast.loading("Uploading image...");
-      const result = await uploadImage(file);
-      console.log("Upload result:", result);
       
-      setFormData(prev => ({
-        ...prev,
-        image: { url: result.url, public_id: result.public_id }
-      }));
+      // Convert File to base64 for server-side upload
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        if (e.target?.result) {
+          try {
+            const base64Image = e.target.result as string;
+            const result = await uploadImage(base64Image, "featured-reviews");
+            console.log("Upload result:", result);
+            
+            setFormData(prev => ({
+              ...prev,
+              image: { url: result.url, public_id: result.public_id }
+            }));
+            
+            toast.dismiss(loadingToast);
+            toast.success("Image uploaded successfully!");
+            
+            // Reset the file input to allow selecting the same file again
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
+          } catch (uploadError) {
+            toast.dismiss(loadingToast);
+            toast.error("Failed to upload image. Please try again.");
+            console.error("Upload error:", uploadError);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
       
-      toast.dismiss(loadingToast);
-      toast.success("Image uploaded successfully!");
-      
-      // Reset the file input to allow selecting the same file again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     } catch (error) {
-      toast.error("Failed to upload image. Please try again.");
-      console.error("Upload error:", error);
+      toast.error("Failed to process image. Please try again.");
+      console.error("Processing error:", error);
     }
   };
 

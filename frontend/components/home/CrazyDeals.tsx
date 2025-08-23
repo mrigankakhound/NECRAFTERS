@@ -1,3 +1,5 @@
+"use client";
+
 import { HomeScreenOffer } from "@prisma/client";
 import Link from "next/link";
 
@@ -8,12 +10,6 @@ interface CrazyDealsProps {
 const CrazyDeals = ({ offers }: CrazyDealsProps) => {
   return (
     <div id="crazy-deals" className="container mx-auto mb-[20px] px-4">
-      {/* Debug info */}
-      <div className="mb-4 p-4 bg-gray-100 rounded">
-        <p>Debug: Received {offers.length} offers</p>
-        <pre className="text-xs">{JSON.stringify(offers, null, 2)}</pre>
-      </div>
-      
       <div className="section-container">
         <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           GIFT HAMPER
@@ -28,17 +24,11 @@ const CrazyDeals = ({ offers }: CrazyDealsProps) => {
               className="flex-shrink-0 w-[80vw] sm:w-[347px]"
             >
               <div className="flex flex-col items-center">
-                <div className="w-full aspect-[4/3] overflow-hidden border-2 border-red-500">
-                  {/* Debug image info */}
-                  <div className="absolute top-0 left-0 bg-black text-white text-xs p-1 z-10">
-                    Image URL: {offer.images[0]?.url || "NO URL"}
-                  </div>
+                <div className="w-full aspect-[4/3] overflow-hidden">
                   <img
                     src={offer.images[0]?.url || ""}
                     alt={offer.title}
                     className="w-full h-full object-cover"
-                    onError={(e) => console.error("Image failed to load:", e)}
-                    onLoad={() => console.log("Image loaded successfully:", offer.images[0]?.url)}
                   />
                 </div>
                 <p className="text-center uppercase textGap font-[500] mt-2">

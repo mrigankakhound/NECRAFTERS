@@ -26,6 +26,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.herzindagi.info",
       },
+      {
+        protocol: "https",
+        hostname: "share.google",
+      },
     ],
   },
   typescript: {

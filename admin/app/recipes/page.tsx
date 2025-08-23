@@ -44,6 +44,8 @@ export default function RecipesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -53,6 +55,7 @@ export default function RecipesPage() {
     servings: "",
     difficulty: "",
     image: "",
+    imageFile: null as File | null, // Keep only the file upload field
     published: false,
   });
 
@@ -92,26 +95,130 @@ export default function RecipesPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return; // Prevent double submission
+    
+    setIsSubmitting(true);
+    
+    try {
+      let finalImageUrl = "";
+      
+      // Handle image upload if a file is selected
+      if (formData.imageFile) {
+        try {
+          setIsUploading(true);
+          toast.info("Uploading image...");
+          
+          // Convert File to base64 for upload
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            if (e.target?.result) {
+              const base64Image = e.target.result as string;
+              
+              try {
+                // Upload to Cloudinary
+                const uploadResult = await uploadImageToCloudinary(base64Image);
+                finalImageUrl = uploadResult.url;
+                
+                // Continue with form submission
+                await submitFormWithImage(finalImageUrl);
+              } catch (uploadError) {
+                console.error("Image upload failed:", uploadError);
+                toast.error("Failed to upload image. Please try again.");
+                setIsUploading(false);
+                setIsSubmitting(false);
+              }
+            }
+          };
+          reader.readAsDataURL(formData.imageFile);
+          return; // Exit early, will continue in callback
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          toast.error("Failed to upload image. Please try again.");
+          setIsUploading(false);
+          setIsSubmitting(false);
+          return;
+        }
+      } else {
+        // No image selected
+        toast.error("Please select an image for the recipe");
+        setIsSubmitting(false);
+        return;
+      }
+      
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast.error("Failed to submit recipe");
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helper function to submit form with final image URL
+  const submitFormWithImage = async (imageUrl: string) => {
     try {
       const url = selectedRecipe ? `/api/recipes/${selectedRecipe.id}` : "/api/recipes";
       const method = selectedRecipe ? "PUT" : "POST";
       
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          image: imageUrl,
+        }),
       });
 
-      const data = await response.json();
-      if (data.success) {
-        toast.success(selectedRecipe ? "Recipe updated successfully" : "Recipe created successfully");
-        setIsDialogOpen(false);
-        fetchRecipes();
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          toast.success(
+            selectedRecipe
+              ? "Recipe updated successfully!"
+              : "Recipe created successfully!"
+          );
+          setIsDialogOpen(false);
+          resetForm();
+          fetchRecipes();
+        } else {
+          toast.error(result.error || "Failed to save recipe");
+        }
       } else {
-        toast.error(data.error || "Operation failed");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      toast.error("Error saving recipe");
+      console.error("API Error:", error);
+      toast.error("Failed to save recipe");
+    } finally {
+      setIsSubmitting(false);
+      setIsUploading(false);
+    }
+  };
+
+  // Function to upload image to Cloudinary
+  const uploadImageToCloudinary = async (base64Image: string) => {
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: base64Image,
+          folder: "recipes"
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Image upload failed");
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error("Image upload error:", error);
+      throw new Error("Failed to upload image");
     }
   };
 
@@ -148,6 +255,7 @@ export default function RecipesPage() {
       servings: recipe.servings,
       difficulty: recipe.difficulty,
       image: recipe.image,
+      imageFile: null,
       published: recipe.published,
     });
     setIsDialogOpen(true);
@@ -156,17 +264,7 @@ export default function RecipesPage() {
   // Handle new recipe button click
   const handleNewRecipe = () => {
     setSelectedRecipe(null);
-    setFormData({
-      title: "",
-      description: "",
-      ingredients: [],
-      instructions: [],
-      cookingTime: "",
-      servings: "",
-      difficulty: "",
-      image: "",
-      published: false,
-    });
+    resetForm();
     setIsDialogOpen(true);
   };
 
@@ -191,6 +289,21 @@ export default function RecipesPage() {
   const removeArrayField = (field: "ingredients" | "instructions", index: number) => {
     const newArray = formData[field].filter((_, i) => i !== index);
     setFormData({ ...formData, [field]: newArray });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      ingredients: [],
+      instructions: [],
+      cookingTime: "",
+      servings: "",
+      difficulty: "",
+      image: "",
+      imageFile: null,
+      published: false,
+    });
   };
 
   if (isLoading) {
@@ -319,14 +432,56 @@ export default function RecipesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Image URL</label>
-                <Input
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
-                  }
-                  placeholder="Enter image URL"
-                />
+                <label className="text-sm font-medium mb-1 block">
+                  Recipe Image <span className="text-red-500">*</span>
+                </label>
+                
+                {/* Show existing image when editing */}
+                {selectedRecipe && selectedRecipe.image && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2">Current image:</p>
+                    <img
+                      src={selectedRecipe.image}
+                      alt="Current recipe image"
+                      className="w-32 h-32 object-cover rounded-lg border"
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setFormData({ ...formData, imageFile: file });
+                    }}
+                    disabled={isUploading}
+                    required
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  {isUploading && (
+                    <div className="mt-2 text-sm text-blue-600 flex items-center">
+                      <span className="animate-spin mr-2">⚙️</span>
+                      Uploading image...
+                    </div>
+                  )}
+                  {formData.imageFile && (
+                    <div className="mt-2">
+                      <img
+                        src={URL.createObjectURL(formData.imageFile)}
+                        alt="Uploaded image preview"
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formData.imageFile.name} ({(formData.imageFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Upload a high-quality image for your recipe (JPG, PNG, GIF)
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -457,8 +612,16 @@ export default function RecipesPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="spicy-button">
-                {selectedRecipe ? "Update Recipe" : "Create Recipe"}
+              <Button type="submit" className="spicy-button" disabled={isSubmitting || isUploading}>
+                {isSubmitting || isUploading ? (
+                  <>
+                    {isSubmitting ? "Saving..." : "Uploading..."}
+                    {isSubmitting && <span className="ml-2">⚙️</span>}
+                    {isUploading && <span className="ml-2">⚙️</span>}
+                  </>
+                ) : (
+                  selectedRecipe ? "Update Recipe" : "Create Recipe"
+                )}
               </Button>
             </div>
           </form>

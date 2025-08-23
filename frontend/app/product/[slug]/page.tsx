@@ -1,6 +1,8 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/actions/products';
+import { getProductBySlug } from "@/actions/product";
+import ImageCarousel from "@/components/product/ImageCarousel";
+import ProductDetailsAccordian from "@/components/product/ProductDetailsAccordian";
+import ProductActions from "@/components/product/ProductActions";
+import { notFound } from "next/navigation";
 
 interface ProductPageProps {
   params: {
@@ -8,81 +10,68 @@ interface ProductPageProps {
   };
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
-  
-  if (!product) {
-    return {
-      title: 'Product Not Found | NE CRAFTERS',
-      description: 'The requested product could not be found.',
-    };
-  }
-
-  const title = `${product.title} - Premium ${product.category.name} | NE CRAFTERS`;
-  const description = `${product.description} - Authentic Northeast Indian ${product.category.name.toLowerCase()}. ${product.brand ? `Brand: ${product.brand}.` : ''} Shop now for premium quality and authentic flavors.`;
-  
-  return {
-    title,
-    description,
-    keywords: [
-      product.title.toLowerCase(),
-      product.category.name.toLowerCase(),
-      'northeast indian spices',
-      'premium spices',
-      'authentic flavors',
-      'chili oil',
-      'spice blends',
-      'online spices',
-      'indian spices',
-      'traditional spices'
-    ].join(', '),
-    openGraph: {
-      title,
-      description,
-      images: product.images.map(img => ({
-        url: img.url || '',
-        width: 800,
-        height: 600,
-        alt: product.title,
-      })),
-      type: 'product',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: product.images.map(img => img.url || ''),
-    },
-    alternates: {
-      canonical: `/product/${params.slug}`,
-    },
-  };
-}
-
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug);
-  
-  if (!product) {
-    notFound();
-  }
+  try {
+    console.log("Fetching product with slug:", params.slug);
+    
+    const result = await getProductBySlug(params.slug);
+    console.log("Product fetch result:", result);
+    
+    if (!result.success || !result.data) {
+      console.error("Product not found or error:", result.error);
+      notFound();
+    }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          {product.title}
-        </h1>
-        <p className="text-lg text-gray-700 mb-6">
-          {product.description}
-        </p>
-        
-        {/* Add your existing product display components here */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-600 text-center">
-            Product details and images will be displayed here...
-          </p>
+    const product = result.data;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Product Images */}
+            <div>
+              <ImageCarousel images={product.images || []} title={product.title} />
+            </div>
+
+            {/* Product Details */}
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                  {product.title}
+                </h1>
+                <p className="text-lg text-gray-600 mb-4">
+                  {product.description}
+                </p>
+                {product.brand && (
+                  <p className="text-sm text-gray-500">
+                    Brand: <span className="font-medium">{product.brand}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Product Actions */}
+              <ProductActions 
+                sizes={product.sizes || []}
+                discount={product.discount}
+                productId={product.id}
+                productName={product.title}
+                productImage={product.images?.[0]?.url || ""}
+              />
+
+              {/* Product Details Accordion */}
+              <ProductDetailsAccordian 
+                description={product.description}
+                longDescription={product.longDescription}
+                benefits={product.benefits || []}
+                ingredients={product.ingredients || []}
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("Error in ProductPage:", error);
+    notFound();
+  }
 }

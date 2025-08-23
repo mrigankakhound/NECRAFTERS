@@ -7,6 +7,8 @@ export async function getProductBySlug(slug: string) {
         slug: slug,
       },
       include: {
+        images: true,
+        sizes: true,
         category: true,
         productSubCategories: {
           include: {
