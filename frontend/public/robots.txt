@@ -1,3 +1,20 @@
 User-agent: *
-Disallow: /admin
 Allow: /
+
+# Sitemap
+Sitemap: https://necrafters.com/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Allow important pages
+Allow: /products/
+Allow: /categories/
+Allow: /blog/
+Allow: /recipes/
+Allow: /about-us/
+Allow: /contact-us/
+
+# Crawl delay (optional)
+Crawl-delay: 1

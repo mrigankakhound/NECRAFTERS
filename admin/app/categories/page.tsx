@@ -105,11 +105,11 @@ export default function CategoriesPage() {
   };
 
   const handleCreateCategory = async () => {
-    if (!newCategory.name || !newCategory.image) return;
+    if (!newCategory.name || !newCategory.imageFile) return;
 
     const result = await createCategory({
       name: newCategory.name,
-      image: newCategory.image,
+      image: newCategory.imageFile,
     });
 
     if (result.success) {
@@ -251,7 +251,7 @@ export default function CategoriesPage() {
         <Button
           className="mt-4"
           onClick={handleCreateCategory}
-          disabled={!newCategory.name || !newCategory.image}
+          disabled={!newCategory.name || !newCategory.imageFile}
         >
           Create Category
         </Button>

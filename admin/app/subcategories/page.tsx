@@ -135,7 +135,7 @@ export default function SubcategoriesPage() {
   const handleCreateSubcategory = async () => {
     if (
       !newSubcategory.name ||
-      !newSubcategory.image ||
+      !newSubcategory.imageFile ||
       !newSubcategory.parentCategoryId
     )
       return;
@@ -143,7 +143,7 @@ export default function SubcategoriesPage() {
     const result = await createSubCategory({
       name: newSubcategory.name,
       parentId: newSubcategory.parentCategoryId,
-      image: newSubcategory.image,
+      image: newSubcategory.imageFile,
     });
 
     if (result.success) {
@@ -184,7 +184,7 @@ export default function SubcategoriesPage() {
       const result = await updateSubCategory(editSubcategory.id, {
         name: editSubcategory.name,
         parentId: editSubcategory.parent.id,
-        image: editImage.file ? editImage.url : undefined,
+        image: editImage.file || undefined,
         oldImagePublicId: editImage.file
           ? editSubcategory.images[0]?.public_url || undefined
           : undefined,
@@ -317,7 +317,7 @@ export default function SubcategoriesPage() {
           onClick={handleCreateSubcategory}
           disabled={
             !newSubcategory.name ||
-            !newSubcategory.image ||
+            !newSubcategory.imageFile ||
             !newSubcategory.parentCategoryId
           }
         >

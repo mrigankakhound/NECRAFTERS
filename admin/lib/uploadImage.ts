@@ -5,9 +5,13 @@ export const uploadImage = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log("Sending request to /api/upload"); // Debug log
+    // Get the base URL for server-side requests
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const uploadUrl = `${baseUrl}/api/upload`;
     
-    const response = await fetch('/api/upload', {
+    console.log("Sending request to:", uploadUrl); // Debug log
+    
+    const response = await fetch(uploadUrl, {
       method: 'POST',
       body: formData,
     });

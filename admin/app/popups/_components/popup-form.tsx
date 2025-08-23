@@ -30,8 +30,8 @@ export const PopupForm: React.FC<PopupFormProps> = ({ initialData }) => {
       if (!file) return;
 
       setLoading(true);
-      const imageUrl = await uploadImage(file);
-      setData({ ...data, imageUrl });
+      const imageResult = await uploadImage(file);
+      setData({ ...data, imageUrl: imageResult.url });
       toast.success('Image uploaded successfully');
     } catch (error) {
       toast.error('Error uploading image');
