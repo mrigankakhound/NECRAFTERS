@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   },
   // Add output configuration for standalone mode
   output: "standalone",
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb'
+    }
+  }
 };
 
 export default nextConfig;
