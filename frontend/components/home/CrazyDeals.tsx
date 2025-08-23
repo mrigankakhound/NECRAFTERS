@@ -8,6 +8,12 @@ interface CrazyDealsProps {
 const CrazyDeals = ({ offers }: CrazyDealsProps) => {
   return (
     <div id="crazy-deals" className="container mx-auto mb-[20px] px-4">
+      {/* Debug info */}
+      <div className="mb-4 p-4 bg-gray-100 rounded">
+        <p>Debug: Received {offers.length} offers</p>
+        <pre className="text-xs">{JSON.stringify(offers, null, 2)}</pre>
+      </div>
+      
       <div className="section-container">
         <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           GIFT HAMPER
