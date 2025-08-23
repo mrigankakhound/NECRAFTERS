@@ -28,11 +28,17 @@ const CrazyDeals = ({ offers }: CrazyDealsProps) => {
               className="flex-shrink-0 w-[80vw] sm:w-[347px]"
             >
               <div className="flex flex-col items-center">
-                <div className="w-full aspect-[4/3] overflow-hidden">
+                <div className="w-full aspect-[4/3] overflow-hidden border-2 border-red-500">
+                  {/* Debug image info */}
+                  <div className="absolute top-0 left-0 bg-black text-white text-xs p-1 z-10">
+                    Image URL: {offer.images[0]?.url || "NO URL"}
+                  </div>
                   <img
                     src={offer.images[0]?.url || ""}
                     alt={offer.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => console.error("Image failed to load:", e)}
+                    onLoad={() => console.log("Image loaded successfully:", offer.images[0]?.url)}
                   />
                 </div>
                 <p className="text-center uppercase textGap font-[500] mt-2">
