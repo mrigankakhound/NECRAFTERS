@@ -68,24 +68,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* SEO-optimized breadcrumb */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <a href="/" className="hover:text-red-600">Home</a>
-            <span>/</span>
-            <a href="/categories" className="hover:text-red-600">Categories</a>
-            <span>/</span>
-            <a href={`/categories/${product.category.slug}`} className="hover:text-red-600">
-              {product.category.name}
-            </a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{product.title}</span>
-          </div>
-        </div>
-      </nav>
-
-      {/* Product content will go here */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
           {product.title}
@@ -95,8 +77,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </p>
         
         {/* Add your existing product display components here */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <p className="text-gray-600">
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-gray-600 text-center">
             Product details and images will be displayed here...
           </p>
         </div>
