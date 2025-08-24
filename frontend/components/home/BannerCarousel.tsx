@@ -36,7 +36,10 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 485); // Detect if the screen is mobile size
+      const width = window.innerWidth;
+      const mobile = width <= 768; // More reasonable mobile breakpoint
+      console.log(`Screen width: ${width}px, isMobile: ${mobile}`);
+      setIsMobile(mobile);
     };
 
     window.addEventListener("resize", handleResize);
@@ -50,8 +53,11 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
   }, []);
 
   const images = isMobile
-    ? app_banners.map((banner) => banner.url)
+    ? (app_banners.length > 0 ? app_banners.map((banner) => banner.url) : banners.map((banner) => banner.url))
     : banners.map((banner) => banner.url);
+
+  // Add debugging
+  console.log(`BannerCarousel: isMobile=${isMobile}, banners=${banners.length}, app_banners=${app_banners.length}, images=${images.length}`);
 
   return (
     <div
