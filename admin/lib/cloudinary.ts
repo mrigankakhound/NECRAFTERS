@@ -80,9 +80,21 @@ export async function deleteImage(public_id: string) {
     const result = await cloudinary.uploader.destroy(public_id);
     console.log(`[ADMIN DEBUG] Delete result:`, result);
     
+    // Check if deletion was actually successful
+    if (result.result === 'ok') {
+      console.log(`[ADMIN DEBUG] ✅ Image deleted successfully from Cloudinary`);
+    } else {
+      console.log(`[ADMIN DEBUG] ❌ Image deletion failed:`, result);
+    }
+    
     return result;
   } catch (error) {
-    console.error("Error deleting from Cloudinary:", error);
+    console.error("[ADMIN DEBUG] ❌ Error deleting from Cloudinary:", error);
+    console.error("[ADMIN DEBUG] Error details:", {
+      message: error.message,
+      code: error.code,
+      statusCode: error.http_code
+    });
     throw error;
   }
 }

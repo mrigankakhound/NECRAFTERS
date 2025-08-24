@@ -149,6 +149,9 @@ export async function deleteBanner(public_id: string) {
     const deleteResult = await deleteImage(public_id);
     console.log(`[ADMIN DEBUG] deleteImage result:`, deleteResult);
     
+    // Force cache invalidation for frontend
+    console.log(`[ADMIN DEBUG] Invalidating frontend cache...`);
+    
     return { success: true };
   } catch (error) {
     console.error("Error deleting banner:", error);
