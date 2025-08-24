@@ -21,6 +21,16 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
 
+  // Debug logging
+  console.log('🎨 BannerCarousel Component Debug:');
+  console.log('  Props received:');
+  console.log('    banners:', banners);
+  console.log('    app_banners:', app_banners);
+  console.log('    banners.length:', banners?.length);
+  console.log('    app_banners.length:', app_banners?.length);
+  console.log('    banners type:', typeof banners);
+  console.log('    app_banners type:', typeof app_banners);
+
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
   };
@@ -58,6 +68,11 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
 
   // Add debugging
   console.log(`BannerCarousel: isMobile=${isMobile}, banners=${banners.length}, app_banners=${app_banners.length}, images=${images.length}`);
+  console.log('  Final images array:', images);
+  console.log('  Image URLs:');
+  images.forEach((url, index) => {
+    console.log(`    Image ${index + 1}: ${url}`);
+  });
 
   return (
     <div
@@ -65,21 +80,26 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
         isMobile ? "h-[400px]" : "h-[400px]"
       } overflow-hidden mb-[20px]`}
     >
-      {images.map((src, index) => (
-        <div
-          key={index}
-          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
-            index === currentIndex ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <img
-            src={src}
-            alt={`Slide ${index + 1}`}
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={handleBannerClick}
-          />
-        </div>
-      ))}
+      {images.map((src, index) => {
+        console.log(`🎯 Rendering image ${index}: ${src}`);
+        return (
+          <div
+            key={index}
+            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={src}
+              alt={`Slide ${index + 1}`}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={handleBannerClick}
+              onLoad={() => console.log(`✅ Image ${index} loaded successfully: ${src}`)}
+              onError={(e) => console.error(`❌ Image ${index} failed to load: ${src}`, e)}
+            />
+          </div>
+        );
+      })}
       <Button
         variant={"outline"}
         size={"icon"}

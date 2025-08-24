@@ -28,6 +28,14 @@ const HomePage = async () => {
   const newArrivals = await getNewArrivals(4); // Fetch 4 newest products
   const featuredReviews = await getActiveFeaturedReviews();
 
+  // Debug logging
+  console.log('🔍 HomePage Debug:');
+  console.log('website_banners:', JSON.stringify(website_banners, null, 2));
+  console.log('app_banners:', JSON.stringify(app_banners, null, 2));
+  console.log('BannerCarousel props:');
+  console.log('  banners:', JSON.stringify(website_banners.data ?? [], null, 2));
+  console.log('  app_banners:', JSON.stringify(app_banners.data ?? [], null, 2));
+
   // SEO-optimized page title and description
   const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
   const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
