@@ -22,6 +22,11 @@ export async function getAppBanners() {
 export async function uploadAppBanner(base64Image: string) {
   try {
     const result = await uploadImage(base64Image, "app-banners");
+    
+    // Revalidate frontend paths to refresh banner data
+    revalidatePath("/");
+    revalidatePath("/admin/app-banners");
+    
     return { success: true, data: result };
   } catch (error) {
     console.error("Error uploading app banner:", error);
@@ -43,6 +48,11 @@ export async function getWebsiteBanners() {
 export async function uploadWebsiteBanner(base64Image: string) {
   try {
     const result = await uploadImage(base64Image, "website-banners");
+    
+    // Revalidate frontend paths to refresh banner data
+    revalidatePath("/");
+    revalidatePath("/admin/website-banners");
+    
     return { success: true, data: result };
   } catch (error) {
     console.error("Error uploading website banner:", error);
@@ -145,6 +155,12 @@ export async function deleteHomeScreenOffer(id: string, public_id: string) {
 export async function deleteBanner(public_id: string) {
   try {
     await deleteImage(public_id);
+    
+    // Revalidate frontend paths to refresh banner data
+    revalidatePath("/");
+    revalidatePath("/admin/website-banners");
+    revalidatePath("/admin/app-banners");
+    
     return { success: true };
   } catch (error) {
     console.error("Error deleting banner:", error);

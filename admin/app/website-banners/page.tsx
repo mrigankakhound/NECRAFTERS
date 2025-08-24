@@ -59,6 +59,7 @@ export default function WebsiteBannersPage() {
                   e.target.result as string
                 );
                 setBanners((prev) => [...prev, result]);
+                
                 toast.success("Banner uploaded successfully");
               } catch (error) {
                 toast.error("Failed to upload banner");
@@ -89,6 +90,7 @@ export default function WebsiteBannersPage() {
             (banner) => banner.public_id !== bannerToDelete.public_id
           )
         );
+        
         toast.success("Banner deleted successfully");
       } catch (error) {
         toast.error("Failed to delete banner");

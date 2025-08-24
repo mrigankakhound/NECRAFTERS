@@ -55,7 +55,7 @@ export default function AppBannersPage() {
           reader.onload = async (e) => {
             if (e.target?.result) {
               const result = await uploadAppBanner(e.target.result as string);
-              if (result.success) {
+              if (result.success && result.data) {
                 setBanners((prev) => [...prev, result.data]);
                 toast.success("Banner uploaded successfully");
               } else {
@@ -87,6 +87,7 @@ export default function AppBannersPage() {
             (banner) => banner.public_id !== bannerToDelete.public_id
           )
         );
+        
         toast.success("Banner deleted successfully");
       } else {
         toast.error("Failed to delete banner");
