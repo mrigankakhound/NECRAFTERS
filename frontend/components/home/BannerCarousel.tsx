@@ -16,10 +16,44 @@ interface BannerCarouselProps {
   }[];
 }
 
-const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
+const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanners }: BannerCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [banners, setBanners] = useState(initialBanners);
+  const [app_banners, setAppBanners] = useState(initialAppBanners);
   const router = useRouter();
+
+  // Real-time banner updates
+  const fetchBanners = async () => {
+    try {
+      // Fetch fresh banner data
+      const [websiteResponse, appResponse] = await Promise.all([
+        fetch('/api/banners/website'),
+        fetch('/api/banners/app')
+      ]);
+      
+      if (websiteResponse.ok) {
+        const websiteData = await websiteResponse.json();
+        setBanners(websiteData.banners || []);
+      }
+      
+      if (appResponse.ok) {
+        const appData = await appResponse.json();
+        setAppBanners(appData.banners || []);
+      }
+    } catch (error) {
+      console.log('Banner refresh failed:', error);
+    }
+  };
+
+  // Refresh banners every 30 seconds and on mount
+  useEffect(() => {
+    fetchBanners(); // Initial fetch
+    
+    const interval = setInterval(fetchBanners, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Debug logging
   console.log('🎨 BannerCarousel Component Debug:');
@@ -117,6 +151,23 @@ const BannerCarousel = ({ banners, app_banners }: BannerCarouselProps) => {
         className="absolute top-1/2 right-4 transform -translate-y-1/2 text-black rounded-none bg-transparent border-transparent hover:bg-white/10"
       >
         <ChevronRight size={24} />
+      </Button>
+      
+      {/* Manual refresh button */}
+      <Button
+        variant={"outline"}
+        size={"icon"}
+        onClick={fetchBanners}
+        aria-label="Refresh banners"
+        className="absolute top-4 right-4 bg-white/80 hover:bg-white text-black rounded-full"
+        title="Refresh banners"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M3 21v-5h5"/>
+        </svg>
       </Button>
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {images.map((_, index) => (
