@@ -70,7 +70,17 @@ export async function uploadHomeScreenOffer(file: string) {
 
 export async function deleteImage(public_id: string) {
   try {
-    await cloudinary.uploader.destroy(public_id);
+    console.log(`[ADMIN DEBUG] Attempting to delete image:`, {
+      public_id,
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
+      api_secret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'
+    });
+    
+    const result = await cloudinary.uploader.destroy(public_id);
+    console.log(`[ADMIN DEBUG] Delete result:`, result);
+    
+    return result;
   } catch (error) {
     console.error("Error deleting from Cloudinary:", error);
     throw error;

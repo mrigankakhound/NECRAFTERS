@@ -144,7 +144,11 @@ export async function deleteHomeScreenOffer(id: string, public_id: string) {
 // Generic Banner Delete
 export async function deleteBanner(public_id: string) {
   try {
-    await deleteImage(public_id);
+    console.log(`[ADMIN DEBUG] deleteBanner called with public_id:`, public_id);
+    
+    const deleteResult = await deleteImage(public_id);
+    console.log(`[ADMIN DEBUG] deleteImage result:`, deleteResult);
+    
     return { success: true };
   } catch (error) {
     console.error("Error deleting banner:", error);
