@@ -6,54 +6,7 @@ import {
   uploadImage,
   deleteImage,
   getCloudinaryImages,
-  comprehensiveCloudinaryTest,
 } from "@/lib/cloudinary";
-
-// Test Cloudinary setup
-export async function testCloudinarySetup() {
-  try {
-    console.log(`[ADMIN DEBUG] 🧪 Testing Cloudinary setup from banner actions...`);
-    const result = await comprehensiveCloudinaryTest();
-    return result;
-  } catch (error) {
-    console.error(`[ADMIN DEBUG] ❌ Test failed:`, error);
-    return { success: false, error: "Test failed" };
-  }
-}
-
-// Client-side test function (can be called from browser console)
-export async function clientTestCloudinary() {
-  try {
-    console.log(`[CLIENT TEST] 🧪 Starting client-side Cloudinary test...`);
-    
-    // Test environment variables
-    const envCheck = {
-      NODE_ENV: process.env.NODE_ENV,
-      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET',
-      CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
-      CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'
-    };
-    
-    console.log(`[CLIENT TEST] 📋 Environment check:`, envCheck);
-    
-    // Test basic banner fetching
-    const banners = await getWebsiteBanners();
-    console.log(`[CLIENT TEST] 🖼️ Banner fetch test:`, banners);
-    
-    return {
-      success: true,
-      envCheck,
-      bannerTest: banners,
-      message: 'Client test completed - check console for details'
-    };
-  } catch (error) {
-    console.error(`[CLIENT TEST] ❌ Client test failed:`, error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
-  }
-}
 
 // App Banners
 export async function getAppBanners() {
@@ -191,41 +144,10 @@ export async function deleteHomeScreenOffer(id: string, public_id: string) {
 // Generic Banner Delete
 export async function deleteBanner(public_id: string) {
   try {
-    console.log(`[ADMIN DEBUG] 🚀 deleteBanner called with public_id:`, public_id);
-    console.log(`[ADMIN DEBUG] 📍 Function execution started at:`, new Date().toISOString());
-    
-    const deleteResult = await deleteImage(public_id);
-    console.log(`[ADMIN DEBUG] 🗑️ deleteImage result:`, deleteResult);
-    
-    // Force cache invalidation for frontend
-    console.log(`[ADMIN DEBUG] 🔄 Invalidating frontend cache...`);
-    
-    // Add a small delay to ensure deletion is processed
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(`[ADMIN DEBUG] ⏱️ Waited 1 second after deletion`);
-    
-    // Test if the image still exists
-    console.log(`[ADMIN DEBUG] 🔍 Testing if image still exists...`);
-    try {
-      const testResult = await fetch(`https://res.cloudinary.com/dtxh3ew7s/image/upload/${public_id}`);
-      if (testResult.status === 404) {
-        console.log(`[ADMIN DEBUG] ✅ Image successfully deleted (404 response)`);
-      } else {
-        console.log(`[ADMIN DEBUG] ⚠️ Image might still exist (Status: ${testResult.status})`);
-      }
-    } catch (testError) {
-      console.log(`[ADMIN DEBUG] ✅ Image deletion test completed (Error expected if deleted)`);
-    }
-    
-    console.log(`[ADMIN DEBUG] 🎯 deleteBanner function completed successfully`);
+    await deleteImage(public_id);
     return { success: true };
   } catch (error) {
-    console.error(`[ADMIN DEBUG] ❌ Error in deleteBanner:`, error);
-    console.error(`[ADMIN DEBUG] Error details:`, {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : 'No stack trace',
-      name: error instanceof Error ? error.name : 'Unknown error type'
-    });
+    console.error("Error deleting banner:", error);
     return { success: false, error: "Failed to delete banner" };
   }
 }
