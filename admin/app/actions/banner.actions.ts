@@ -21,6 +21,40 @@ export async function testCloudinarySetup() {
   }
 }
 
+// Client-side test function (can be called from browser console)
+export async function clientTestCloudinary() {
+  try {
+    console.log(`[CLIENT TEST] 🧪 Starting client-side Cloudinary test...`);
+    
+    // Test environment variables
+    const envCheck = {
+      NODE_ENV: process.env.NODE_ENV,
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET',
+      CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
+      CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'
+    };
+    
+    console.log(`[CLIENT TEST] 📋 Environment check:`, envCheck);
+    
+    // Test basic banner fetching
+    const banners = await getWebsiteBanners();
+    console.log(`[CLIENT TEST] 🖼️ Banner fetch test:`, banners);
+    
+    return {
+      success: true,
+      envCheck,
+      bannerTest: banners,
+      message: 'Client test completed - check console for details'
+    };
+  } catch (error) {
+    console.error(`[CLIENT TEST] ❌ Client test failed:`, error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
 // App Banners
 export async function getAppBanners() {
   try {
