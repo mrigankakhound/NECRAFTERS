@@ -6,7 +6,20 @@ import {
   uploadImage,
   deleteImage,
   getCloudinaryImages,
+  comprehensiveCloudinaryTest,
 } from "@/lib/cloudinary";
+
+// Test Cloudinary setup
+export async function testCloudinarySetup() {
+  try {
+    console.log(`[ADMIN DEBUG] 🧪 Testing Cloudinary setup from banner actions...`);
+    const result = await comprehensiveCloudinaryTest();
+    return result;
+  } catch (error) {
+    console.error(`[ADMIN DEBUG] ❌ Test failed:`, error);
+    return { success: false, error: "Test failed" };
+  }
+}
 
 // App Banners
 export async function getAppBanners() {
@@ -144,17 +157,41 @@ export async function deleteHomeScreenOffer(id: string, public_id: string) {
 // Generic Banner Delete
 export async function deleteBanner(public_id: string) {
   try {
-    console.log(`[ADMIN DEBUG] deleteBanner called with public_id:`, public_id);
+    console.log(`[ADMIN DEBUG] 🚀 deleteBanner called with public_id:`, public_id);
+    console.log(`[ADMIN DEBUG] 📍 Function execution started at:`, new Date().toISOString());
     
     const deleteResult = await deleteImage(public_id);
-    console.log(`[ADMIN DEBUG] deleteImage result:`, deleteResult);
+    console.log(`[ADMIN DEBUG] 🗑️ deleteImage result:`, deleteResult);
     
     // Force cache invalidation for frontend
-    console.log(`[ADMIN DEBUG] Invalidating frontend cache...`);
+    console.log(`[ADMIN DEBUG] 🔄 Invalidating frontend cache...`);
     
+    // Add a small delay to ensure deletion is processed
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log(`[ADMIN DEBUG] ⏱️ Waited 1 second after deletion`);
+    
+    // Test if the image still exists
+    console.log(`[ADMIN DEBUG] 🔍 Testing if image still exists...`);
+    try {
+      const testResult = await fetch(`https://res.cloudinary.com/dtxh3ew7s/image/upload/${public_id}`);
+      if (testResult.status === 404) {
+        console.log(`[ADMIN DEBUG] ✅ Image successfully deleted (404 response)`);
+      } else {
+        console.log(`[ADMIN DEBUG] ⚠️ Image might still exist (Status: ${testResult.status})`);
+      }
+    } catch (testError) {
+      console.log(`[ADMIN DEBUG] ✅ Image deletion test completed (Error expected if deleted)`);
+    }
+    
+    console.log(`[ADMIN DEBUG] 🎯 deleteBanner function completed successfully`);
     return { success: true };
   } catch (error) {
-    console.error("Error deleting banner:", error);
+    console.error(`[ADMIN DEBUG] ❌ Error in deleteBanner:`, error);
+    console.error(`[ADMIN DEBUG] Error details:`, {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown error type'
+    });
     return { success: false, error: "Failed to delete banner" };
   }
 }

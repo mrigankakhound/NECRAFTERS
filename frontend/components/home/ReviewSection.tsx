@@ -93,7 +93,8 @@ const ReviewSection = () => {
         
         {/* Mobile background - PNG icons only */}
         <div className="sm:hidden">
-          {/* Stylish PNG icons integration for mobile */}
+          {/* Stylish PNG icons integration for mobile - TEMPORARILY DISABLED DUE TO MISSING IMAGES */}
+          {/* 
           <div className="absolute top-4 left-6 w-12 h-12 opacity-30 hover:opacity-50 transition-opacity duration-300 transform hover:scale-110">
             <img src="/images/reviewicons/bowl.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
@@ -118,6 +119,7 @@ const ReviewSection = () => {
           <div className="absolute top-2/3 right-2 w-8 h-8 opacity-20 hover:opacity-40 transition-opacity duration-300 transform hover:scale-110">
             <img src="/images/reviewicons/tacos.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
+          */}
         </div>
       </div>
 
