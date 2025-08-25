@@ -21,11 +21,14 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
   const [isMobile, setIsMobile] = useState(false);
   const [banners, setBanners] = useState(initialBanners);
   const [app_banners, setAppBanners] = useState(initialAppBanners);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
   const router = useRouter();
 
   // Real-time banner updates
   const fetchBanners = async () => {
     try {
+      setIsLoading(true); // Show loading while fetching
+      
       // Fetch fresh banner data
       const [websiteResponse, appResponse] = await Promise.all([
         fetch('/api/banners/website'),
@@ -43,13 +46,17 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
       }
     } catch (error) {
       console.log('Banner refresh failed:', error);
+    } finally {
+      setIsLoading(false); // Hide loading after fetch
     }
   };
 
   // Refresh banners every 30 seconds and on mount
   useEffect(() => {
-    fetchBanners(); // Initial fetch
+    // Immediately fetch fresh data to avoid showing old cached banners
+    fetchBanners();
     
+    // Set up interval for ongoing updates
     const interval = setInterval(fetchBanners, 30000); // Refresh every 30 seconds
     
     return () => clearInterval(interval);
@@ -114,26 +121,32 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
         isMobile ? "h-[400px]" : "h-[400px]"
       } overflow-hidden mb-[20px]`}
     >
-      {images.map((src, index) => {
-        console.log(`🎯 Rendering image ${index}: ${src}`);
-        return (
-          <div
-            key={index}
-            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
-              index === currentIndex ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <img
-              src={src}
-              alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover cursor-pointer"
-              onClick={handleBannerClick}
-              onLoad={() => console.log(`✅ Image ${index} loaded successfully: ${src}`)}
-              onError={(e) => console.error(`❌ Image ${index} failed to load: ${src}`, e)}
-            />
-          </div>
-        );
-      })}
+      {isLoading ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <p className="text-white text-lg">Loading banners...</p>
+        </div>
+      ) : (
+        images.map((src, index) => {
+          console.log(`🎯 Rendering image ${index}: ${src}`);
+          return (
+            <div
+              key={index}
+              className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
+                index === currentIndex ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <img
+                src={src}
+                alt={`Slide ${index + 1}`}
+                className="w-full h-full object-cover cursor-pointer"
+                onClick={handleBannerClick}
+                onLoad={() => console.log(`✅ Image ${index} loaded successfully: ${src}`)}
+                onError={(e) => console.error(`❌ Image ${index} failed to load: ${src}`, e)}
+              />
+            </div>
+          );
+        })
+      )}
       <Button
         variant={"outline"}
         size={"icon"}
