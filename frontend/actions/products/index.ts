@@ -9,8 +9,6 @@ export async function getBestSellerProducts(limit: number = 10) {
       },
       take: limit,
       include: {
-        images: true,
-        sizes: true,
         category: true,
       },
     });
@@ -28,26 +26,44 @@ export async function getBestSellerProducts(limit: number = 10) {
   }
 }
 
-export async function getFeaturedProducts(limit: number = 10) {
+export async function getFeaturedProducts(limit: number = 10, page: number = 1) {
   try {
-    const featuredProducts = await prisma.product.findMany({
-      where: {
-        featured: true,
-      },
-      take: limit,
-      include: {
-        category: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
+    const skip = (page - 1) * limit;
+    
+    const [featuredProducts, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          featured: true,
+        },
+        skip,
+        take: limit,
+        include: {
+          category: true,
+          productSubCategories: {
+            include: {
+              subCategory: true,
+            },
           },
         },
-      },
-    });
+      }),
+      prisma.product.count({
+        where: {
+          featured: true,
+        },
+      }),
+    ]);
 
     return {
       success: true,
       data: featuredProducts,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
     };
   } catch (error) {
     console.error("Error fetching featured products:", error);
@@ -66,8 +82,6 @@ export async function getNewArrivals(limit?: number) {
         createdAt: "desc", // Order by creation date, newest first
       },
       include: {
-        images: true,
-        sizes: true,
         category: {
           select: {
             name: true,
@@ -108,45 +122,84 @@ export async function searchProducts(query: string) {
     return { success: false, error: "Failed to search products" };
   }
 }
-export async function getAllProducts() {
+export async function getAllProducts(page: number = 1, limit: number = 20) {
   try {
-    const products = await prisma.product.findMany({
-      include: {
-        category: true,
-      },
-    });
-    return { success: true, data: products };
+    const skip = (page - 1) * limit;
+    
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        skip,
+        take: limit,
+        include: {
+          category: true,
+        },
+        orderBy: {
+          createdAt: 'desc', // Default ordering
+        },
+      }),
+      prisma.product.count(), // Get total count for pagination
+    ]);
+
+    return { 
+      success: true, 
+      data: products,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
+    };
   } catch (error) {
     console.error("Error fetching all products:", error);
     return { success: false, error: "Failed to fetch all products" };
   }
 }
 
-export async function sortProducts(sortBy: string) {
+export async function sortProducts(sortBy: string, page: number = 1, limit: number = 20) {
   try {
     let orderBy: any = {};
+    const skip = (page - 1) * limit;
 
     switch (sortBy) {
       case "Featured":
-        return await getFeaturedProducts();
+        return await getFeaturedProducts(20, page);
       case "Price: Low to High":
         // For MongoDB, we need to sort by the minimum price in the sizes array
         const productsAsc = await prisma.product.findMany({
+          skip,
+          take: limit,
           include: {
             category: true,
           },
         });
+        
+        // Sort by minimum price
+        const sortedAsc = productsAsc.sort((a, b) => {
+          const minPriceA = Math.min(...a.sizes.map((s) => s.price));
+          const minPriceB = Math.min(...b.sizes.map((s) => s.price));
+          return minPriceA - minPriceB;
+        });
+        
         return {
           success: true,
-          data: productsAsc.sort((a, b) => {
-            const minPriceA = Math.min(...a.sizes.map((s) => s.price));
-            const minPriceB = Math.min(...b.sizes.map((s) => s.price));
-            return minPriceA - minPriceB;
-          }),
+          data: sortedAsc,
+          pagination: {
+            page,
+            limit,
+            total: await prisma.product.count(),
+            totalPages: Math.ceil((await prisma.product.count()) / limit),
+            hasNext: page * limit < (await prisma.product.count()),
+            hasPrev: page > 1,
+          }
         };
       case "Price: High to Low":
         // For MongoDB, we need to sort by the maximum price in the sizes array
         const productsDesc = await prisma.product.findMany({
+          skip,
+          take: limit,
           include: {
             category: true,
             productSubCategories: {
@@ -156,13 +209,25 @@ export async function sortProducts(sortBy: string) {
             },
           },
         });
+        
+        // Sort by maximum price
+        const sortedDesc = productsDesc.sort((a, b) => {
+          const maxPriceA = Math.max(...a.sizes.map((s) => s.price));
+          const maxPriceB = Math.max(...b.sizes.map((s) => s.price));
+          return maxPriceB - maxPriceA;
+        });
+        
         return {
           success: true,
-          data: productsDesc.sort((a, b) => {
-            const maxPriceA = Math.max(...a.sizes.map((s) => s.price));
-            const maxPriceB = Math.max(...b.sizes.map((s) => s.price));
-            return maxPriceB - maxPriceA;
-          }),
+          data: sortedDesc,
+          pagination: {
+            page,
+            limit,
+            total: await prisma.product.count(),
+            totalPages: Math.ceil((await prisma.product.count()) / limit),
+            hasNext: page * limit < (await prisma.product.count()),
+            hasPrev: page > 1,
+          }
         };
       case "Newest":
         orderBy = { createdAt: "desc" };
@@ -174,14 +239,30 @@ export async function sortProducts(sortBy: string) {
         orderBy = { createdAt: "desc" }; // Default sorting
     }
 
-    const products = await prisma.product.findMany({
-      orderBy,
-      include: {
-        category: true,
-      },
-    });
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          category: true,
+        },
+      }),
+      prisma.product.count(),
+    ]);
 
-    return { success: true, data: products };
+    return { 
+      success: true, 
+      data: products,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
+    };
   } catch (error) {
     console.error("Error sorting products:", error);
     return { success: false, error: "Failed to sort products" };

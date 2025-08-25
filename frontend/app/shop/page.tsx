@@ -124,6 +124,13 @@ const ShopPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
 
   useEffect(() => {
     // Check if popup should be shown (session-based logic)
@@ -148,6 +155,11 @@ const ShopPage = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  useEffect(() => {
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  }, [searchParams, sortBy]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -185,10 +197,28 @@ const ShopPage = () => {
             maxPrice,
             sortBy,
           });
+          setPagination({
+            total: result?.data?.length || 0,
+            totalPages: 1,
+            hasNext: false,
+            hasPrev: false,
+          });
         } else if (sortBy === "Featured") {
-          result = await getAllProducts();
+          result = await getAllProducts(currentPage, 20);
+          setPagination(result?.pagination || {
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          });
         } else {
-          result = await sortProducts(sortBy);
+          result = await sortProducts(sortBy, currentPage, 20);
+          setPagination(result?.pagination || {
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          });
         }
 
         setProducts(result?.data || []);
@@ -201,10 +231,17 @@ const ShopPage = () => {
     };
 
     fetchProducts();
-  }, [searchParams, sortBy]);
+  }, [searchParams, sortBy, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
+    setCurrentPage(1); // Reset to first page when sorting changes
     const params = new URLSearchParams(window.location.search);
     params.set("sortBy", value);
     router.push(`?${params.toString()}`);
@@ -275,7 +312,39 @@ const ShopPage = () => {
       ) : products.length === 0 ? (
         <EmptyState />
       ) : (
-        <ProductCard heading="" products={products} shop={true} />
+        <>
+          <ProductCard heading="" products={products} shop={true} />
+          
+          {/* Pagination Controls */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!pagination.hasPrev || isLoading}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors"
+              >
+                Previous
+              </button>
+              
+              <span className="px-4 py-2 text-gray-600">
+                Page {currentPage} of {pagination.totalPages}
+              </span>
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!pagination.hasNext || isLoading}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+          
+          {/* Results Count */}
+          <div className="text-center text-gray-600 mt-4">
+            Showing {products.length} of {pagination.total} products
+          </div>
+        </>
       )}
     </div>
   );

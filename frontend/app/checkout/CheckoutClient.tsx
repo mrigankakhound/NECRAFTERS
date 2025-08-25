@@ -124,6 +124,26 @@ export default function CheckoutClient({
     setIsLoading(true);
 
     try {
+      console.log("Starting checkout process...");
+      console.log("Cart items:", items);
+      console.log("Cart totals:", { subtotal, total, discount });
+
+      // Check if cart has items
+      if (!items || items.length === 0) {
+        console.error("Cart is empty");
+        toast.error("Your cart is empty. Please add items before checkout.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if totals are valid
+      if (total <= 0) {
+        console.error("Invalid total amount:", total);
+        toast.error("Invalid order total. Please refresh and try again.");
+        setIsLoading(false);
+        return;
+      }
+
       const formData = new FormData(e.currentTarget);
       const shippingData = {
         firstName: formData.get("firstName") as string,
@@ -137,14 +157,19 @@ export default function CheckoutClient({
         country: formData.get("country") as string,
       };
 
+      console.log("Shipping data:", shippingData);
+
       // Validate form
       const errors = validateShippingForm(shippingData);
       if (Object.keys(errors).length > 0) {
+        console.log("Form validation errors:", errors);
         setFormErrors(errors);
         setIsLoading(false);
         return;
       }
       setFormErrors({});
+
+      console.log("Form validation passed, saving shipping address...");
 
       // Save shipping address to database
       const addressResponse = await fetch("/api/user/shipping-address", {
@@ -153,17 +178,26 @@ export default function CheckoutClient({
         body: JSON.stringify(shippingData),
       });
 
+      console.log("Shipping address response status:", addressResponse.status);
+
       if (!addressResponse.ok) {
-        throw new Error("Failed to save shipping address");
+        const errorData = await addressResponse.json();
+        console.error("Shipping address error:", errorData);
+        throw new Error(errorData.error || "Failed to save shipping address");
       }
+
+      console.log("Shipping address saved successfully");
 
       // Get user ID using server action
       const { userId, error } = await getAuthenticatedUserId();
       if (error || !userId) {
+        console.error("Authentication error:", { error, userId });
         toast.error("Please login to continue");
         router.push("/login");
         return;
       }
+
+      console.log("User authenticated:", userId);
 
       const orderData = {
         userId,
@@ -183,13 +217,20 @@ export default function CheckoutClient({
         totalSaved: discount,
       };
 
+      console.log("Order data prepared:", orderData);
+
       // Initialize Razorpay
+      console.log("Initializing Razorpay...");
       const res = await initializeRazorpay();
       if (!res) {
+        console.error("Razorpay SDK failed to load");
         toast.error("Razorpay SDK failed to load");
         return;
       }
 
+      console.log("Razorpay SDK loaded successfully");
+
+      console.log("Creating Razorpay order...");
       const razorpayResponse = await fetch("/api/razorpay", {
         method: "POST",
         headers: {
@@ -200,7 +241,25 @@ export default function CheckoutClient({
         }),
       });
 
+      console.log("Razorpay response status:", razorpayResponse.status);
+
+      if (!razorpayResponse.ok) {
+        const errorData = await razorpayResponse.json();
+        console.error("Razorpay order creation error:", errorData);
+        throw new Error(errorData.error || "Failed to create payment order");
+      }
+
       const data = await razorpayResponse.json();
+      console.log("Razorpay order created:", data);
+
+      // Check if Razorpay key is available
+      if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
+        console.error("Missing NEXT_PUBLIC_RAZORPAY_KEY_ID environment variable");
+        throw new Error("Payment gateway configuration error");
+      }
+
+      console.log("Razorpay key found, proceeding with payment...");
+      console.log("Order data:", orderData);
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -210,24 +269,43 @@ export default function CheckoutClient({
         description: "Thank you for your purchase",
         order_id: data.id,
         handler: async (response: any) => {
-          const verifyResponse = await fetch("/api/razorpay/verify", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              orderData,
-            }),
-          });
+          console.log("Payment response received:", response);
+          try {
+            const verifyResponse = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                orderData,
+              }),
+            });
 
-          const verifyData = await verifyResponse.json();
-          if (verifyData.success) {
-            clearCart();
-            toast.success("Payment successful and order placed!");
-            router.push(`/order/${verifyData.orderId}`);
+            console.log("Verification response status:", verifyResponse.status);
+
+            if (!verifyResponse.ok) {
+              const errorData = await verifyResponse.json();
+              console.error("Payment verification error:", errorData);
+              toast.error(errorData.error || "Payment verification failed");
+              return;
+            }
+
+            const verifyData = await verifyResponse.json();
+            console.log("Payment verification successful:", verifyData);
+            
+            if (verifyData.success) {
+              clearCart();
+              toast.success("Payment successful and order placed!");
+              router.push(`/order/${verifyData.orderId}`);
+            } else {
+              toast.error("Payment verification failed");
+            }
+          } catch (verifyError) {
+            console.error("Payment verification error:", verifyError);
+            toast.error("Payment verification failed");
           }
         },
         prefill: {
@@ -239,11 +317,26 @@ export default function CheckoutClient({
         },
       };
 
+      console.log("Opening Razorpay payment modal...");
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Something went wrong during checkout");
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes("Failed to save shipping address")) {
+          toast.error("Failed to save shipping address. Please try again.");
+        } else if (error.message.includes("Failed to create payment order")) {
+          toast.error("Failed to create payment order. Please try again.");
+        } else if (error.message.includes("Payment gateway configuration error")) {
+          toast.error("Payment gateway is not configured. Please contact support.");
+        } else {
+          toast.error(`Checkout error: ${error.message}`);
+        }
+      } else {
+        toast.error("Something went wrong during checkout. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
