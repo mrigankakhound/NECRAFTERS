@@ -2,12 +2,45 @@
 
 import { HomeScreenOffer } from "@prisma/client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface SpecialCombosProps {
   offers: HomeScreenOffer[];
 }
 
-const SpecialCombos = ({ offers }: SpecialCombosProps) => {
+const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
+  const [offers, setOffers] = useState(initialOffers);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Real-time offers updates
+  const fetchOffers = async () => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/offers/special-combos');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOffers(data.offers || []);
+      }
+    } catch (error) {
+      console.log('Special combos refresh failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Refresh offers every 30 seconds and on mount
+  useEffect(() => {
+    // Immediately fetch fresh data to avoid showing old cached offers
+    fetchOffers();
+    
+    // Set up interval for ongoing updates
+    const interval = setInterval(fetchOffers, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="container mx-auto mb-[20px] px-4">
       <div className="section-container">
@@ -16,28 +49,34 @@ const SpecialCombos = ({ offers }: SpecialCombosProps) => {
         </h2>
       </div>
       <div className="relative flex justify-center">
-        <div className="flex overflow-x-auto gap-4 sm:gap-6 scroll-smooth no-scrollbar sm:justify-center">
-          {offers.map((offer) => (
-            <Link
-              href={offer.link}
-              key={offer.id}
-              className="flex-shrink-0 w-[80vw] sm:w-[347px]"
-            >
-              <div className="flex flex-col items-center">
-                <div className="w-full aspect-[4/3] overflow-hidden">
-                  <img
-                    src={offer.images[0]?.url || ""}
-                    alt={offer.title}
-                    className="w-full h-full object-cover"
-                  />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-gray-500">Loading offers...</p>
+          </div>
+        ) : (
+          <div className="flex overflow-x-auto gap-4 sm:gap-6 scroll-smooth no-scrollbar sm:justify-center">
+            {offers.map((offer) => (
+              <Link
+                href={offer.link}
+                key={offer.id}
+                className="flex-shrink-0 w-[80vw] sm:w-[347px]"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-full aspect-[4/3] overflow-hidden">
+                    <img
+                      src={offer.images[0]?.url || ""}
+                      alt={offer.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <p className="text-center uppercase textGap font-[500] mt-2">
+                    {offer.title}
+                  </p>
                 </div>
-                <p className="text-center uppercase textGap font-[500] mt-2">
-                  {offer.title}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
