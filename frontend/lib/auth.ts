@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 
 export async function getAuthenticatedUser() {
-const cookieStore = await cookies();
+  const cookieStore = await cookies();
   const userId = cookieStore.get("userId");
   const userEmail = cookieStore.get("userEmail");
   const username = cookieStore.get("username");

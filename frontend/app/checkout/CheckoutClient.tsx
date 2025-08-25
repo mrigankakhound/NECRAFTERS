@@ -24,7 +24,7 @@ import {
   Banknote,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { getAuthenticatedUserId } from "@/app/actions/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import CouponList from "@/components/checkout/CouponList";
 
 type PaymentMethod = "razorpay";
@@ -128,6 +128,10 @@ export default function CheckoutClient({
       console.log("Cart items:", items);
       console.log("Cart totals:", { subtotal, total, discount });
 
+      // Check authentication status first
+      const authUser = await getAuthenticatedUser();
+      console.log("Authentication check result:", authUser ? `User ID: ${authUser.id}` : "Not authenticated");
+
       // Check if cart has items
       if (!items || items.length === 0) {
         console.error("Cart is empty");
@@ -179,28 +183,31 @@ export default function CheckoutClient({
       });
 
       console.log("Shipping address response status:", addressResponse.status);
+      console.log("Shipping address response headers:", Object.fromEntries(addressResponse.headers.entries()));
 
       if (!addressResponse.ok) {
         const errorData = await addressResponse.json();
         console.error("Shipping address error:", errorData);
-        throw new Error(errorData.error || "Failed to save shipping address");
+        console.error("Response status:", addressResponse.status);
+        console.error("Response status text:", addressResponse.statusText);
+        throw new Error(errorData.error || `Failed to save shipping address (Status: ${addressResponse.status})`);
       }
 
       console.log("Shipping address saved successfully");
 
       // Get user ID using server action
-      const { userId, error } = await getAuthenticatedUserId();
-      if (error || !userId) {
-        console.error("Authentication error:", { error, userId });
+      const user = await getAuthenticatedUser();
+      if (!user) {
+        console.error("Authentication error: User not authenticated");
         toast.error("Please login to continue");
         router.push("/login");
         return;
       }
 
-      console.log("User authenticated:", userId);
+      console.log("User authenticated:", user.id);
 
       const orderData = {
-        userId,
+        userId: user.id,
         products: items.map((item) => ({
           productId: item.uid,
           name: item.name,
