@@ -82,9 +82,9 @@ export default function ProfileClient({
     if (!data.address1?.trim()) errors.address1 = "Address is required";
     if (!data.city?.trim()) errors.city = "City is required";
     if (!data.state?.trim()) errors.state = "State is required";
-    if (!data.zipCode?.trim()) errors.zipCode = "ZIP code is required";
-    else if (!/^\d{5}(-\d{4})?$/.test(data.zipCode)) {
-      errors.zipCode = "Please enter a valid ZIP code";
+    if (!data.zipCode?.trim()) errors.zipCode = "PIN code is required";
+    else if (!/^\d{6}$/.test(data.zipCode)) {
+      errors.zipCode = "Please enter a valid 6-digit PIN code";
     }
     if (!data.country?.trim()) errors.country = "Country is required";
 
@@ -441,7 +441,7 @@ export default function ProfileClient({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zipCode" className="text-gray-700">
-                      ZIP Code
+                      PIN Code
                     </Label>
                     <Input
                       id="zipCode"

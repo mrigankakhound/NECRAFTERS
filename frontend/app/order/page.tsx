@@ -84,15 +84,13 @@ const OrderPage = () => {
                     <span className="text-gray-600">0123456789</span>
                   </div>
                   <p className="text-sm text-gray-600">
-                    450 Muldoon Rd, Anchorage
+                    123 Main Street, Mumbai
                     <br />
-                    Alabama,
+                    Maharashtra,
                     <br />
-                    ZipCode: 99504,
+                    PIN Code: 400001,
                     <br />
-                    United States.
-                    <br />
-                    Addison.
+                    India.
                   </p>
                 </div>
 
