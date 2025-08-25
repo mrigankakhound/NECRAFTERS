@@ -107,7 +107,6 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
               {isLoading && (
                 <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
               )}
-              <span className="text-xs text-gray-500">Auto-refresh</span>
             </div>
           )}
         </div>
@@ -130,7 +129,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
 
             return (
               <Link
-                href={`/product/${product.slug || product.id || ''}`}
+                href={`/product/${String(product.slug || product.id)}`}
                 key={product.id}
                 className="group bg-white rounded-lg p-2 sm:p-3"
               >
