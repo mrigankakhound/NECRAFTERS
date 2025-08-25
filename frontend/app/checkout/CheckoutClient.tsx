@@ -124,6 +124,15 @@ export default function CheckoutClient({
     setIsLoading(true);
 
     try {
+      // Capture form element synchronously to avoid issues with async/await
+      const formElement = e.currentTarget as HTMLFormElement;
+      if (!(formElement instanceof HTMLFormElement)) {
+        console.error("Invalid form element in submit handler");
+        toast.error("Unexpected error: invalid form element");
+        setIsLoading(false);
+        return;
+      }
+
       console.log("Starting checkout process...");
       console.log("Cart items:", items);
       console.log("Cart totals:", { subtotal, total, discount });
@@ -148,7 +157,7 @@ export default function CheckoutClient({
         return;
       }
 
-      const formData = new FormData(e.currentTarget);
+      const formData = new FormData(formElement);
       const shippingData = {
         firstName: formData.get("firstName") as string,
         lastName: formData.get("lastName") as string,
