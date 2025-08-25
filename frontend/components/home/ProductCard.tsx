@@ -6,16 +6,64 @@ import Link from "next/link";
 import { Product } from "@prisma/client";
 import { useCart } from "@/store/useCart";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 interface ProductCardProps {
   heading: string;
   products: Product[];
   shop?: boolean;
   sectionId?: string;
+  refreshInterval?: number; // Add refresh interval prop
 }
 
-const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) => {
+const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refreshInterval = 30000 }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState(initialProducts);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Real-time product updates
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      
+      let endpoint = '';
+      if (heading === "BEST SELLERS") {
+        endpoint = '/api/products/best-sellers?limit=8';
+      } else if (heading === "NEW ARRIVALS") {
+        endpoint = '/api/products/new-arrivals?limit=4';
+      } else {
+        // For other sections, don't refresh
+        return;
+      }
+      
+      const response = await fetch(endpoint);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setProducts(data.data);
+        }
+      }
+    } catch (error) {
+      // Silent error - don't show error toast for background refresh
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Refresh products on mount and at intervals
+  useEffect(() => {
+    // Only refresh for Best Sellers and New Arrivals
+    if (heading === "BEST SELLERS" || heading === "NEW ARRIVALS") {
+      // Immediately fetch fresh data
+      fetchProducts();
+      
+      // Set up interval for ongoing updates
+      const interval = setInterval(fetchProducts, refreshInterval);
+      
+      return () => clearInterval(interval);
+    }
+  }, [heading, refreshInterval]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault(); // Prevent navigation when clicking the button
@@ -41,6 +89,7 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
       maxQuantity: firstSize.qty || 10,
     });
   };
+
   if (!products || products.length === 0) {
     return null;
   }
@@ -48,9 +97,20 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
   return (
     <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-          {heading}
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            {heading}
+          </h2>
+          {/* Show refresh indicator for real-time sections */}
+          {(heading === "BEST SELLERS" || heading === "NEW ARRIVALS") && (
+            <div className="flex items-center gap-2">
+              {isLoading && (
+                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+              )}
+              <span className="text-xs text-gray-500">Auto-refresh</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="relative">
@@ -70,7 +130,7 @@ const ProductCard = ({ heading, products, shop, sectionId }: ProductCardProps) =
 
             return (
               <Link
-                href={`/product/${product.slug || ''}`}
+                href={`/product/${product.slug || product.id || ''}`}
                 key={product.id}
                 className="group bg-white rounded-lg p-2 sm:p-3"
               >
