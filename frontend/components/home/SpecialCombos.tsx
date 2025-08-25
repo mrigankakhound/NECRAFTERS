@@ -3,6 +3,7 @@
 import { HomeScreenOffer } from "@prisma/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "../ui/loading-spinner";
 
 interface SpecialCombosProps {
   offers: HomeScreenOffer[];
@@ -50,8 +51,12 @@ const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
       </div>
       <div className="relative flex justify-center">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-gray-500">Loading offers...</p>
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner 
+              size="lg" 
+              text="Loading Special Combos" 
+              className="text-orange-600"
+            />
           </div>
         ) : (
           <div className="flex overflow-x-auto gap-4 sm:gap-6 scroll-smooth no-scrollbar sm:justify-center">

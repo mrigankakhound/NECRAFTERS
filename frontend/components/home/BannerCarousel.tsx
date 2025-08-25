@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import LoadingSpinner from "../ui/loading-spinner";
 
 interface BannerCarouselProps {
   banners: {
@@ -28,18 +29,18 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
   const fetchBanners = async () => {
     try {
       setIsLoading(true); // Show loading while fetching
-      
+
       // Fetch fresh banner data
       const [websiteResponse, appResponse] = await Promise.all([
         fetch('/api/banners/website'),
         fetch('/api/banners/app')
       ]);
-      
+
       if (websiteResponse.ok) {
         const websiteData = await websiteResponse.json();
         setBanners(websiteData.banners || []);
       }
-      
+
       if (appResponse.ok) {
         const appData = await appResponse.json();
         setAppBanners(appData.banners || []);
@@ -55,10 +56,10 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
   useEffect(() => {
     // Immediately fetch fresh data to avoid showing old cached banners
     fetchBanners();
-    
+
     // Set up interval for ongoing updates
     const interval = setInterval(fetchBanners, 30000); // Refresh every 30 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -122,8 +123,12 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
       } overflow-hidden mb-[20px]`}
     >
       {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <p className="text-white text-lg">Loading banners...</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
+          <LoadingSpinner 
+            size="lg" 
+            text="Loading Banners" 
+            className="text-orange-600"
+          />
         </div>
       ) : (
         images.map((src, index) => {
