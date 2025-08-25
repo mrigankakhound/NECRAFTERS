@@ -101,14 +101,6 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
           <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
             {heading}
           </h2>
-          {/* Show refresh indicator for real-time sections */}
-          {(heading === "BEST SELLERS" || heading === "NEW ARRIVALS") && (
-            <div className="flex items-center gap-2">
-              {isLoading && (
-                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
