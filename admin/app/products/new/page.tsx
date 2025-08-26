@@ -336,8 +336,10 @@ export default function NewProductPage() {
         toast.success("Product created successfully!");
         router.push("/products");
       } else {
-        console.error("Product creation failed:", result.error);
-        toast.error(result.error || "Failed to create product");
+        // TypeScript knows result has error property when success is false
+        const errorMessage = (result as any).error || "Failed to create product";
+        console.error("Product creation failed:", errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error creating product:", error);
