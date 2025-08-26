@@ -16,7 +16,7 @@ export async function getOrders(filters: OrderFilters = {}) {
     const { dateRange, paymentStatus, paymentMethod, searchQuery } = filters;
 
     // Build the where clause based on filters
-    let where: any = {};
+    const where: any = {};
 
     // Date range filter
     if (dateRange && dateRange !== "all") {

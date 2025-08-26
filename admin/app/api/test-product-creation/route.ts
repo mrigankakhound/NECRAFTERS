@@ -9,8 +9,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
+    console.log("=== SYSTEM HEALTH CHECK STARTED ===");
     const results = {
       database: { status: "pending", message: "" },
       cloudinary: { status: "pending", message: "" },
@@ -48,15 +49,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Check environment variables
-    const requiredEnvVars = {
+    const envVars = {
       DATABASE_URL: process.env.DATABASE_URL,
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
       CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
       CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     };
 
-    const missingVars = Object.entries(requiredEnvVars)
-      .filter(([_, value]) => !value)
+    const missingVars = Object.entries(envVars)
+      .filter(([_, status]) => !status)
       .map(([key, _]) => key);
 
     if (missingVars.length === 0) {

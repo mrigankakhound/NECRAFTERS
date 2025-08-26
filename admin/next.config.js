@@ -1,18 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ['@prisma/client'],
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
+    // Remove deprecated options
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-    responseLimit: '50mb',
-  },
-  // Increase the maximum payload size for server actions
-  serverRuntimeConfig: {
-    maxPayloadSize: '50mb',
-  },
+  // Remove api configuration as it's not supported in Next.js 15
+  // The payload limits will be handled by Vercel configuration
 }
 
 module.exports = nextConfig

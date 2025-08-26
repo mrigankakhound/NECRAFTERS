@@ -93,10 +93,9 @@ export default function AnalyticsPage() {
           setSelectedProduct(productsResult.products[0].id);
         }
       }
-    } catch (error) {
-      toast.error("Failed to fetch analytics data");
+    } catch {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   async function fetchProductAnalytics(productId: string) {
@@ -107,8 +106,8 @@ export default function AnalyticsPage() {
       } else {
         setProductPerformance(result.productPerformance);
       }
-    } catch (error) {
-      toast.error("Failed to fetch product analytics");
+    } catch {
+      setIsLoading(false);
     }
   }
 

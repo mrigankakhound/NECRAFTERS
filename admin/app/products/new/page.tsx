@@ -333,7 +333,7 @@ export default function NewProductPage() {
       });
 
       if (result.success) {
-        toast.success("Product created successfully");
+        toast.success("Product created successfully!");
         router.push("/products");
       } else {
         console.error("Product creation failed:", result.error);
