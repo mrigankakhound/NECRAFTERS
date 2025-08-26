@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "app/actions/product.actions.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Content-Length",
+          "value": "52428800"
+        }
+      ]
+    }
+  ]
+}
