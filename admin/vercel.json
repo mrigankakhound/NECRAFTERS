@@ -2,9 +2,12 @@
   "functions": {
     "app/actions/product.actions.ts": {
       "maxDuration": 30
+    },
+    "app/api/upload/route.ts": {
+      "maxDuration": 60
     }
   },
   "env": {
-    "VERCEL_FUNCTION_TIMEOUT": "30"
+    "VERCEL_FUNCTION_TIMEOUT": "60"
   }
 }

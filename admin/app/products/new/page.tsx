@@ -318,9 +318,48 @@ export default function NewProductPage() {
         return;
       }
 
+      console.log("=== UPLOADING IMAGES TO CLOUDINARY FIRST ===");
+      
+      // Upload images to Cloudinary first via API route
+      const uploadPromises = images.map(async (image, index) => {
+        if (image.file) {
+          console.log(`Uploading image ${index + 1}: ${image.file.name}`);
+          
+          const formData = new FormData();
+          formData.append('file', image.file);
+          formData.append('folder', 'products');
+          
+          try {
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Upload failed with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log(`Image ${index + 1} uploaded successfully:`, result);
+            return result;
+          } catch (uploadError) {
+            console.error(`Failed to upload image ${index + 1}:`, uploadError);
+            throw new Error(`Failed to upload image ${index + 1}: ${uploadError}`);
+          }
+        } else {
+          // If no file, use the existing URL (already uploaded)
+          console.log(`Image ${index + 1} already has URL:`, image.url);
+          return { url: image.url, public_id: null };
+        }
+      });
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      console.log("=== ALL IMAGES UPLOADED SUCCESSFULLY ===");
+      console.log("Uploaded images:", uploadedImages);
+
       console.log("=== CALLING CREATE PRODUCT SERVER ACTION ===");
       
-      // Create product
+      // Create product with image URLs instead of base64 strings
       const result = await createProduct({
         title: productData.title,
         description: productData.description,
@@ -330,7 +369,7 @@ export default function NewProductPage() {
         benefits: benefits.filter((b) => b.trim()),
         ingredients: ingredients.filter((i) => i.trim()),
         sku: productData.sku,
-        images: images.map((img) => img.url),
+        images: uploadedImages.map((img) => img.url), // Now using URLs instead of base64
         sizes: sizes.map((s) => ({
           size: s.size,
           qty: s.quantity,

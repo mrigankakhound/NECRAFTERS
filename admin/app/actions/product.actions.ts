@@ -21,7 +21,7 @@ export async function createProduct(data: {
   benefits: string[];
   ingredients: string[];
   sku: string;
-  images: string[]; // These are base64 strings
+  images: string[]; // These are now Cloudinary URLs, not base64 strings
   sizes: ProductSize[];
   discount: number;
   featured: boolean;
@@ -96,62 +96,22 @@ export async function createProduct(data: {
       return { success: false, error: "Selected category does not exist." };
     }
 
-    // Validate image data before upload
-    console.log("=== VALIDATING IMAGE DATA ===");
+    // Validate image URLs (they should already be Cloudinary URLs)
+    console.log("=== VALIDATING IMAGE URLS ===");
     for (let i = 0; i < data.images.length; i++) {
-      const image = data.images[i];
-      if (!image || typeof image !== 'string') {
-        return { success: false, error: `Invalid image data at position ${i + 1}` };
+      const imageUrl = data.images[i];
+      if (!imageUrl || typeof imageUrl !== 'string') {
+        return { success: false, error: `Invalid image URL at position ${i + 1}` };
       }
-      if (!image.startsWith('data:image/')) {
-        return { success: false, error: `Invalid image format at position ${i + 1}. Expected base64 data URL.` };
-      }
-      
-      // Base64 strings are larger than original files due to encoding overhead
-      // A 10MB file becomes ~13-14MB as base64, so we need to allow for this
-      const maxBase64Size = 15 * 1024 * 1024; // 15MB for base64 strings
-      if (image.length > maxBase64Size) {
-        const sizeInMB = Math.round(image.length / (1024 * 1024) * 100) / 100;
-        return { 
-          success: false, 
-          error: `Image at position ${i + 1} is too large (${sizeInMB}MB). Maximum 10MB original file size allowed. Please compress the image before uploading.` 
-        };
+      if (!imageUrl.startsWith('https://res.cloudinary.com/')) {
+        return { success: false, error: `Invalid image URL format at position ${i + 1}. Expected Cloudinary URL.` };
       }
     }
 
-    // Upload all images to Cloudinary using base64 strings
-    console.log("=== STARTING IMAGE UPLOAD ===");
-    console.log("Total images to upload:", data.images.length);
-    
-    if (data.images.length > 0) {
-      console.log("First image sample:", data.images[0]?.substring(0, 100) + "...");
-      console.log("First image starts with:", data.images[0]?.startsWith('data:') ? 'data: URL' : 'base64 string');
-      console.log("First image length:", data.images[0]?.length);
-    }
-    
-    const uploadPromises = data.images.map(async (base64Image, index) => {
-      try {
-        console.log(`=== UPLOADING IMAGE ${index + 1} ===`);
-        console.log(`Image ${index + 1} length: ${base64Image.length}`);
-        console.log(`Image ${index + 1} starts with: ${base64Image.startsWith('data:') ? 'data: URL' : 'base64 string'}`);
-        
-        const result = await uploadImage(base64Image, "products");
-        console.log(`Image ${index + 1} uploaded successfully:`, result);
-        return result;
-      } catch (uploadError) {
-        console.error(`=== FAILED TO UPLOAD IMAGE ${index + 1} ===`);
-        console.error(`Error details:`, uploadError);
-        throw new Error(`Failed to upload image ${index + 1}: ${uploadError}`);
-      }
-    });
+    console.log("=== IMAGES ALREADY UPLOADED TO CLOUDINARY ===");
+    console.log("Image URLs:", data.images);
 
-    console.log("=== WAITING FOR ALL IMAGES TO UPLOAD ===");
-    const uploadedImages = await Promise.all(uploadPromises);
-    console.log("=== ALL IMAGES UPLOADED SUCCESSFULLY ===");
-    console.log("Uploaded images count:", uploadedImages.length);
-    console.log("Sample uploaded image:", uploadedImages[0]);
-
-    // Create product in database
+    // Create product in database with the provided image URLs
     console.log("=== CREATING PRODUCT IN DATABASE ===");
     const product = await prisma.product.create({
       data: {
@@ -163,9 +123,9 @@ export async function createProduct(data: {
         benefits: data.benefits.map((name) => ({ name })),
         ingredients: data.ingredients.map((name) => ({ name })),
         sku: data.sku,
-        images: uploadedImages.map((img) => ({
-          url: img.url,
-          public_id: img.public_id,
+        images: data.images.map((url) => ({
+          url: url,
+          public_id: null, // We don't have public_id from the upload API
         })),
         sizes: data.sizes,
         discount: data.discount,
@@ -213,9 +173,6 @@ export async function createProduct(data: {
       if (error.message.includes("SKU already exists")) {
         return { success: false, error: "SKU already exists. Please use a unique SKU." };
       }
-      if (error.message.includes("Failed to upload image")) {
-        return { success: false, error: error.message };
-      }
       if (error.message.includes("Foreign key constraint")) {
         return { success: false, error: "Invalid category or subcategory selected." };
       }
@@ -225,10 +182,7 @@ export async function createProduct(data: {
       if (error.message.includes("Database connection failed")) {
         return { success: false, error: "Database connection failed. Please try again." };
       }
-      if (error.message.includes("Invalid image format")) {
-        return { success: false, error: error.message };
-      }
-      if (error.message.includes("Image at position")) {
+      if (error.message.includes("Invalid image URL")) {
         return { success: false, error: error.message };
       }
     }
