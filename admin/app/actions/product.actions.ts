@@ -38,6 +38,10 @@ export async function createProduct(data: {
     try {
       await prisma.$connect();
       console.log("Database connected successfully");
+      
+      // Test a simple query
+      const categoryCount = await prisma.category.count();
+      console.log("Database query test successful, category count:", categoryCount);
     } catch (dbError) {
       console.error("Database connection failed:", dbError);
       return { success: false, error: "Database connection failed. Please try again." };
@@ -155,7 +159,18 @@ export async function createProduct(data: {
       if (error.message.includes("Unique constraint")) {
         return { success: false, error: "A product with this title or SKU already exists." };
       }
+      if (error.message.includes("Database connection failed")) {
+        return { success: false, error: "Database connection failed. Please try again." };
+      }
     }
+    
+    // Log the full error for debugging
+    console.error("Full error details:", {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      error: error
+    });
     
     return { success: false, error: `Failed to create product: ${error instanceof Error ? error.message : 'Unknown error'}` };
   } finally {
