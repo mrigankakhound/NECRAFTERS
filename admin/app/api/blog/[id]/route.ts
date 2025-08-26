@@ -3,13 +3,20 @@ import { prisma } from "@/lib/db";
 import slugify from "slugify";
 
 // GET - Fetch single blog post
-export async function GET(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid blog post ID" },
+        { status: 400 }
+      );
+    }
+
     const post = await prisma.blogPost.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!post) {
@@ -33,11 +40,18 @@ export async function GET(
 }
 
 // PUT - Update blog post
-export async function PUT(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function PUT(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid blog post ID" },
+        { status: 400 }
+      );
+    }
+
     const data = await request.json();
     
     // Generate new slug if title changed
@@ -47,7 +61,7 @@ export async function PUT(
     const existingPost = await prisma.blogPost.findFirst({
       where: {
         slug,
-        NOT: { id: params.id }
+        NOT: { id }
       }
     });
 
@@ -59,7 +73,7 @@ export async function PUT(
     }
 
     const post = await prisma.blogPost.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...data,
         slug
@@ -80,13 +94,20 @@ export async function PUT(
 }
 
 // DELETE - Delete blog post
-export async function DELETE(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid blog post ID" },
+        { status: 400 }
+      );
+    }
+
     await prisma.blogPost.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({

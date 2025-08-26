@@ -4,13 +4,20 @@ const prisma = new PrismaClient();
 import slugify from "slugify";
 
 // GET - Fetch single recipe
-export async function GET(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid recipe ID" },
+        { status: 400 }
+      );
+    }
+
     const recipe = await prisma.recipe.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!recipe) {
@@ -34,11 +41,18 @@ export async function GET(
 }
 
 // PUT - Update recipe
-export async function PUT(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function PUT(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid recipe ID" },
+        { status: 400 }
+      );
+    }
+
     const data = await request.json();
     
     // Generate new slug if title changed
@@ -48,7 +62,7 @@ export async function PUT(
     const existingRecipe = await prisma.recipe.findFirst({
       where: {
         slug,
-        NOT: { id: params.id }
+        NOT: { id }
       }
     });
 
@@ -60,7 +74,7 @@ export async function PUT(
     }
 
     const recipe = await prisma.recipe.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title: data.title,
         description: data.description,
@@ -89,13 +103,20 @@ export async function PUT(
 }
 
 // DELETE - Delete recipe
-export async function DELETE(
-  { params }: { params: { id: string } },
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid recipe ID" },
+        { status: 400 }
+      );
+    }
+
     await prisma.recipe.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({

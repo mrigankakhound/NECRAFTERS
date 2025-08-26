@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(
-  { params }: { params: { popupId: string } },
-  req: Request
-) {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const popupId = url.pathname.split('/').pop();
+    
+    if (!popupId) {
+      return new NextResponse("Invalid popup ID", { status: 400 });
+    }
+
     const popup = await prisma.shopPopup.findUnique({
       where: {
-        id: params.popupId
+        id: popupId
       }
     });
 
@@ -23,15 +27,19 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  { params }: { params: { popupId: string } },
-  req: Request
-) {
+export async function PATCH(request: Request) {
   try {
-    const body = await req.json();
+    const url = new URL(request.url);
+    const popupId = url.pathname.split('/').pop();
+    
+    if (!popupId) {
+      return new NextResponse("Invalid popup ID", { status: 400 });
+    }
+
+    const body = await request.json();
     const popup = await prisma.shopPopup.update({
       where: {
-        id: params.popupId
+        id: popupId
       },
       data: body
     });
@@ -42,14 +50,18 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  { params }: { params: { popupId: string } },
-  req: Request
-) {
+export async function DELETE(request: Request) {
   try {
+    const url = new URL(request.url);
+    const popupId = url.pathname.split('/').pop();
+    
+    if (!popupId) {
+      return new NextResponse("Invalid popup ID", { status: 400 });
+    }
+
     const popup = await prisma.shopPopup.delete({
       where: {
-        id: params.popupId
+        id: popupId
       }
     });
     return NextResponse.json(popup);
