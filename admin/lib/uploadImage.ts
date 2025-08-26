@@ -1,29 +1,52 @@
-export const uploadImage = async (file: File) => {
+export const uploadImage = async (file: File | string, folder?: string) => {
   try {
-    console.log("UploadImage called with file:", file.name, file.type, file.size); // Debug log
+    console.log("UploadImage called with:", typeof file === 'string' ? 'base64 string' : `file: ${file.name}`, folder);
     
-    const formData = new FormData();
-    formData.append('file', file);
+    let base64Image: string;
+    let uploadFolder = folder || "featured-reviews";
+    
+    if (typeof file === 'string') {
+      // Handle base64 string
+      base64Image = file;
+      console.log("Processing base64 image for folder:", uploadFolder);
+    } else {
+      // Handle File object
+      console.log("Processing file:", file.name, file.type, file.size);
+      
+      // Convert File to base64
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+    }
 
     // Get the base URL for server-side requests
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
     const uploadUrl = `${baseUrl}/api/upload`;
     
-    console.log("Sending request to:", uploadUrl); // Debug log
+    console.log("Sending request to:", uploadUrl);
     
     const response = await fetch(uploadUrl, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image: base64Image,
+        folder: uploadFolder
+      }),
     });
 
-    console.log("Response status:", response.status); // Debug log
+    console.log("Response status:", response.status);
 
-    if (!response.ok) throw new Error('Upload failed');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Upload failed: ${response.status} - ${errorData.error || 'Unknown error'}`);
+    }
 
     const data = await response.json();
-    console.log("Response data:", data); // Debug log
+    console.log("Response data:", data);
     
-    // Return both url and public_id as expected by Featured Reviews
+    // Return both url and public_id as expected
     return {
       url: data.url,
       public_id: data.public_id || `upload-${Date.now()}`

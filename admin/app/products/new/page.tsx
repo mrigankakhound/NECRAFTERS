@@ -79,10 +79,44 @@ export default function NewProductPage() {
   const [benefits, setBenefits] = useState<string[]>([""]);
   const [ingredients, setIngredients] = useState<string[]>([""]);
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [systemStatus, setSystemStatus] = useState<{ status: string; message: string } | null>(null);
 
   useEffect(() => {
     loadCategories();
+    checkSystemStatus();
   }, []);
+
+  const checkSystemStatus = async () => {
+    try {
+      const response = await fetch('/api/check-env');
+      const data = await response.json();
+      
+      if (data.success) {
+        const hasErrors = Object.values(data.results).some((result: any) => result.status === 'error');
+        if (hasErrors) {
+          setSystemStatus({
+            status: 'warning',
+            message: 'Some system components may have issues. Check the troubleshooting guide.'
+          });
+        } else {
+          setSystemStatus({
+            status: 'success',
+            message: 'All system components are working properly.'
+          });
+        }
+      } else {
+        setSystemStatus({
+          status: 'error',
+          message: 'Unable to check system status.'
+        });
+      }
+    } catch (error) {
+      setSystemStatus({
+        status: 'error',
+        message: 'Failed to check system status.'
+      });
+    }
+  };
 
   useEffect(() => {
     if (productData.categoryId) {
@@ -254,11 +288,13 @@ export default function NewProductPage() {
         toast.success("Product created successfully");
         router.push("/products");
       } else {
+        console.error("Product creation failed:", result.error);
         toast.error(result.error || "Failed to create product");
       }
     } catch (error) {
       console.error("Error creating product:", error);
-      toast.error("Failed to create product");
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(`Failed to create product: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -267,6 +303,27 @@ export default function NewProductPage() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-8">Create New Product</h1>
+      
+      {/* System Status Indicator */}
+      {systemStatus && (
+        <div className={`mb-6 p-4 rounded-lg border ${
+          systemStatus.status === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+          systemStatus.status === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+          'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <strong>System Status:</strong> {systemStatus.message}
+            </div>
+            <button
+              onClick={checkSystemStatus}
+              className="text-sm underline hover:no-underline"
+            >
+              Refresh Status
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-8">
         {/* Left Column - Main Details */}

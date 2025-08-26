@@ -29,11 +29,75 @@ export async function createProduct(data: {
   subCategoryIds: string[];
 }) {
   try {
+    console.log("Starting product creation...");
+    console.log("Images count:", data.images.length);
+    console.log("Category ID:", data.categoryId);
+    console.log("Subcategory IDs:", data.subCategoryIds);
+
+    // Test database connection
+    try {
+      await prisma.$connect();
+      console.log("Database connected successfully");
+    } catch (dbError) {
+      console.error("Database connection failed:", dbError);
+      return { success: false, error: "Database connection failed. Please try again." };
+    }
+
+    // Validate required fields
+    if (!data.title || !data.description || !data.sku || !data.categoryId) {
+      return { success: false, error: "Missing required fields: title, description, SKU, or category" };
+    }
+
+    if (data.images.length === 0) {
+      return { success: false, error: "At least one product image is required" };
+    }
+
+    if (data.sizes.length === 0) {
+      return { success: false, error: "At least one product size is required" };
+    }
+
+    // Check if SKU already exists
+    const existingSku = await prisma.product.findUnique({
+      where: { sku: data.sku }
+    });
+    if (existingSku) {
+      return { success: false, error: "SKU already exists. Please use a unique SKU." };
+    }
+
+    // Check if slug already exists
+    const existingSlug = await prisma.product.findUnique({
+      where: { slug: data.slug }
+    });
+    if (existingSlug) {
+      return { success: false, error: "A product with this title already exists." };
+    }
+
+    // Check if category exists
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId }
+    });
+    if (!category) {
+      return { success: false, error: "Selected category does not exist." };
+    }
+
     // Upload all images to Cloudinary using base64 strings
-    const uploadPromises = data.images.map((base64Image) => uploadImage(base64Image, "products"));
+    console.log("Uploading images to Cloudinary...");
+    const uploadPromises = data.images.map(async (base64Image, index) => {
+      try {
+        const result = await uploadImage(base64Image, "products");
+        console.log(`Image ${index + 1} uploaded successfully`);
+        return result;
+      } catch (uploadError) {
+        console.error(`Failed to upload image ${index + 1}:`, uploadError);
+        throw new Error(`Failed to upload image ${index + 1}: ${uploadError}`);
+      }
+    });
+
     const uploadedImages = await Promise.all(uploadPromises);
+    console.log("All images uploaded successfully");
 
     // Create product in database
+    console.log("Creating product in database...");
     const product = await prisma.product.create({
       data: {
         title: data.title,
@@ -68,11 +132,37 @@ export async function createProduct(data: {
       },
     });
 
+    console.log("Product created successfully:", product.id);
     revalidatePath("/products");
     return { success: true, data: product };
   } catch (error) {
     console.error("Error creating product:", error);
-    return { success: false, error: "Failed to create product" };
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes("SKU already exists")) {
+        return { success: false, error: "SKU already exists. Please use a unique SKU." };
+      }
+      if (error.message.includes("Failed to upload image")) {
+        return { success: false, error: error.message };
+      }
+      if (error.message.includes("Foreign key constraint")) {
+        return { success: false, error: "Invalid category or subcategory selected." };
+      }
+      if (error.message.includes("Unique constraint")) {
+        return { success: false, error: "A product with this title or SKU already exists." };
+      }
+    }
+    
+    return { success: false, error: `Failed to create product: ${error instanceof Error ? error.message : 'Unknown error'}` };
+  } finally {
+    // Always disconnect from database
+    try {
+      await prisma.$disconnect();
+      console.log("Database disconnected");
+    } catch (disconnectError) {
+      console.error("Error disconnecting from database:", disconnectError);
+    }
   }
 }
 
