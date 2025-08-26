@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -202,11 +201,15 @@ export default function ProductsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="relative h-12 w-12">
-                    <Image
+                    <img
                       src={product.mainImage || "/placeholder.png"}
                       alt={product.title}
-                      fill
-                      className="rounded-full object-cover"
+                      className="w-12 h-12 rounded-full object-cover"
+                      onError={(e) => {
+                        // Fallback to placeholder if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.png";
+                      }}
                     />
                   </div>
                 </TableCell>
