@@ -12,8 +12,8 @@ export async function GET() {
     };
 
     const missingVars = Object.entries(envVars)
-      .filter(([_, status]) => !status)
-      .map(([key, _]) => key);
+      .filter(([, status]) => !status)
+      .map(([key]) => key);
 
     return NextResponse.json({
       success: true,

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -57,8 +57,8 @@ export async function POST() {
     };
 
     const missingVars = Object.entries(envVars)
-      .filter(([_, status]) => !status)
-      .map(([key, _]) => key);
+      .filter(([, status]) => !status)
+      .map(([key]) => key);
 
     if (missingVars.length === 0) {
       results.environment = { 

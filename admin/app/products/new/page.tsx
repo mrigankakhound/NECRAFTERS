@@ -14,7 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { X, Plus, Upload } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { SimpleImageUpload } from "@/components/ui/simple-image-upload";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
