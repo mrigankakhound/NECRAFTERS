@@ -57,10 +57,17 @@ export default function ProductsPage() {
 
   const loadProducts = async () => {
     try {
+      setIsLoading(true);
+      console.log("=== LOADING PRODUCTS ===");
+      
       const result = await getAllProducts();
+      console.log("getAllProducts result:", result);
+      
       if (result.success && result.data) {
+        console.log("Products loaded successfully:", result.data);
         setProducts(result.data);
       } else {
+        console.error("Failed to load products:", result.error);
         toast.error(result.error || "Failed to load products");
       }
     } catch (error) {
@@ -159,9 +166,18 @@ export default function ProductsPage() {
     <div className="p-8 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Products</h1>
-        <Button onClick={() => router.push("/products/new")}>
-          Add New Product
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={loadProducts}
+            disabled={isLoading}
+          >
+            {isLoading ? "Loading..." : "Refresh"}
+          </Button>
+          <Button onClick={() => router.push("/products/new")}>
+            Add New Product
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border">

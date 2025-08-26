@@ -151,9 +151,16 @@ export async function createProduct(data: {
     console.log("Product ID:", product.id);
     console.log("Product title:", product.title);
     console.log("Product images count:", product.images.length);
+    console.log("Product images:", product.images);
+    console.log("Product category:", product.category?.name || "No category");
+    console.log("Product subcategories count:", product.productSubCategories?.length || 0);
     
-    revalidatePath("/products");
+    // Force revalidation of multiple paths to ensure the products page updates
     console.log("=== REVALIDATING PATHS ===");
+    revalidatePath("/products");
+    revalidatePath("/");
+    revalidatePath("/dashboard");
+    console.log("Paths revalidated successfully");
     
     const result = { success: true, data: product };
     console.log("=== RETURNING SUCCESS RESULT ===");
