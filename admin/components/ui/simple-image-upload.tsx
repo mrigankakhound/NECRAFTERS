@@ -1,12 +1,9 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import { Upload, X, FileDown, AlertTriangle } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { Button } from './button';
 import { Card } from './card';
-import { Badge } from './badge';
-import { ImageCompressor } from '@/lib/imageCompression';
-import { testCompression } from '@/lib/test-compression';
 
 interface SimpleImageUploadProps {
   onImagesChange: (images: { id: string; url: string; file?: File }[]) => void;
@@ -21,21 +18,8 @@ export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({
   images,
   maxImages = 10,
   className = '',
-  onCompressionComplete,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [hasLargeImages, setHasLargeImages] = useState(false);
-
-  const checkImageSizes = useCallback(() => {
-    const largeImages = images.some(img => img.file && img.file.size > 20 * 1024 * 1024);
-    setHasLargeImages(largeImages);
-  }, [images]);
-
-  // Check image sizes whenever images change
-  React.useEffect(() => {
-    checkImageSizes();
-  }, [checkImageSizes]);
 
   const handleFileSelect = useCallback(async (files: FileList) => {
     const newImages: { id: string; url: string; file?: File }[] = [];
@@ -83,67 +67,9 @@ export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({
     setIsDragging(false);
   }, []);
 
-  const removeImage = useCallback((id: string) => {
+    const removeImage = useCallback((id: string) => {
     const newImages = images.filter(img => img.id !== id);
     onImagesChange(newImages);
-  }, [images, onImagesChange]);
-
-    const compressAllImages = useCallback(async () => {
-    setIsCompressing(true);
-
-    try {
-      console.log('Starting compression of', images.length, 'images');
-      const compressedImages: { id: string; url: string; file?: File }[] = [];
-      
-      for (const image of images) {
-        if (image.file) {
-          try {
-            console.log('Compressing image:', image.file.name, 'Size:', image.file.size / (1024 * 1024), 'MB');
-            // Compress image to fit within 20MB limit
-            const result = await ImageCompressor.compressImage(image.file, 'default', {
-              maxSizeMB: 20,
-              quality: 0.8,
-            });
-            console.log('Compression result:', result);
-            
-            // Create new preview for compressed image
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              if (e.target?.result) {
-                compressedImages.push({
-                  id: image.id,
-                  url: e.target.result as string,
-                  file: result.compressedFile,
-                });
-                
-                             // Update images when all are compressed
-             if (compressedImages.length === images.length) {
-               onImagesChange(compressedImages);
-               // Notify parent that compression is complete
-               if (onCompressionComplete) {
-                 onCompressionComplete();
-               }
-             }
-              }
-            };
-            reader.readAsDataURL(result.compressedFile);
-            
-          } catch (error) {
-            console.error(`Failed to compress ${image.file.name}:`, error);
-            // Keep original image if compression fails
-            compressedImages.push(image);
-          }
-        } else {
-          // Keep images without files (already uploaded)
-          compressedImages.push(image);
-        }
-      }
-      
-    } catch (error) {
-      console.error('Compression failed:', error);
-    } finally {
-      setIsCompressing(false);
-    }
   }, [images, onImagesChange]);
 
   const formatFileSize = (bytes: number): string => {
@@ -154,72 +80,8 @@ export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleTestCompression = async () => {
-    console.log('Testing compression...');
-    const result = await testCompression();
-    console.log('Test result:', result);
-    alert(`Compression test: ${result.success ? 'SUCCESS' : 'FAILED'}\n${result.success ? `Original: ${((result.originalSize || 0) / (1024 * 1024)).toFixed(2)}MB, Compressed: ${((result.compressedSize || 0) / (1024 * 1024)).toFixed(2)}MB, Ratio: ${(result.compressionRatio || 0).toFixed(2)}%` : `Error: ${result.error}`}`);
-  };
-
   return (
     <div className={`space-y-4 ${className}`}>
-             {/* Test Compression Button */}
-       <Card className="p-4 border-blue-200 bg-blue-50">
-         <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2">
-             <div>
-               <p className="font-medium text-blue-800">
-                 Test Image Compression
-               </p>
-               <p className="text-sm text-blue-700">
-                 Click to test if compression is working
-               </p>
-             </div>
-           </div>
-           <Button
-             onClick={handleTestCompression}
-             className="bg-blue-600 hover:bg-blue-700 text-white"
-           >
-             Test Compression
-           </Button>
-         </div>
-       </Card>
-
-       {/* Compression Warning and Button */}
-       {hasLargeImages && (
-         <Card className="p-4 border-yellow-200 bg-yellow-50">
-           <div className="flex items-center justify-between">
-             <div className="flex items-center gap-2">
-               <AlertTriangle className="w-5 h-5 text-yellow-600" />
-               <div>
-                 <p className="font-medium text-yellow-800">
-                   Some images exceed 20MB limit
-                 </p>
-                 <p className="text-sm text-yellow-700">
-                   Compress images before creating product (20MB limit)
-                 </p>
-               </div>
-             </div>
-             <Button
-               onClick={compressAllImages}
-               disabled={isCompressing}
-               className="bg-yellow-600 hover:bg-yellow-700 text-white"
-             >
-               {isCompressing ? (
-                 <>
-                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                   Compressing...
-                 </>
-               ) : (
-                 <>
-                   <FileDown className="w-4 h-4 mr-2" />
-                   Compress Images
-                 </>
-               )}
-             </Button>
-           </div>
-         </Card>
-       )}
 
       {/* Upload Area */}
       <Card className={`p-6 border-2 border-dashed transition-colors ${
@@ -238,7 +100,7 @@ export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({
             Click to upload or drag and drop
           </p>
                      <p className="text-sm text-gray-500 mb-4">
-             PNG, JPG, GIF, WebP up to 20MB (will be compressed automatically)
+             PNG, JPG, GIF, WebP up to 10MB
            </p>
           <input
             type="file"
@@ -263,60 +125,45 @@ export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({
             Selected Images ({images.length}/{maxImages})
           </h3>
           
-          {images.map((image) => {
-                         const isLarge = image.file && image.file.size > 20 * 1024 * 1024;
-            
-            return (
-              <Card key={image.id} className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Image Preview */}
-                  <div className="relative">
-                    <img
-                      src={image.url}
-                      alt="Product image"
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                    {isLarge && (
-                      <Badge className="absolute -top-2 -right-2 bg-red-100 text-red-800 border-red-200">
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        Large
-                      </Badge>
-                    )}
+          {images.map((image) => (
+            <Card key={image.id} className="p-4">
+              <div className="flex items-start gap-4">
+                {/* Image Preview */}
+                <div className="relative">
+                  <img
+                    src={image.url}
+                    alt="Product image"
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                </div>
+                
+                {/* Image Info */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium">{image.file?.name || 'Image'}</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeImage(image.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
                   
-                  {/* Image Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{image.file?.name || 'Image'}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeImage(image.id)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    
-                    {image.file && (
-                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                        <div>
-                          <span className="font-medium">Size:</span> {formatFileSize(image.file.size)}
-                                                     {isLarge && (
-                             <span className="text-red-600 ml-2 font-medium">
-                               (Exceeds 20MB limit)
-                             </span>
-                           )}
-                        </div>
-                        <div>
-                          <span className="font-medium">Type:</span> {image.file.type}
-                        </div>
+                  {image.file && (
+                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Size:</span> {formatFileSize(image.file.size)}
                       </div>
-                    )}
-                  </div>
+                      <div>
+                        <span className="font-medium">Type:</span> {image.file.type}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </Card>
-            );
-          })}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
     </div>

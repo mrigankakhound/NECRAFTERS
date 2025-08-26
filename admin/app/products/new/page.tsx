@@ -81,18 +81,10 @@ export default function NewProductPage() {
   const [ingredients, setIngredients] = useState<string[]>([""]);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [systemStatus, setSystemStatus] = useState<{ status: string; message: string } | null>(null);
-  const [hasLargeImages, setHasLargeImages] = useState(false);
-
   useEffect(() => {
     loadCategories();
     checkSystemStatus();
   }, []);
-
-      // Check for large images whenever images change
-    useEffect(() => {
-      const largeImages = images.some(img => img.file && img.file.size > 20 * 1024 * 1024);
-      setHasLargeImages(largeImages);
-    }, [images]);
 
   const checkSystemStatus = async () => {
     try {
@@ -640,11 +632,6 @@ export default function NewProductPage() {
               onImagesChange={setImages}
               maxImages={10}
               className="mt-2"
-              onCompressionComplete={() => {
-                // Force re-check of image sizes after compression
-                const largeImages = images.some(img => img.file && img.file.size > 20 * 1024 * 1024);
-                setHasLargeImages(largeImages);
-              }}
             />
           </Card>
         </div>
@@ -660,10 +647,9 @@ export default function NewProductPage() {
         </Button>
         <Button 
           onClick={handleSubmit} 
-          disabled={isLoading || hasLargeImages}
-          className={hasLargeImages ? "opacity-50 cursor-not-allowed" : ""}
+          disabled={isLoading}
         >
-          {isLoading ? "Creating..." : hasLargeImages ? "Compress Images First" : "Create Product"}
+          {isLoading ? "Creating..." : "Create Product"}
         </Button>
       </div>
     </div>

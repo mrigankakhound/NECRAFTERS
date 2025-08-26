@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Validate file size (max 20MB - will be compressed client-side if larger)
-      if (file.size > 20 * 1024 * 1024) {
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
         return NextResponse.json(
-          { error: 'File size too large. Maximum 20MB allowed. Please compress your image first using the compression tools.' },
+          { error: 'File size too large. Maximum 10MB allowed.' },
           { status: 400 }
         );
       }
