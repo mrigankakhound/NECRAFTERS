@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { Review, ProductReview } from "@/lib/generated/prisma";
+import { Review, ProductReview } from "@prisma/client";
 
 export type ReviewWithDetails = {
   id: string;
