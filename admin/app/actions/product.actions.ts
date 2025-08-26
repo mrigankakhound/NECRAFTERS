@@ -28,6 +28,18 @@ export async function createProduct(data: {
   categoryId: string;
   subCategoryIds: string[];
 }) {
+  console.log("=== PRODUCT CREATION STARTED ===");
+  console.log("Data received:", {
+    title: data.title,
+    description: data.description?.substring(0, 50) + "...",
+    sku: data.sku,
+    categoryId: data.categoryId,
+    imagesCount: data.images.length,
+    sizesCount: data.sizes.length,
+    benefitsCount: data.benefits.length,
+    ingredientsCount: data.ingredients.length
+  });
+  
   try {
     console.log("Starting product creation...");
     console.log("Images count:", data.images.length);
@@ -85,26 +97,39 @@ export async function createProduct(data: {
     }
 
     // Upload all images to Cloudinary using base64 strings
-    console.log("Uploading images to Cloudinary...");
-    console.log("First image sample:", data.images[0]?.substring(0, 100) + "...");
+    console.log("=== STARTING IMAGE UPLOAD ===");
+    console.log("Total images to upload:", data.images.length);
+    
+    if (data.images.length > 0) {
+      console.log("First image sample:", data.images[0]?.substring(0, 100) + "...");
+      console.log("First image starts with:", data.images[0]?.startsWith('data:') ? 'data: URL' : 'base64 string');
+      console.log("First image length:", data.images[0]?.length);
+    }
     
     const uploadPromises = data.images.map(async (base64Image, index) => {
       try {
-        console.log(`Processing image ${index + 1}, length: ${base64Image.length}`);
+        console.log(`=== UPLOADING IMAGE ${index + 1} ===`);
+        console.log(`Image ${index + 1} length: ${base64Image.length}`);
+        console.log(`Image ${index + 1} starts with: ${base64Image.startsWith('data:') ? 'data: URL' : 'base64 string'}`);
+        
         const result = await uploadImage(base64Image, "products");
-        console.log(`Image ${index + 1} uploaded successfully`);
+        console.log(`Image ${index + 1} uploaded successfully:`, result);
         return result;
       } catch (uploadError) {
-        console.error(`Failed to upload image ${index + 1}:`, uploadError);
+        console.error(`=== FAILED TO UPLOAD IMAGE ${index + 1} ===`);
+        console.error(`Error details:`, uploadError);
         throw new Error(`Failed to upload image ${index + 1}: ${uploadError}`);
       }
     });
 
+    console.log("=== WAITING FOR ALL IMAGES TO UPLOAD ===");
     const uploadedImages = await Promise.all(uploadPromises);
-    console.log("All images uploaded successfully");
+    console.log("=== ALL IMAGES UPLOADED SUCCESSFULLY ===");
+    console.log("Uploaded images count:", uploadedImages.length);
+    console.log("Sample uploaded image:", uploadedImages[0]);
 
     // Create product in database
-    console.log("Creating product in database...");
+    console.log("=== CREATING PRODUCT IN DATABASE ===");
     const product = await prisma.product.create({
       data: {
         title: data.title,
@@ -139,9 +164,17 @@ export async function createProduct(data: {
       },
     });
 
-    console.log("Product created successfully:", product.id);
+    console.log("=== PRODUCT CREATED SUCCESSFULLY ===");
+    console.log("Product ID:", product.id);
+    console.log("Product title:", product.title);
+    console.log("Product images count:", product.images.length);
+    
     revalidatePath("/products");
-    return { success: true, data: product };
+    console.log("=== REVALIDATING PATHS ===");
+    
+    const result = { success: true, data: product };
+    console.log("=== RETURNING SUCCESS RESULT ===");
+    return result;
   } catch (error) {
     console.error("Error creating product:", error);
     
