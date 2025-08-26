@@ -419,7 +419,7 @@ export async function updateProduct(
     // Upload new images to Cloudinary (if they are File objects)
     const uploadPromises = data.images
       .filter((img) => img instanceof File)
-      .map((image) => uploadImage(image as File));
+      .map((image) => uploadImage(image as File, "products"));
     const uploadedImages = await Promise.all(uploadPromises);
 
     // Combine existing images (not File objects) with newly uploaded ones

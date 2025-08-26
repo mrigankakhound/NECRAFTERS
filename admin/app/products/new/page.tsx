@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { X, Plus, Upload } from "lucide-react";
-import { EnhancedImageUpload } from "@/components/ui/enhanced-image-upload";
+import { SimpleImageUpload } from "@/components/ui/simple-image-upload";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import {
@@ -81,11 +81,18 @@ export default function NewProductPage() {
   const [ingredients, setIngredients] = useState<string[]>([""]);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [systemStatus, setSystemStatus] = useState<{ status: string; message: string } | null>(null);
+  const [hasLargeImages, setHasLargeImages] = useState(false);
 
   useEffect(() => {
     loadCategories();
     checkSystemStatus();
   }, []);
+
+  // Check for large images whenever images change
+  useEffect(() => {
+    const largeImages = images.some(img => img.file && img.file.size > 10 * 1024 * 1024);
+    setHasLargeImages(largeImages);
+  }, [images]);
 
   const checkSystemStatus = async () => {
     try {
@@ -628,13 +635,16 @@ export default function NewProductPage() {
 
           <Card className="p-6">
             <Label className="mb-4 block">Product Images*</Label>
-            <EnhancedImageUpload
+            <SimpleImageUpload
               images={images}
               onImagesChange={setImages}
               maxImages={10}
-              purpose="product-gallery"
-              showCompressionTools={true}
               className="mt-2"
+              onCompressionComplete={() => {
+                // Force re-check of image sizes after compression
+                const largeImages = images.some(img => img.file && img.file.size > 10 * 1024 * 1024);
+                setHasLargeImages(largeImages);
+              }}
             />
           </Card>
         </div>
@@ -648,8 +658,12 @@ export default function NewProductPage() {
         >
           Cancel
         </Button>
-        <Button onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Product"}
+        <Button 
+          onClick={handleSubmit} 
+          disabled={isLoading || hasLargeImages}
+          className={hasLargeImages ? "opacity-50 cursor-not-allowed" : ""}
+        >
+          {isLoading ? "Creating..." : hasLargeImages ? "Compress Images First" : "Create Product"}
         </Button>
       </div>
     </div>
