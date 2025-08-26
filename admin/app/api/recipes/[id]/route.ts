@@ -5,8 +5,8 @@ import slugify from "slugify";
 
 // GET - Fetch single recipe
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const recipe = await prisma.recipe.findUnique({
@@ -35,8 +35,8 @@ export async function GET(
 
 // PUT - Update recipe
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const data = await request.json();
@@ -90,8 +90,8 @@ export async function PUT(
 
 // DELETE - Delete recipe
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     await prisma.recipe.delete({

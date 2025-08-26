@@ -4,8 +4,8 @@ import slugify from "slugify";
 
 // GET - Fetch single blog post
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const post = await prisma.blogPost.findUnique({
@@ -34,8 +34,8 @@ export async function GET(
 
 // PUT - Update blog post
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const data = await request.json();
@@ -81,8 +81,8 @@ export async function PUT(
 
 // DELETE - Delete blog post
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     await prisma.blogPost.delete({
