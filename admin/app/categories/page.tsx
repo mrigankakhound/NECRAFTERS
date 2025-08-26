@@ -142,13 +142,21 @@ export default function CategoriesPage() {
 
   const handleEditSave = async () => {
     if (editCategory) {
-      const result = await updateCategory(editCategory.id, {
+      const updateData: {
+        name: string;
+        image?: File;
+        oldImagePublicId?: string;
+      } = {
         name: editCategory.name,
-        image: editImage.file ? editImage.url : undefined,
-        oldImagePublicId: editImage.file
-          ? editCategory.images[0]?.public_id || undefined
-          : undefined,
-      });
+      };
+
+      // Only include image if there's a new file
+      if (editImage.file) {
+        updateData.image = editImage.file;
+        updateData.oldImagePublicId = editCategory.images[0]?.public_id || undefined;
+      }
+
+      const result = await updateCategory(editCategory.id, updateData);
 
       if (result.success) {
         toast.success("Category updated successfully");
