@@ -96,6 +96,29 @@ export async function createProduct(data: {
       return { success: false, error: "Selected category does not exist." };
     }
 
+    // Validate image data before upload
+    console.log("=== VALIDATING IMAGE DATA ===");
+    for (let i = 0; i < data.images.length; i++) {
+      const image = data.images[i];
+      if (!image || typeof image !== 'string') {
+        return { success: false, error: `Invalid image data at position ${i + 1}` };
+      }
+      if (!image.startsWith('data:image/')) {
+        return { success: false, error: `Invalid image format at position ${i + 1}. Expected base64 data URL.` };
+      }
+      
+      // Base64 strings are larger than original files due to encoding overhead
+      // A 10MB file becomes ~13-14MB as base64, so we need to allow for this
+      const maxBase64Size = 15 * 1024 * 1024; // 15MB for base64 strings
+      if (image.length > maxBase64Size) {
+        const sizeInMB = Math.round(image.length / (1024 * 1024) * 100) / 100;
+        return { 
+          success: false, 
+          error: `Image at position ${i + 1} is too large (${sizeInMB}MB). Maximum 10MB original file size allowed. Please compress the image before uploading.` 
+        };
+      }
+    }
+
     // Upload all images to Cloudinary using base64 strings
     console.log("=== STARTING IMAGE UPLOAD ===");
     console.log("Total images to upload:", data.images.length);
@@ -176,10 +199,17 @@ export async function createProduct(data: {
     console.log("=== RETURNING SUCCESS RESULT ===");
     return result;
   } catch (error) {
-    console.error("Error creating product:", error);
+    console.error("=== PRODUCT CREATION FAILED ===");
+    console.error("Error type:", typeof error);
+    console.error("Error constructor:", error?.constructor?.name);
+    console.error("Error instanceof Error:", error instanceof Error);
     
-    // Provide more specific error messages
     if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      
+      // Provide more specific error messages
       if (error.message.includes("SKU already exists")) {
         return { success: false, error: "SKU already exists. Please use a unique SKU." };
       }
@@ -194,6 +224,12 @@ export async function createProduct(data: {
       }
       if (error.message.includes("Database connection failed")) {
         return { success: false, error: "Database connection failed. Please try again." };
+      }
+      if (error.message.includes("Invalid image format")) {
+        return { success: false, error: error.message };
+      }
+      if (error.message.includes("Image at position")) {
+        return { success: false, error: error.message };
       }
     }
     

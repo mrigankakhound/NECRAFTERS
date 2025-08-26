@@ -280,23 +280,32 @@ export default function NewProductPage() {
     setImages(images.filter((img) => img.id !== id));
   };
 
-  const handleSubmit = async () => {
-    try {
-      setIsLoading(true);
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    setIsLoading(true);
 
-      // Validate required fields
-      if (
-        !productData.title ||
-        !productData.description ||
-        !productData.sku ||
-        !productData.categoryId
-      ) {
+    try {
+      console.log("=== STARTING PRODUCT CREATION ===");
+      console.log("Form data:", {
+        title: productData.title,
+        description: productData.description?.substring(0, 50) + "...",
+        sku: productData.sku,
+        categoryId: productData.categoryId,
+        imagesCount: images.length,
+        sizesCount: sizes.length
+      });
+      console.log("Images:", images.map(img => ({ id: img.id, hasFile: !!img.file, urlLength: img.url?.length })));
+
+      // Validation
+      if (!productData.title || !productData.description || !productData.sku || !productData.categoryId) {
         toast.error("Please fill in all required fields");
         return;
       }
 
       if (images.length === 0) {
-        toast.error("Please upload at least one product image");
+        toast.error("Please select at least one product image");
         return;
       }
 
@@ -309,6 +318,8 @@ export default function NewProductPage() {
         return;
       }
 
+      console.log("=== CALLING CREATE PRODUCT SERVER ACTION ===");
+      
       // Create product
       const result = await createProduct({
         title: productData.title,
@@ -332,6 +343,9 @@ export default function NewProductPage() {
         subCategoryIds: productData.subcategoryIds,
       });
 
+      console.log("=== SERVER ACTION RESULT ===");
+      console.log("Result:", result);
+
       if (result.success) {
         toast.success("Product created successfully!");
         router.push("/products");
@@ -342,8 +356,23 @@ export default function NewProductPage() {
         toast.error(errorMessage);
       }
     } catch (error) {
+      console.error("=== CLIENT-SIDE ERROR ===");
       console.error("Error creating product:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      console.error("Error type:", typeof error);
+      console.error("Error constructor:", error?.constructor?.name);
+      
+      let errorMessage = "An unexpected error occurred";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error("Error name:", error.name);
+        console.error("Error stack:", error.stack);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object') {
+        errorMessage = JSON.stringify(error);
+      }
+      
       toast.error(`Failed to create product: ${errorMessage}`);
     } finally {
       setIsLoading(false);
