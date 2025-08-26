@@ -10,7 +10,6 @@ interface SimpleImageUploadProps {
   images: { id: string; url: string; file?: File }[];
   maxImages?: number;
   className?: string;
-  onCompressionComplete?: () => void;
 }
 
 export const SimpleImageUpload: React.FC<SimpleImageUploadProps> = ({

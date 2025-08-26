@@ -82,8 +82,11 @@ export async function createProduct(data: {
 
     // Upload all images to Cloudinary using base64 strings
     console.log("Uploading images to Cloudinary...");
+    console.log("First image sample:", data.images[0]?.substring(0, 100) + "...");
+    
     const uploadPromises = data.images.map(async (base64Image, index) => {
       try {
+        console.log(`Processing image ${index + 1}, length: ${base64Image.length}`);
         const result = await uploadImage(base64Image, "products");
         console.log(`Image ${index + 1} uploaded successfully`);
         return result;
@@ -419,7 +422,13 @@ export async function updateProduct(
     // Upload new images to Cloudinary (if they are File objects)
     const uploadPromises = data.images
       .filter((img) => img instanceof File)
-      .map((image) => uploadImage(image as File, "products"));
+      .map(async (image) => {
+        // Convert File to base64 string
+        const bytes = await (image as File).arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64Image = `data:${(image as File).type};base64,${buffer.toString('base64')}`;
+        return uploadImage(base64Image, "products");
+      });
     const uploadedImages = await Promise.all(uploadPromises);
 
     // Combine existing images (not File objects) with newly uploaded ones
