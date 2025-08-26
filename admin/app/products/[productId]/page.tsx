@@ -56,11 +56,13 @@ interface SubCategory {
   name: string;
 }
 
-export default function EditProductPage() {
-  const router = useRouter();
-  const params = useParams();
-  const productId = params.productId as string;
+interface PageProps {
+  params: Promise<{ productId: string }>;
+}
 
+export default function ProductPage({ params }: PageProps) {
+  const router = useRouter();
+  const [productId, setProductId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,54 +91,66 @@ export default function EditProductPage() {
   const [images, setImages] = useState<ProductImage[]>([]);
 
   useEffect(() => {
-    loadCategories();
+    // Handle async params
+    params.then(({ productId }) => {
+      setProductId(productId);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!productId) return;
+    
+    const loadProduct = async () => {
+      try {
+        const result = await getProduct(productId);
+        if (result.success && result.data) {
+          const product = result.data;
+          setProductData({
+            title: product.title,
+            description: product.description,
+            brand: product.brand || "",
+            sku: product.sku,
+            discount: product.discount.toString(),
+            categoryId: product.categoryId,
+            subcategoryIds: product.subCategories.map((sub) => sub.id),
+            featured: product.featured,
+            longDescription: product.longDescription,
+          });
+
+          setSizes(
+            product.sizes.map((size) => ({
+              size: size.size,
+              quantity: size.qty,
+              price: size.price,
+            }))
+          );
+
+          setBenefits(product.benefits);
+          setIngredients(product.ingredients);
+          setImages(
+            product.images.map((img: any) => ({
+              id: img.public_id || Math.random().toString(36).substring(7),
+              url: img.url,
+              public_id: img.public_id,
+            }))
+          );
+        } else {
+          toast.error(result.error || "Failed to load product");
+        }
+      } catch (error) {
+        console.error("Error loading product:", error);
+        toast.error("Failed to load product");
+      }
+    };
+
     loadProduct();
-  }, []);
+  }, [productId]);
 
   useEffect(() => {
     if (productData.categoryId) {
       loadSubcategories(productData.categoryId);
     }
   }, [productData.categoryId]);
-
-  const loadProduct = async () => {
-    const result = await getProduct(productId);
-    if (result.success && result.data) {
-      const product = result.data;
-      setProductData({
-        title: product.title,
-        description: product.description,
-        brand: product.brand || "",
-        sku: product.sku,
-        discount: product.discount.toString(),
-        categoryId: product.categoryId,
-        subcategoryIds: product.subCategories.map((sub) => sub.id),
-        featured: product.featured,
-        longDescription: product.longDescription,
-      });
-
-      setSizes(
-        product.sizes.map((size) => ({
-          size: size.size,
-          quantity: size.qty,
-          price: size.price,
-        }))
-      );
-
-      setBenefits(product.benefits);
-      setIngredients(product.ingredients);
-      setImages(
-        product.images.map((img: any) => ({
-          id: img.public_id || Math.random().toString(36).substring(7),
-          url: img.url,
-          public_id: img.public_id,
-        }))
-      );
-    } else {
-      toast.error("Failed to load product");
-      router.push("/products");
-    }
-  };
 
   const loadCategories = async () => {
     const result = await getAllCategories();
@@ -279,7 +293,7 @@ export default function EditProductPage() {
       }
 
       // Update product
-      const result = await updateProduct(productId, {
+      const result = await updateProduct(productId!, {
         title: productData.title,
         description: productData.description,
         longDescription: productData.longDescription,

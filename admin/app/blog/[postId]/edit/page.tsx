@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -22,11 +22,13 @@ interface BlogPost {
   updatedAt: string;
 }
 
-export default function EditBlogPostPage() {
-  const router = useRouter();
-  const params = useParams();
-  const postId = params.postId as string;
+interface PageProps {
+  params: Promise<{ postId: string }>;
+}
 
+export default function EditBlogPostPage({ params }: PageProps) {
+  const router = useRouter();
+  const [postId, setPostId] = useState<string | null>(null);
   const [post, setPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,36 +47,47 @@ export default function EditBlogPostPage() {
 
   const categories = ['Techniques', 'Education', 'Health', 'Recipes', 'News'];
 
-  // Mock data - in real app, this would fetch from API
   useEffect(() => {
-    const mockPost: BlogPost = {
-      id: postId,
-      slug: "the-art-of-making-chili-oil",
-      title: "The Art of Making Chili Oil",
-      excerpt: "Discover the traditional methods and secrets behind crafting the perfect chili oil...",
-      date: "March 15, 2024",
-      category: "Techniques",
-      image: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a",
-      readTime: "5 min read",
-      author: "Chef Maria Rodriguez",
-      content: "Full content here...",
-      published: true,
-      createdAt: "2024-03-15T10:00:00Z",
-      updatedAt: "2024-03-15T10:00:00Z"
+    // Handle async params
+    params.then(({ postId }) => {
+      setPostId(postId);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!postId) return;
+    
+    const fetchPost = async () => {
+      try {
+        const response = await fetch(`/api/blog/${postId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPost(data.post);
+          setFormData({
+            title: data.post.title,
+            excerpt: data.post.excerpt,
+            category: data.post.category,
+            readTime: data.post.readTime,
+            author: data.post.author,
+            content: data.post.content,
+            published: data.post.published,
+            image: data.post.image
+          });
+          setIsLoading(false);
+        } else {
+          setPost(null);
+          setIsLoading(false);
+          toast.error('Blog post not found');
+        }
+      } catch (error) {
+        console.error("Error fetching post:", error);
+        setPost(null);
+        setIsLoading(false);
+        toast.error('Failed to fetch blog post');
+      }
     };
 
-    setPost(mockPost);
-    setFormData({
-      title: mockPost.title,
-      excerpt: mockPost.excerpt,
-      category: mockPost.category,
-      readTime: mockPost.readTime,
-      author: mockPost.author,
-      content: mockPost.content,
-      published: mockPost.published,
-      image: mockPost.image
-    });
-    setIsLoading(false);
+    fetchPost();
   }, [postId]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
