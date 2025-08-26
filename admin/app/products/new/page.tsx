@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { X, Plus, Upload } from "lucide-react";
+import { EnhancedImageUpload } from "@/components/ui/enhanced-image-upload";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import {
@@ -627,49 +628,14 @@ export default function NewProductPage() {
 
           <Card className="p-6">
             <Label className="mb-4 block">Product Images*</Label>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              {images.map((image) => (
-                <div
-                  key={image.id}
-                  className="relative aspect-square rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={image.url}
-                    alt="Product"
-                    className="w-full h-full object-cover"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={() => removeImage(image.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-center w-full">
-              <label htmlFor="image-upload" className="w-full cursor-pointer">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">
-                    Click to upload or drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG, GIF up to 10MB
-                  </p>
-                </div>
-                <input
-                  id="image-upload"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </label>
-            </div>
+            <EnhancedImageUpload
+              images={images}
+              onImagesChange={setImages}
+              maxImages={10}
+              purpose="product-gallery"
+              showCompressionTools={true}
+              className="mt-2"
+            />
           </Card>
         </div>
       </div>
