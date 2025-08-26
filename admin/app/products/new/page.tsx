@@ -88,32 +88,80 @@ export default function NewProductPage() {
 
   const checkSystemStatus = async () => {
     try {
-      const response = await fetch('/api/check-env');
-      const data = await response.json();
+      setSystemStatus({
+        status: 'pending',
+        message: 'Checking system status...'
+      });
+
+      // First check environment variables
+      const envResponse = await fetch('/api/check-env');
+      if (!envResponse.ok) {
+        throw new Error(`Environment check failed: ${envResponse.status}`);
+      }
       
-      if (data.success) {
-        const hasErrors = Object.values(data.results).some((result: any) => result.status === 'error');
-        if (hasErrors) {
-          setSystemStatus({
-            status: 'warning',
-            message: 'Some system components may have issues. Check the troubleshooting guide.'
-          });
+      const envData = await envResponse.json();
+      
+      if (!envData.success) {
+        throw new Error(envData.error || 'Environment check failed');
+      }
+
+      // Check if there are missing environment variables
+      const hasMissingEnv = envData.missing && envData.missing.length > 0;
+      
+      if (hasMissingEnv) {
+        setSystemStatus({
+          status: 'warning',
+          message: `Missing environment variables: ${envData.missing.join(', ')}. This may cause product creation to fail.`
+        });
+        return;
+      }
+
+      // If environment is good, test the system health
+      try {
+        const healthResponse = await fetch('/api/test-product-creation', {
+          method: 'POST'
+        });
+        
+        if (healthResponse.ok) {
+          const healthData = await healthResponse.json();
+          if (healthData.success) {
+            const hasErrors = Object.values(healthData.results).some((result: any) => result.status === 'error');
+            if (hasErrors) {
+              setSystemStatus({
+                status: 'warning',
+                message: 'Some system components have issues. Check the troubleshooting guide for details.'
+              });
+            } else {
+              setSystemStatus({
+                status: 'success',
+                message: 'All system components are working properly. Product creation should work correctly.'
+              });
+            }
+          } else {
+            setSystemStatus({
+              status: 'warning',
+              message: 'System health check failed. Some features may not work properly.'
+            });
+          }
         } else {
           setSystemStatus({
-            status: 'success',
-            message: 'All system components are working properly.'
+            status: 'warning',
+            message: 'System health check unavailable. Basic environment check passed.'
           });
         }
-      } else {
+      } catch (healthError) {
+        // If health check fails, but environment is good, show warning
         setSystemStatus({
-          status: 'error',
-          message: 'Unable to check system status.'
+          status: 'warning',
+          message: 'Environment variables are set, but system health check failed. Product creation may still work.'
         });
       }
+      
     } catch (error) {
+      console.error('System status check failed:', error);
       setSystemStatus({
         status: 'error',
-        message: 'Failed to check system status.'
+        message: `Failed to check system status: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     }
   };
@@ -309,17 +357,22 @@ export default function NewProductPage() {
         <div className={`mb-6 p-4 rounded-lg border ${
           systemStatus.status === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
           systemStatus.status === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+          systemStatus.status === 'pending' ? 'bg-blue-50 border-blue-200 text-blue-800' :
           'bg-red-50 border-red-200 text-red-800'
         }`}>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center gap-2">
+              {systemStatus.status === 'pending' && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              )}
               <strong>System Status:</strong> {systemStatus.message}
             </div>
             <button
               onClick={checkSystemStatus}
               className="text-sm underline hover:no-underline"
+              disabled={systemStatus.status === 'pending'}
             >
-              Refresh Status
+              {systemStatus.status === 'pending' ? 'Checking...' : 'Refresh Status'}
             </button>
           </div>
         </div>
