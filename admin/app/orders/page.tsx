@@ -72,6 +72,14 @@ interface Order {
   createdAt: Date;
   paidAt: Date | null;
   deliveredAt: Date | null;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  paymentDetails: {
+    method: string | null;
+    bank: string | null;
+    wallet: string | null;
+    vpa: string | null;
+  } | null;
   paymentResult: {
     id: string | null;
     status: string | null;
