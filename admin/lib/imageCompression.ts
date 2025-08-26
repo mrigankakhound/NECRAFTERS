@@ -115,8 +115,8 @@ export class ImageCompressor {
     purpose: keyof typeof this.SIZE_LIMITS = 'default',
     customOptions?: Partial<CompressionOptions>
   ): Promise<CompressionResult> {
-    const targetSize = this.SIZE_LIMITS[purpose] || this.SIZE_LIMITS.default;
-    const targetSizeMB = targetSize / (1024 * 1024);
+    // Use custom options if provided, otherwise use purpose-based limits
+    const targetSizeMB = customOptions?.maxSizeMB || (this.SIZE_LIMITS[purpose] || this.SIZE_LIMITS.default) / (1024 * 1024);
     
     const options: CompressionOptions = {
       ...this.DEFAULT_OPTIONS,

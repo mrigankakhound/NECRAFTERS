@@ -88,11 +88,11 @@ export default function NewProductPage() {
     checkSystemStatus();
   }, []);
 
-  // Check for large images whenever images change
-  useEffect(() => {
-    const largeImages = images.some(img => img.file && img.file.size > 10 * 1024 * 1024);
-    setHasLargeImages(largeImages);
-  }, [images]);
+      // Check for large images whenever images change
+    useEffect(() => {
+      const largeImages = images.some(img => img.file && img.file.size > 20 * 1024 * 1024);
+      setHasLargeImages(largeImages);
+    }, [images]);
 
   const checkSystemStatus = async () => {
     try {
@@ -642,7 +642,7 @@ export default function NewProductPage() {
               className="mt-2"
               onCompressionComplete={() => {
                 // Force re-check of image sizes after compression
-                const largeImages = images.some(img => img.file && img.file.size > 10 * 1024 * 1024);
+                const largeImages = images.some(img => img.file && img.file.size > 20 * 1024 * 1024);
                 setHasLargeImages(largeImages);
               }}
             />
