@@ -26,7 +26,7 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
   const trendingSearches = [
     "Spices",
-    "Chili Oil",
+    "Chilli Oil",
     "Pickles",
     "Best Sellers",
     "Northeast Indian",
@@ -34,7 +34,7 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
     "Hot Sauces",
     "Organic Spices",
     "Gift Sets",
-    "Seasoning Blends"
+    "Seaso
   ];
 
   useEffect(() => {
