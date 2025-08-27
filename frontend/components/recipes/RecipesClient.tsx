@@ -95,13 +95,14 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
             }, 5 * 60 * 1000); // 5 minutes
           }
           
-          if (removedRecipes.length > 0) {
-            if (removedRecipes.length === 1) {
-              toast.info(`Recipe removed: "${removedRecipes[0].title}"`);
-            } else {
-              toast.info(`${removedRecipes.length} recipes removed`);
-            }
-          }
+          // Removed recipes notification is disabled
+          // if (removedRecipes.length > 0) {
+          //   if (removedRecipes.length === 1) {
+          //     toast.info(`Recipe removed: "${removedRecipes[0].title}"`);
+          //   } else {
+          //     toast.info(`${removedRecipes.length} recipes removed`);
+          //   }
+          // }
           
           if (updatedRecipes.length > 0) {
             if (updatedRecipes.length === 1) {
@@ -124,13 +125,15 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
             }, 3 * 60 * 1000); // 3 minutes
           }
           
-          // Also check for count changes as fallback
+          // Also check for count changes as fallback (only for additions)
           if (newRecipes.length !== previousCount && addedRecipes.length === 0 && removedRecipes.length === 0) {
             if (newRecipes.length > previousCount) {
               toast.success(`Added ${newRecipes.length - previousCount} new recipe(s)!`);
-            } else if (newRecipes.length < previousCount) {
-              toast.info(`Removed ${previousCount - newRecipes.length} recipe(s)`);
             }
+            // Removed recipes notification is disabled
+            // else if (newRecipes.length < previousCount) {
+            //   toast.info(`Removed ${previousCount - newRecipes.length} recipe(s)`);
+            // }
           }
         }
       }
