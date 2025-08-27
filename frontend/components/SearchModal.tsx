@@ -25,11 +25,16 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const trendingSearches = [
-    "Perfume",
-    "Bath & Body",
-    "Gifting",
-            "Crazy Deals",
-    "Combos",
+    "Spices",
+    "Chili Oil",
+    "Pickles",
+    "Best Sellers",
+    "Northeast Indian",
+    "Traditional Spices",
+    "Hot Sauces",
+    "Organic Spices",
+    "Gift Sets",
+    "Seasoning Blends"
   ];
 
   useEffect(() => {
