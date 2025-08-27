@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, Users, ChefHat, RefreshCw } from "lucide-react";
+import { Clock, Users, ChefHat } from "lucide-react";
 import { toast } from "sonner";
 
 interface Recipe {
@@ -47,16 +47,16 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
           const previousCount = recipes.length;
           
           // Check for new recipes by comparing IDs
-          const newRecipeIds = new Set(newRecipes.map(r => r.id));
-          const previousRecipeIds = new Set(recipes.map(r => r.id));
+          const newRecipeIds = new Set(newRecipes.map((r: Recipe) => r.id));
+          const previousRecipeIds = new Set(recipes.map((r: Recipe) => r.id));
           
           // Find newly added recipes
-          const addedRecipes = newRecipes.filter(recipe => !previousRecipeIds.has(recipe.id));
+          const addedRecipes = newRecipes.filter((recipe: Recipe) => !previousRecipeIds.has(recipe.id));
           // Find removed recipes
-          const removedRecipes = recipes.filter(recipe => !newRecipeIds.has(recipe.id));
+          const removedRecipes = recipes.filter((recipe: Recipe) => !newRecipeIds.has(recipe.id));
           // Find updated recipes (same ID but different content)
-          const updatedRecipes = newRecipes.filter(newRecipe => {
-            const oldRecipe = recipes.find(r => r.id === newRecipe.id);
+          const updatedRecipes = newRecipes.filter((newRecipe: Recipe) => {
+            const oldRecipe = recipes.find((r: Recipe) => r.id === newRecipe.id);
             return oldRecipe && (
               oldRecipe.title !== newRecipe.title ||
               oldRecipe.description !== newRecipe.description ||
@@ -82,14 +82,14 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
             }
             
             // Mark new recipes for visual highlighting
-            const newIds = new Set([...newRecipeIds, ...addedRecipes.map(r => r.id)]);
+            const newIds = new Set([...newRecipeIds, ...addedRecipes.map((r: Recipe) => r.id)]);
             setNewRecipeIds(newIds);
             
             // Remove the "new" indicator after 5 minutes
             setTimeout(() => {
               setNewRecipeIds(prev => {
                 const updated = new Set(prev);
-                addedRecipes.forEach(recipe => updated.delete(recipe.id));
+                addedRecipes.forEach((recipe: Recipe) => updated.delete(recipe.id));
                 return updated;
               });
             }, 5 * 60 * 1000); // 5 minutes
@@ -111,14 +111,14 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
             }
             
             // Mark updated recipes for visual highlighting
-            const updatedIds = new Set([...updatedRecipeIds, ...updatedRecipes.map(r => r.id)]);
+            const updatedIds = new Set([...updatedRecipeIds, ...updatedRecipes.map((r: Recipe) => r.id)]);
             setUpdatedRecipeIds(updatedIds);
             
             // Remove the "updated" indicator after 3 minutes
             setTimeout(() => {
               setUpdatedRecipeIds(prev => {
                 const updated = new Set(prev);
-                updatedRecipes.forEach(recipe => updated.delete(recipe.id));
+                updatedRecipes.forEach((recipe: Recipe) => updated.delete(recipe.id));
                 return updated;
               });
             }, 3 * 60 * 1000); // 3 minutes
@@ -160,43 +160,26 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
         <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           Spicy Recipes
         </h1>
-        <div className="text-sm text-foreground/60 mb-2">
-          {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} available
-          <span className="ml-4 text-xs">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </span>
-          {(newRecipeIds.size > 0 || updatedRecipeIds.size > 0) && (
-            <span className="ml-4 text-xs">
-              {newRecipeIds.size > 0 && (
-                <span className="inline-flex items-center gap-1 text-green-600">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  {newRecipeIds.size} new
-                </span>
-              )}
-              {updatedRecipeIds.size > 0 && (
-                <span className="inline-flex items-center gap-1 text-blue-600 ml-2">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  {updatedRecipeIds.size} updated
-                </span>
-              )}
-            </span>
-          )}
-        </div>
+        {(newRecipeIds.size > 0 || updatedRecipeIds.size > 0) && (
+          <div className="text-sm text-foreground/60 mb-2">
+            {newRecipeIds.size > 0 && (
+              <span className="inline-flex items-center gap-1 text-red-600">
+                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                {newRecipeIds.size} new
+              </span>
+            )}
+            {updatedRecipeIds.size > 0 && (
+              <span className="inline-flex items-center gap-1 text-blue-600 ml-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                {updatedRecipeIds.size} updated
+              </span>
+            )}
+          </div>
+        )}
         <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
           Discover delicious ways to use our chili oils and spices. From traditional
           recipes to modern fusion dishes, explore our collection of fiery delights.
         </p>
-        <button
-          onClick={() => {
-            toast.info('Refreshing recipes...');
-            fetchRecipes();
-          }}
-          disabled={isLoading}
-          className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          {isLoading ? 'Refreshing...' : 'Refresh Recipes'}
-        </button>
       </div>
 
       {/* Loading indicator */}
@@ -225,7 +208,7 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
                 index % 2 === 0 ? "" : "lg:grid-flow-col-dense"
               } ${
                 newRecipeIds.has(recipe.id) 
-                  ? 'ring-2 ring-green-500/30 bg-green-50/50 rounded-2xl p-4' 
+                  ? 'ring-2 ring-red-500/30 bg-red-50/50 rounded-2xl p-4' 
                   : updatedRecipeIds.has(recipe.id)
                   ? 'ring-2 ring-blue-500/30 bg-blue-50/50 rounded-2xl p-4'
                   : ''
@@ -242,7 +225,7 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
               >
                 {/* New Recipe Badge */}
                 {newRecipeIds.has(recipe.id) && (
-                  <div className="absolute top-4 right-4 z-10 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                  <div className="absolute top-4 right-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium animate-pulse">
                     New!
                   </div>
                 )}
