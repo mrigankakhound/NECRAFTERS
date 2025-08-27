@@ -34,7 +34,6 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
     "Hot Sauces",
     "Organic Spices",
     "Gift Sets",
-    "Seaso
   ];
 
   useEffect(() => {
