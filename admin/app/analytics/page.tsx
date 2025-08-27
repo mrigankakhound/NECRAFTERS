@@ -53,6 +53,7 @@ export default function AnalyticsPage() {
     ProductPerformanceData[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -93,7 +94,11 @@ export default function AnalyticsPage() {
           setSelectedProduct(productsResult.products[0].id);
         }
       }
-    } catch {
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+      setError("Failed to fetch analytics data");
+      toast.error("Failed to fetch analytics data");
+    } finally {
       setIsLoading(false);
     }
   }
@@ -106,8 +111,9 @@ export default function AnalyticsPage() {
       } else {
         setProductPerformance(result.productPerformance);
       }
-    } catch {
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching product analytics:", error);
+      toast.error("Failed to fetch product analytics");
     }
   }
 
@@ -115,6 +121,23 @@ export default function AnalyticsPage() {
     return (
       <div className="p-8 flex justify-center items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center space-y-4">
+        <div className="text-red-500 text-xl font-semibold">{error}</div>
+        <button
+          onClick={() => {
+            setError(null);
+            fetchInitialData();
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -132,16 +155,22 @@ export default function AnalyticsPage() {
               Orders by Month (Bar Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={orderData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="orders" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+              {orderData && orderData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={orderData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="orders" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No order data available
+                </div>
+              )}
             </div>
           </Card>
 
@@ -150,21 +179,27 @@ export default function AnalyticsPage() {
               Orders Trend (Line Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={orderData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="orders"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {orderData && orderData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={orderData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#8884d8"
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No order data available
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -179,16 +214,22 @@ export default function AnalyticsPage() {
               New Customers by Month (Bar Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={customerData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="customers" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
+              {customerData && customerData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={customerData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="customers" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No customer data available
+                </div>
+              )}
             </div>
           </Card>
 
@@ -197,21 +238,27 @@ export default function AnalyticsPage() {
               Customer Growth Trend (Line Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={customerData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="customers"
-                    stroke="#82ca9d"
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {customerData && customerData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={customerData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="customers"
+                      stroke="#82ca9d"
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No customer data available
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -221,18 +268,22 @@ export default function AnalyticsPage() {
       <div>
         <h2 className="text-2xl font-semibold mb-4">Product Analytics</h2>
         <div className="mb-4">
-          <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-            <SelectTrigger className="w-[300px]">
-              <SelectValue placeholder="Select a product" />
-            </SelectTrigger>
-            <SelectContent>
-              {products.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  {product.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {products && products.length > 0 ? (
+            <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+              <SelectTrigger className="w-[300px]">
+                <SelectValue placeholder="Select a product" />
+              </SelectTrigger>
+              <SelectContent>
+                {products.map((product) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="text-gray-500">No products available for analytics</div>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="p-4">
@@ -240,28 +291,34 @@ export default function AnalyticsPage() {
               Product Sales by Month (Bar Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={productPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar
-                    yAxisId="left"
-                    dataKey="sales"
-                    fill="#8884d8"
-                    name="Units Sold"
-                  />
-                  <Bar
-                    yAxisId="right"
-                    dataKey="revenue"
-                    fill="#82ca9d"
-                    name="Revenue (₹)"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {productPerformance && productPerformance.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={productPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Legend />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="sales"
+                      fill="#8884d8"
+                      name="Units Sold"
+                    />
+                    <Bar
+                      yAxisId="right"
+                      dataKey="revenue"
+                      fill="#82ca9d"
+                      name="Revenue (₹)"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No product performance data available
+                </div>
+              )}
             </div>
           </Card>
 
@@ -270,32 +327,38 @@ export default function AnalyticsPage() {
               Product Performance Trend (Line Chart)
             </h3>
             <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={productPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="sales"
-                    stroke="#8884d8"
-                    name="Units Sold"
-                    activeDot={{ r: 8 }}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#82ca9d"
-                    name="Revenue (₹)"
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {productPerformance && productPerformance.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={productPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="sales"
+                      stroke="#8884d8"
+                      name="Units Sold"
+                      activeDot={{ r: 8 }}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#82ca9d"
+                      name="Revenue (₹)"
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No product performance data available
+                </div>
+              )}
             </div>
           </Card>
         </div>
