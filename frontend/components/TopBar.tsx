@@ -51,7 +51,7 @@ export default function TopBar() {
         setCurrentIndex((prevIndex) =>
           prevIndex === topBars.length - 1 ? 0 : prevIndex + 1
         );
-      }, 2000); // Change slide every 2 seconds
+      }, 8000); // Change slide every 8 seconds
 
       return () => clearInterval(interval);
     }
