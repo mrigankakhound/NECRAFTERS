@@ -3,13 +3,12 @@
 
 // Import necessary components and libraries
 import ProductCard from "@/components/home/ProductCard";
-import FilterButton from "@/components/shop/FilterButton";
+
 import ShopPopup from "@/components/ShopPopup";
-import { ChevronDown } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import {
   getAllProducts,
-  sortProducts,
   getFilteredProducts,
   getProductsByCategory,
 } from "@/actions/products/index";
@@ -119,10 +118,7 @@ const EmptyState = () => (
 const ShopPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // State to manage the sorting options for the products
-  const [sortBy, setSortBy] = useState(
-    searchParams.get("sortBy") || "Featured"
-  );
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
@@ -184,7 +180,7 @@ const ShopPage = () => {
     // Update selectedCategory from URL params
     const categoryParam = searchParams.get("category");
     setSelectedCategory(categoryParam);
-  }, [searchParams, sortBy]);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -201,7 +197,7 @@ const ShopPage = () => {
             hasNext: false,
             hasPrev: false,
           });
-        } else {
+                } else {
           // Get all filter parameters from URL
           const categories = searchParams
             .get("categories")
@@ -231,7 +227,6 @@ const ShopPage = () => {
               sizes,
               minPrice,
               maxPrice,
-              sortBy,
             });
             setPagination({
               total: result?.data?.length || 0,
@@ -239,16 +234,8 @@ const ShopPage = () => {
               hasNext: false,
               hasPrev: false,
             });
-          } else if (sortBy === "Featured") {
-            result = await getAllProducts(currentPage, 12);
-            setPagination(result?.pagination || {
-              total: 0,
-              totalPages: 0,
-              hasNext: false,
-              hasPrev: false,
-            });
           } else {
-            result = await sortProducts(sortBy, currentPage, 12);
+            result = await getAllProducts(currentPage, 12);
             setPagination(result?.pagination || {
               total: 0,
               totalPages: 0,
@@ -270,7 +257,7 @@ const ShopPage = () => {
     // Add debouncing to prevent excessive API calls
     const timeoutId = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchParams, sortBy, currentPage, selectedCategory]);
+  }, [searchParams, currentPage, selectedCategory]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -278,14 +265,7 @@ const ShopPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSortChange = (value: string) => {
-    if (value === sortBy) return; // Prevent unnecessary re-renders
-    setSortBy(value);
-    setCurrentPage(1); // Reset to first page when sorting changes
-    const params = new URLSearchParams(window.location.search);
-    params.set("sortBy", value);
-    router.push(`?${params.toString()}`);
-  };
+
 
   const handlePopupClose = () => {
     setShowPopup(false);
@@ -358,50 +338,7 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* Container for the filter button and sorting dropdown */}
-      <div className="flex justify-center items-center mb-8">
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          {/* Filter button component to open product filtering options */}
-          {/* <FilterButton isLoading={isLoading} /> */}
 
-          {/* Sorting dropdown to allow users to sort products by criteria like price or rating */}
-          <div className="relative group animate-bounce">
-            {/* Animated background glow effect */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out -z-10 animate-pulse"></div>
-            
-            {/* Animated border gradient */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out -z-5"></div>
-
-            <select
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="relative z-10 appearance-none bg-white text-gray-800 px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:opacity-50 cursor-pointer min-w-[200px] text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg transform-gpu"
-              disabled={isLoading}
-            >
-              {isLoading && (
-                <option disabled className="py-2 px-3 bg-white text-gray-400">
-                  Loading...
-                </option>
-              )}
-              <option className="py-2 px-3 bg-white text-gray-800">Featured</option>
-              <option className="py-2 px-3 bg-white text-gray-800">Price: Low to High</option>
-              <option className="py-2 px-3 bg-white text-gray-800">Price: High to Low</option>
-              <option className="py-2 px-3 bg-white text-gray-800">Newest</option>
-              <option className="py-2 px-3 bg-white text-gray-800">Best Sellers</option>
-            </select>
-
-            {/* Animated chevron icon */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-500 z-20">
-              <ChevronDown className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-180 group-hover:text-purple-500" />
-            </div>
-
-            {/* Floating particles effect */}
-            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping"></div>
-            <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping" style={{animationDelay: '0.2s'}}></div>
-            <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-pink-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping" style={{animationDelay: '0.4s'}}></div>
-          </div>
-        </div>
-      </div>
 
       {/* Display loading, empty state, or products */}
       {isLoading ? (
