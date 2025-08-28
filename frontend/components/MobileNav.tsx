@@ -2,14 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { RiDiscountPercentFill } from "react-icons/ri";
 import { LuStore } from "react-icons/lu";
 import { GrLike } from "react-icons/gr";
-import { GiPerfumeBottle } from "react-icons/gi";
-import { FaBath } from "react-icons/fa";
-import { PiHighlighterCircleBold } from "react-icons/pi";
-import { MdFace4 } from "react-icons/md";
-import { User, Package, Truck, X } from "lucide-react";
+import { User, Package, Truck, X, Gift, UtensilsCrossed, Phone, FileText } from "lucide-react";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -61,7 +56,7 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
   const navItems = [
     { 
       name: "GIFT HAMPER", 
-      icon: <RiDiscountPercentFill size={20} />,
+      icon: <Gift size={20} />,
       link: "/#crazy-deals"
     },
     { 
@@ -81,17 +76,17 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
     },
     {
       name: "RECIPES",
-      icon: <Package size={20} />,
+      icon: <UtensilsCrossed size={20} />,
       link: "/recipes"
     },
     { 
       name: "BLOG", 
-      icon: <PiHighlighterCircleBold size={20} />,
+      icon: <FileText size={20} />,
       link: "/blog"
     },
     {
       name: "CONTACT US",
-      icon: <Truck size={20} />,
+      icon: <Phone size={20} />,
       link: "/contact-us"
     },
   ];
