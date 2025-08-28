@@ -121,7 +121,7 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
           <LoadingSpinner 
             size="lg" 
-            text="Loading Banners" 
+            text="Crafting Mode On" 
             className="text-orange-600"
           />
         </div>

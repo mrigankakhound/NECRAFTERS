@@ -49,7 +49,7 @@ const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner 
               size="lg" 
-              text="Loading Special Combos" 
+              text="Crafting Mode On" 
               className="text-orange-600"
             />
           </div>
