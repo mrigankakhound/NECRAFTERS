@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, Lock, User, AlertTriangle } from "lucide-react";
 
 export default function AdminLogin() {
@@ -10,7 +9,6 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [glitchActive, setGlitchActive] = useState(false);
-  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +16,25 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const success = await login(password);
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
 
-      if (success) {
+      const data = await response.json();
+
+      if (data.success) {
         // Trigger glitch effect before redirect
         setGlitchActive(true);
+        // Set authentication in localStorage
+        localStorage.setItem('admin_authenticated', 'true');
+        // Set session expiry (24 hours)
+        const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+        localStorage.setItem('admin_session_expiry', expiryTime.toString());
+        
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 1000);
