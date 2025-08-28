@@ -1,5 +1,8 @@
+"use client";
+
 import BannerCarousel from "@/components/home/BannerCarousel";
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 // Reduce initial JS by code-splitting non-critical sections
 const CrazyDealsSection = dynamic(() => import("@/components/home/CrazyDeals"));
@@ -9,64 +12,111 @@ const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyN
 const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
 const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
-// Balance freshness with performance
-export const revalidate = 60;
-import BlogImages from "@/components/home/BlogImages";
-
-// Moved to dynamic imports above
-// import CrazyDeals from "@/components/home/CrazyDeals";
-// import NeedOfWebsite from "@/components/home/NeedOfWebsite";
 import ProductCard from "@/components/home/ProductCard";
-// import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
-// import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
-// import FeaturedReviews from "@/components/home/FeaturedReviews";
 import HashScrollHandler from "@/components/HashScrollHandler";
-import React from "react";
-import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
-import { getSpecialCombos } from "@/actions/special-combos";
-import { getCrazyDeals } from "@/actions/crazy-deals";
-import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
-import { getMainCategories } from "@/actions/categories/get-main-categories";
-import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
-const HomePage = async () => {
-  // Fetch all required data
-  const website_banners = await getWebsiteBanners();
-  const app_banners = await getAppBanners();
-  const specialCombos = await getSpecialCombos();
-  const bestSellers = await getBestSellerProducts(8); // Fetch top 8 best sellers
-  const mainCategories = await getMainCategories();
-  const crazyDeals = await getCrazyDeals();
-  const featuredProducts = await getFeaturedProducts(4, 1); // Fetch 4 featured products
-  const featuredReviews = await getActiveFeaturedReviews();
+interface HomePageData {
+  website_banners: { data: any[] };
+  app_banners: { data: any[] };
+  specialCombos: { data: any[] };
+  bestSellers: { data: any[] };
+  mainCategories: { data: any[] };
+  crazyDeals: { data: any[] };
+  featuredProducts: { data: any[] };
+  featuredReviews: { data: any[] };
+}
 
+const HomePage = () => {
+  const [data, setData] = useState<HomePageData>({
+    website_banners: { data: [] },
+    app_banners: { data: [] },
+    specialCombos: { data: [] },
+    bestSellers: { data: [] },
+    mainCategories: { data: [] },
+    crazyDeals: { data: [] },
+    featuredProducts: { data: [] },
+    featuredReviews: { data: [] }
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch critical data first
+        const [banners, specialCombos, bestSellers] = await Promise.all([
+          fetch('/api/banners/website').then(r => r.json()),
+          fetch('/api/offers/special-combos').then(r => r.json()),
+          fetch('/api/products/best-sellers?limit=8').then(r => r.json())
+        ]);
 
-  // SEO-optimized page title and description
-  const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
-  const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
+        setData(prev => ({
+          ...prev,
+          website_banners: banners,
+          app_banners: banners, // Use same data for now
+          specialCombos,
+          bestSellers
+        }));
 
+        // Fetch remaining data in background
+        const remainingData = await Promise.all([
+          fetch('/api/offers/crazy-deals').then(r => r.json()),
+          fetch('/api/products/featured?limit=4&page=1').then(r => r.json()),
+          fetch('/api/featured-reviews').then(r => r.json())
+        ]);
+
+        setData(prev => ({
+          ...prev,
+          crazyDeals: remainingData[0],
+          featuredProducts: remainingData[1],
+          featuredReviews: remainingData[2]
+        }));
+      } catch (error) {
+        console.error('Error fetching homepage data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="animate-pulse">
+          <div className="h-64 bg-gray-200 mb-8" />
+          <div className="max-w-7xl mx-auto px-4 space-y-8">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-200 rounded" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <HashScrollHandler />
       <BannerCarousel
-        banners={website_banners.data ?? []}
-        app_banners={app_banners.data ?? []}
+        banners={data.website_banners.data ?? []}
+        app_banners={data.app_banners.data ?? []}
       />
       
-
-      <SpecialCombos offers={specialCombos.data ?? []} />
+      <SpecialCombos offers={data.specialCombos.data ?? []} />
       <ProductCard
         shop
         heading="BEST SELLERS"
-        products={bestSellers.data ?? []}
+        products={data.bestSellers.data ?? []}
         sectionId="best-sellers"
       />
 
-      <CrazyDealsSection offers={crazyDeals.data ?? []} />
-      <FeaturedReviewsSection reviews={featuredReviews.data?.map(review => ({
+      <CrazyDealsSection offers={data.crazyDeals.data ?? []} />
+      <FeaturedReviewsSection reviews={data.featuredReviews.data?.map(review => ({
         ...review,
         description: review.description || undefined,
         customerName: review.customerName || undefined,
@@ -81,7 +131,7 @@ const HomePage = async () => {
       <ProductCard
         shop
         heading="FEATURED PRODUCTS"
-        products={featuredProducts.data ?? []}
+        products={data.featuredProducts.data ?? []}
         sectionId="featured-products"
       />
       <NeedOfWebsiteSection />
