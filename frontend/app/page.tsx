@@ -2,12 +2,12 @@ import BannerCarousel from "@/components/home/BannerCarousel";
 import dynamic from "next/dynamic";
 
 // Reduce initial JS by code-splitting non-critical sections
-const CrazyDealsSection = dynamic(() => import("@/components/home/CrazyDeals"), { ssr: false });
-const FeaturedReviewsSection = dynamic(() => import("@/components/home/FeaturedReviews"), { ssr: false });
-const NeedOfWebsiteSection = dynamic(() => import("@/components/home/NeedOfWebsite"), { ssr: false });
-const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyNeCraftersDiagram"), { ssr: false });
-const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"), { ssr: false });
-const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"), { ssr: false });
+const CrazyDealsSection = dynamic(() => import("@/components/home/CrazyDeals"));
+const FeaturedReviewsSection = dynamic(() => import("@/components/home/FeaturedReviews"));
+const NeedOfWebsiteSection = dynamic(() => import("@/components/home/NeedOfWebsite"));
+const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyNeCraftersDiagram"));
+const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
+const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
 // Balance freshness with performance
 export const revalidate = 60;
