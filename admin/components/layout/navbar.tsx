@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Settings, User, LogOut, Key, ChevronDown } from "lucide-react";
+import { Bell, Settings, LogOut, Key, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import ChangePasswordModal from "../modals/ChangePasswordModal";
@@ -26,8 +26,8 @@ const Navbar = () => {
     // Clear authentication
     localStorage.removeItem('admin_authenticated');
     localStorage.removeItem('admin_session_expiry');
-    // Redirect to login
-    window.location.href = '/login';
+    // Redirect to login (now at root path)
+    window.location.href = '/';
   };
 
   const handleChangePassword = () => {
@@ -83,9 +83,7 @@ const Navbar = () => {
           )}
         </div>
         
-        <Button variant="ghost" size="icon" className="hover:bg-white/10">
-          <User className="h-5 w-6 text-zinc-400" />
-        </Button>
+
       </div>
       
       {/* Change Password Modal */}
