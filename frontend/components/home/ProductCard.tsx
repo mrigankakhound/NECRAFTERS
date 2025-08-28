@@ -120,6 +120,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                 href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
                 className="group bg-white rounded-lg p-2 sm:p-3"
+                prefetch={false}
               >
                 <div className="relative aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
                   {mainImage && (
