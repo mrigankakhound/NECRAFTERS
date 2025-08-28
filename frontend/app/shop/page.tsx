@@ -12,7 +12,7 @@ import {
   getFilteredProducts,
   getProductsByCategory,
 } from "@/actions/products/index";
-import { getMainCategories } from "@/actions/categories/get-main-categories";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -138,9 +138,13 @@ const ShopPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const result = await getMainCategories();
-        if (result.success && result.data) {
-          setCategories(result.data);
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Categories fetched:", data);
+          setCategories(data);
+        } else {
+          console.error("Failed to fetch categories:", response.statusText);
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -148,6 +152,11 @@ const ShopPage = () => {
     };
     fetchCategories();
   }, []);
+
+  // Debug: Log categories state changes
+  useEffect(() => {
+    console.log("Categories state changed:", categories);
+  }, [categories]);
 
   useEffect(() => {
     // Check if popup should be shown (session-based logic)
