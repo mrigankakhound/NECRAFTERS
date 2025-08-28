@@ -95,7 +95,7 @@ const SearchModal = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
 
     if (!products || products.length === 0) {
       return (
-        <div className="text-center py-4">Crafting Mode On</div>
+        <div className="text-center py-4">Loading recommended products...</div>
       );
     }
 
