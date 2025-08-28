@@ -243,6 +243,7 @@ export async function getAllProducts() {
           quantity: size.qty,
         })),
         featured: product.featured,
+        bestSeller: product.bestSeller,
       })),
     };
   } catch (error) {
