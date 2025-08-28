@@ -60,9 +60,9 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
 
   const navItems = [
     { 
-              name: "CRAZY DEALS", 
+      name: "GIFT HAMPER", 
       icon: <RiDiscountPercentFill size={20} />,
-              link: "/#crazy-deals"
+      link: "/#crazy-deals"
     },
     { 
       name: "SHOP ALL", 
@@ -76,12 +76,12 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
     },
     {
       name: "ABOUT US",
-      icon: <GiPerfumeBottle size={20} />,
+      icon: <User size={20} />,
       link: "/about-us"
     },
     {
       name: "RECIPES",
-      icon: <FaBath size={20} />,
+      icon: <Package size={20} />,
       link: "/recipes"
     },
     { 
@@ -91,7 +91,7 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
     },
     {
       name: "CONTACT US",
-      icon: <MdFace4 size={20} />,
+      icon: <Truck size={20} />,
       link: "/contact-us"
     },
   ];
@@ -140,7 +140,7 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
                              <img
                  src="/images/logo.png"
                  alt="NE CRAFTERS Logo"
-                 className="h-10 w-auto transition-transform duration-300 hover:scale-105"
+                 className="h-8 w-auto transition-transform duration-300 hover:scale-105"
                />
 
             </div>
