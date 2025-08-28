@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 const NeedOfWebsite = () => {
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+
   const features = [
     {
       image: "/images/icons/No Msg.png",
@@ -37,7 +39,7 @@ const NeedOfWebsite = () => {
   return (
     <div className="container mx-auto px-4 py-16">
       <h2 className="text-lg font-bold sm:text-3xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">WHY NE CRAFTERS?</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col items-center text-center p-4 sm:p-6">
             <div className={`relative mb-4 sm:mb-6 ${
@@ -45,12 +47,28 @@ const NeedOfWebsite = () => {
                 ? "w-20 h-20 sm:w-24 sm:h-24" 
                 : "w-16 h-16 sm:w-20 sm:h-20"
             }`}>
-              <img 
-                src={feature.image}
-                alt={feature.title}
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
+              {failedImages.has(index) ? (
+                // Fallback icon when image fails to load
+                <div className={`w-full h-full flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 ${
+                  index === 4 ? "text-2xl" : "text-xl"
+                } text-gray-500`}>
+                  {feature.title.charAt(0)}
+                </div>
+              ) : (
+                <img 
+                  src={feature.image}
+                  alt={feature.title}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    console.error(`❌ Failed to load icon: ${feature.image}`, e);
+                    setFailedImages(prev => new Set(prev).add(index));
+                  }}
+                  onLoad={() => {
+                    console.log(`✅ Icon loaded successfully: ${feature.image}`);
+                  }}
+                />
+              )}
             </div>
             <h3 className="text-sm sm:text-base lg:text-lg mb-2 sm:mb-3 font-semibold text-[#33475b] leading-tight">
               {feature.title}
