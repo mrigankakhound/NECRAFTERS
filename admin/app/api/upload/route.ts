@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
         folder: folder,
         resource_type: "image",
         transformation: [
-          { width: 400, height: 300, crop: "fill" },
-          { quality: "auto" }
+          { quality: "auto:best" },  // Use best quality
+          { fetch_format: "auto" }   // Auto-optimize format without losing quality
         ]
       });
       

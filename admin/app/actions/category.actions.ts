@@ -24,8 +24,8 @@ export async function createCategory(data: { name: string; image: File }) {
       folder: "e-commerce/categories",
       resource_type: "image",
       transformation: [
-        { width: 400, height: 300, crop: "fill" },
-        { quality: "auto" }
+        { quality: "auto:best" },  // Use best quality
+        { fetch_format: "auto" }   // Auto-optimize format without losing quality
       ]
     });
 
@@ -87,8 +87,8 @@ export async function updateCategory(
         folder: "e-commerce/categories",
         resource_type: "image",
         transformation: [
-          { width: 400, height: 300, crop: "fill" },
-          { quality: "auto" }
+          { quality: "auto:best" },  // Use best quality
+          { fetch_format: "auto" }   // Auto-optimize format without losing quality
         ]
       });
       

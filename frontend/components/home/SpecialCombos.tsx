@@ -31,15 +31,10 @@ const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
     }
   };
 
-  // Refresh offers every 30 seconds and on mount
+  // Fetch offers on mount only (no auto-refresh)
   useEffect(() => {
-    // Immediately fetch fresh data to avoid showing old cached offers
+    // Fetch fresh data on mount to avoid showing old cached offers
     fetchOffers();
-    
-    // Set up interval for ongoing updates
-    const interval = setInterval(fetchOffers, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
   }, []);
 
   return (

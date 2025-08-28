@@ -151,9 +151,7 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
     fetchRecipes();
     
     // Set up interval for ongoing updates
-    const interval = setInterval(fetchRecipes, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
+    // No auto-refresh - fetch only on mount
   }, []);
 
   return (

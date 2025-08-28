@@ -52,15 +52,10 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
     }
   };
 
-  // Refresh banners every 30 seconds and on mount
+  // Fetch banners on mount only (no auto-refresh)
   useEffect(() => {
-    // Immediately fetch fresh data to avoid showing old cached banners
+    // Fetch fresh data on mount to avoid showing old cached banners
     fetchBanners();
-
-    // Set up interval for ongoing updates
-    const interval = setInterval(fetchBanners, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
   }, []);
 
   // Debug logging

@@ -51,19 +51,14 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
     }
   };
 
-  // Refresh products on mount and at intervals
+  // Fetch products on mount only (no auto-refresh)
   useEffect(() => {
-    // Only refresh for Best Sellers and New Arrivals
+    // Only fetch for Best Sellers and New Arrivals on mount
     if (heading === "BEST SELLERS" || heading === "NEW ARRIVALS") {
-      // Immediately fetch fresh data
+      // Fetch fresh data on mount
       fetchProducts();
-      
-      // Set up interval for ongoing updates
-      const interval = setInterval(fetchProducts, refreshInterval);
-      
-      return () => clearInterval(interval);
     }
-  }, [heading, refreshInterval]);
+  }, [heading]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault(); // Prevent navigation when clicking the button
@@ -121,7 +116,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
 
             return (
               <Link
-                href={`/product/${String(product.slug || product.id)}`}
+                href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
                 className="group bg-white rounded-lg p-2 sm:p-3"
               >

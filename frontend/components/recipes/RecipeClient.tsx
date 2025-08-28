@@ -64,9 +64,7 @@ export default function RecipeClient({ initialRecipe, slug }: RecipeClientProps)
     fetchRecipe();
     
     // Set up interval for ongoing updates
-    const interval = setInterval(fetchRecipe, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
+    // No auto-refresh - fetch only on mount
   }, [slug, router]);
 
   // If recipe is null (deleted), show loading while redirecting
