@@ -3,44 +3,22 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    console.log('🔍 Starting getBestSellerProducts...');
+    console.log('🎲 Getting random products for Best Sellers...');
     
-    // First try to get products ordered by sold count (only non-null values)
+    // Always get random products - no complex logic
     let bestSellers = await prisma.product.findMany({
-      where: {
-        sold: {
-          not: null,
-          gt: 0
-        }
-      },
-      orderBy: {
-        sold: "desc",
-      },
       take: limit,
       include: {
         category: true,
       },
     });
     
-    console.log('📊 Found products by sold count:', bestSellers.length);
-
-    // If no products found with sales, fallback to random products
-    if (!bestSellers || bestSellers.length === 0) {
-      console.log('🔄 No best sellers found, falling back to random products');
-      bestSellers = await prisma.product.findMany({
-        take: limit,
-        include: {
-          category: true,
-        },
-      });
-      
-      console.log('🎲 Found random products:', bestSellers.length);
-      
-      // Shuffle the products to make them truly random
-      if (bestSellers.length > 0) {
-        bestSellers = bestSellers.sort(() => Math.random() - 0.5);
-        console.log('🔀 Products shuffled for variety');
-      }
+    console.log('📦 Found products:', bestSellers.length);
+    
+    // Shuffle the products to make them truly random
+    if (bestSellers.length > 0) {
+      bestSellers = bestSellers.sort(() => Math.random() - 0.5);
+      console.log('🔀 Products shuffled for variety');
     }
 
 
