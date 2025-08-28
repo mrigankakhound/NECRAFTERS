@@ -30,16 +30,69 @@ import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
 import { getMainCategories } from "@/actions/categories/get-main-categories";
 import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
+// Type for the data structure
+interface DataResult {
+  data: any[];
+  success?: boolean;
+  error?: string;
+}
+
 const HomePage = async () => {
-  // Fetch all required data
-  const website_banners = await getWebsiteBanners();
-  const app_banners = await getAppBanners();
-  const specialCombos = await getSpecialCombos();
-  const bestSellers = await getBestSellerProducts(8); // Fetch top 8 best sellers
-  const mainCategories = await getMainCategories();
-  const crazyDeals = await getCrazyDeals();
-  const featuredProducts = await getFeaturedProducts(4, 1); // Fetch 4 featured products
-  const featuredReviews = await getActiveFeaturedReviews();
+  // Add overall timeout to prevent build hanging
+  const pageTimeout = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Page timeout')), 30000)
+  );
+
+  try {
+    // Fetch critical data with timeouts to prevent build hanging
+    const criticalDataResults = await Promise.race([
+      Promise.allSettled([
+        Promise.race([
+          getWebsiteBanners(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ]),
+        Promise.race([
+          getAppBanners(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ]),
+        Promise.race([
+          getSpecialCombos(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ]),
+        Promise.race([
+          getBestSellerProducts(8),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ])
+      ]),
+      pageTimeout
+    ]) as PromiseSettledResult<DataResult>[];
+
+    const [website_banners, app_banners, specialCombos, bestSellers] = criticalDataResults;
+
+  // Fetch non-critical data with timeouts
+  const [crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
+    Promise.race([
+      getCrazyDeals(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+    ]),
+    Promise.race([
+      getFeaturedProducts(4, 1),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+    ]),
+    Promise.race([
+      getActiveFeaturedReviews(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+    ])
+  ]);
+
+  // Extract data safely with proper typing
+  const banners = (website_banners.status === 'fulfilled' ? website_banners.value : { data: [] }) as DataResult;
+  const app_banners_data = (app_banners.status === 'fulfilled' ? app_banners.value : { data: [] }) as DataResult;
+  const specialCombos_data = (specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] }) as DataResult;
+  const bestSellers_data = (bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] }) as DataResult;
+  const crazyDeals_data = (crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] }) as DataResult;
+  const featuredProducts_data = (featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] }) as DataResult;
+  const featuredReviews_data = (featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] }) as DataResult;
 
 
 
@@ -52,21 +105,21 @@ const HomePage = async () => {
     <div>
       <HashScrollHandler />
       <BannerCarousel
-        banners={website_banners.data ?? []}
-        app_banners={app_banners.data ?? []}
+        banners={banners.data ?? []}
+        app_banners={app_banners_data.data ?? []}
       />
       
 
-      <SpecialCombos offers={specialCombos.data ?? []} />
+      <SpecialCombos offers={specialCombos_data.data ?? []} />
       <ProductCard
         shop
         heading="BEST SELLERS"
-        products={bestSellers.data ?? []}
+        products={bestSellers_data.data ?? []}
         sectionId="best-sellers"
       />
 
-      <CrazyDealsSection offers={crazyDeals.data ?? []} />
-      <FeaturedReviewsSection reviews={featuredReviews.data?.map(review => ({
+      <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
+      <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
         ...review,
         description: review.description || undefined,
         customerName: review.customerName || undefined,
@@ -81,7 +134,7 @@ const HomePage = async () => {
       <ProductCard
         shop
         heading="FEATURED PRODUCTS"
-        products={featuredProducts.data ?? []}
+        products={featuredProducts_data.data ?? []}
         sectionId="featured-products"
       />
       <NeedOfWebsiteSection />
@@ -90,6 +143,18 @@ const HomePage = async () => {
       <BlogImagesSection />
     </div>
   );
+  } catch (error) {
+    console.error('Error loading homepage:', error);
+    // Return fallback content if data fetching fails
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to NE CRAFTERS</h1>
+          <p className="text-gray-600">Loading amazing products for you...</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default HomePage;
