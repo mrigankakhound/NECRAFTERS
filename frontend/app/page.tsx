@@ -64,6 +64,22 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
+    // Debug: Check what's happening with Best Sellers
+    console.log('=== DEBUG INFO ===');
+    console.log('Best Sellers Promise Status:', bestSellers.status);
+    console.log('Best Sellers Raw Value:', bestSellers.status === 'fulfilled' ? bestSellers.value : 'REJECTED');
+    console.log('Best Sellers Data:', bestSellers_data);
+    console.log('Best Sellers Products Array:', bestSellers_data.data);
+    console.log('Best Sellers Products Length:', bestSellers_data.data?.length);
+    
+    // Check if we have any products at all
+    if (bestSellers.status === 'fulfilled' && bestSellers.value) {
+      console.log('Best Sellers Success:', bestSellers.value.success);
+      console.log('Best Sellers Error:', bestSellers.value.error);
+      console.log('Best Sellers Raw Data:', bestSellers.value.data);
+    }
+    console.log('==================');
+
 
 
 
@@ -77,24 +93,38 @@ const HomePage = async () => {
       />
       
       <SpecialCombos offers={specialCombos_data.data ?? []} />
-             {/* Best Sellers Section - Only show if we have products */}
-       {bestSellers_data.data && bestSellers_data.data.length > 0 && (
-         <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-           <div className="section-container">
-             <div className="flex items-center justify-center gap-2 mb-4">
-               <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                 BEST SELLERS
-               </h2>
-             </div>
-             <ProductCard
-               shop
-               heading="BEST SELLERS"
-               products={bestSellers_data.data}
-               sectionId="best-sellers"
-             />
-           </div>
-         </div>
-       )}
+      
+      {/* Best Sellers Section - Always show, with fallback content */}
+      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+          </div>
+          
+          {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+            <ProductCard
+              shop
+              heading="BEST SELLERS"
+              products={bestSellers_data.data}
+              sectionId="best-sellers"
+            />
+          ) : (
+            <div className="text-center py-12 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border-2 border-dashed border-orange-200">
+              <div className="max-w-md mx-auto">
+                <div className="text-6xl mb-4">🛍️</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Coming Soon!</h3>
+                <p className="text-gray-600 mb-4">Our best-selling products will appear here as soon as customers start shopping.</p>
+                <div className="text-sm text-gray-500">
+                  <p>• Products will automatically appear based on sales</p>
+                  <p>• For now, explore our featured products below</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
       <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
