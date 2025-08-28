@@ -62,11 +62,11 @@ const NeedOfWebsite = () => {
                   className="w-full h-full object-contain"
                   loading="lazy"
                   onError={(e) => {
-                    console.error(`❌ Failed to load icon: ${feature.image}`, e);
+            
                     setFailedImages(prev => new Set(prev).add(index));
                   }}
                   onLoad={() => {
-                    console.log(`✅ Icon loaded successfully: ${feature.image}`);
+            
                   }}
                 />
               )}

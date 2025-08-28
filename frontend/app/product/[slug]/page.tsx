@@ -12,13 +12,13 @@ interface ProductPageProps {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   try {
-    console.log("Fetching product with slug:", params.slug);
+
     
     const result = await getProductBySlug(params.slug);
-    console.log("Product fetch result:", result);
+    
     
     if (!result.success || !result.data) {
-      console.error("Product not found or error:", result.error);
+      
       notFound();
     }
 

@@ -44,7 +44,7 @@ export default function NewBlogPostPage() {
 
     try {
       // In real app, call API to create post
-      console.log('Creating blog post:', formData);
+
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));

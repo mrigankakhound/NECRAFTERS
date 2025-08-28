@@ -54,30 +54,30 @@ const Navbar = () => {
       if (window.location.pathname === '/') {
         // Already on homepage, scroll to section
         const sectionId = link.substring(2);
-        console.log('Scrolling to section:', sectionId);
+
         
         // Wait a bit for any dynamic content to load
         setTimeout(() => {
           const element = document.getElementById(sectionId);
           if (element) {
-            console.log('Element found, scrolling...');
+
             element.scrollIntoView({ behavior: 'smooth' });
           } else {
-            console.log('Element not found, trying alternative selectors...');
+
             // Try alternative selectors
             const alternativeElement = document.querySelector(`[data-section="${sectionId}"]`) || 
                                     document.querySelector(`[id*="${sectionId}"]`);
             if (alternativeElement) {
-              console.log('Alternative element found, scrolling...');
+
               alternativeElement.scrollIntoView({ behavior: 'smooth' });
             } else {
-              console.log('No element found for section:', sectionId);
+  
             }
           }
         }, 100);
       } else {
         // Not on homepage, navigate to homepage with hash
-        console.log('Navigating to homepage with hash:', link);
+
         router.push(link);
       }
     } else {

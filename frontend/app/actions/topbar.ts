@@ -7,7 +7,7 @@ export async function getTopBars() {
         createdAt: "desc",
       },
     });
-    console.log(topBars);
+
 
     return { success: true, data: topBars };
   } catch (error) {

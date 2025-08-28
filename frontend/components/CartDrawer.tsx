@@ -34,7 +34,7 @@ const CartDrawer = () => {
   useEffect(() => {
     const fetchRecommendedProducts = async () => {
       const result = await getBestSellerProducts(4);
-      console.log(result);
+      
       if (result.success && result.data) {
         setRecommendedProducts(
           result.data.map((product) => ({
@@ -53,7 +53,7 @@ const CartDrawer = () => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  console.log(recommendedProducts);
+  
 
   const handleOnClickCartMenu = () => {
     setCartMenuOpen(true);

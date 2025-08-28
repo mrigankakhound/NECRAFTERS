@@ -34,7 +34,7 @@ export default function TopBar() {
         if (data.success) {
           setTopBars(data.data);
         }
-        console.log(data);
+
       } catch (error) {
         console.error("Error fetching top bars:", error);
       } finally {

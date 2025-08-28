@@ -20,30 +20,30 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
       if (window.location.pathname === '/') {
         // Already on homepage, scroll to section
         const sectionId = link.substring(2);
-        console.log('Mobile: Scrolling to section:', sectionId);
+    
         
         // Wait a bit for any dynamic content to load
         setTimeout(() => {
           const element = document.getElementById(sectionId);
           if (element) {
-            console.log('Mobile: Element found, scrolling...');
+    
             element.scrollIntoView({ behavior: 'smooth' });
           } else {
-            console.log('Mobile: Element not found, trying alternative selectors...');
+  
             // Try alternative selectors
             const alternativeElement = document.querySelector(`[data-section="${sectionId}"]`) || 
                                     document.querySelector(`[id*="${sectionId}"]`);
             if (alternativeElement) {
-              console.log('Mobile: Alternative element found, scrolling...');
+  
               alternativeElement.scrollIntoView({ behavior: 'smooth' });
             } else {
-              console.log('Mobile: No element found for section:', sectionId);
+    
             }
           }
         }, 100);
       } else {
         // Not on homepage, navigate to homepage with hash
-        console.log('Mobile: Navigating to homepage with hash:', link);
+
         router.push(link);
       }
     } else {

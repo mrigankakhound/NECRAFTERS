@@ -16,15 +16,15 @@ const MobileBottomBar = () => {
 
   const handleOnClickHamburgerMenu = () => {
     setHamMenuOpen(true);
-    console.log("ham", hamMenuOpen);
+
   };
   const handleOnClickCartMenu = () => {
     setCartMenuOpen(true);
-    console.log("cart", cartMenuOpen);
+
   };
   const handleOnClickAccountMenu = () => {
     setAccountMenuOpen(true);
-    console.log("acc", accountMenuOpen);
+
   };
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-t-200 md:hidden">

@@ -25,7 +25,7 @@ const CrazyDeals = ({ offers: initialOffers }: CrazyDealsProps) => {
         setOffers(data.offers || []);
       }
     } catch (error) {
-      console.log('Crazy deals refresh failed:', error);
+
     } finally {
       setIsLoading(false);
     }

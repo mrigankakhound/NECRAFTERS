@@ -10,11 +10,9 @@ const FALLBACK_POPUP = {
 };
 
 export async function GET() {
-  console.log("API: Starting shop-popup GET request");
   try {
     // Check if database is accessible
     try {
-      console.log("API: Attempting database query...");
       const popup = await prisma.shopPopup.findFirst({
         where: {
           isActive: true,
@@ -23,28 +21,23 @@ export async function GET() {
           createdAt: 'desc'
         }
       });
-      console.log("API: Database query result:", popup);
 
       if (popup) {
-        console.log("API: Found active popup in database");
         return NextResponse.json({
           success: true,
           data: popup
         });
       }
-      console.log("API: No active popup found in database");
     } catch (dbError) {
       console.error('API: Database error:', dbError);
       // Continue to fallback instead of returning error
     }
 
     // Return fallback popup if no database popup found or if database error
-    console.log('API: Using fallback popup:', FALLBACK_POPUP);
     
     // Test image URL before sending
     try {
-      const testResponse = await fetch(FALLBACK_POPUP.imageUrl, { method: 'HEAD' });
-      console.log('API: Image URL test response:', testResponse.status, testResponse.statusText);
+      await fetch(FALLBACK_POPUP.imageUrl, { method: 'HEAD' });
     } catch (imgError) {
       console.error('API: Image URL test failed:', imgError);
     }
@@ -59,7 +52,6 @@ export async function GET() {
     response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
     
-    console.log('API: Sending response with headers:', Object.fromEntries(response.headers.entries()));
     return response;
 
   } catch (error) {

@@ -138,7 +138,7 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
         }
       }
     } catch (error) {
-      console.log('Recipes refresh failed:', error);
+
       toast.error('Failed to refresh recipes');
     } finally {
       setIsLoading(false);

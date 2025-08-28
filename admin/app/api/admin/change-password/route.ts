@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { verifyPassword, hashPassword } from "@/lib/auth";
+
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,37 +23,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current admin password from environment variable
-    const currentAdminPassword = process.env.ADMIN_PASSWORD;
+    // Find admin user
+    const admin = await prisma.admin.findFirst({
+      where: { 
+        username: 'admin',
+        isActive: true 
+      }
+    });
 
-    if (!currentAdminPassword) {
-      console.error("ADMIN_PASSWORD environment variable not set");
+    if (!admin) {
+      console.error("No active admin user found in database");
       return NextResponse.json(
-        { success: false, message: "Server configuration error" },
-        { status: 500 }
+        { success: false, message: "Admin account not found" },
+        { status: 404 }
       );
     }
 
     // Verify current password
-    if (currentPassword !== currentAdminPassword) {
+    const isValidCurrentPassword = await verifyPassword(currentPassword, admin.password);
+
+    if (!isValidCurrentPassword) {
       return NextResponse.json(
         { success: false, message: "Current password is incorrect" },
         { status: 401 }
       );
     }
 
-    // In a real production environment, you would update the environment variable
-    // For now, we'll return success and log the change
-    console.log(`Admin password change requested. New password: ${newPassword}`);
-    
-    // Note: In production, you would need to:
-    // 1. Update the environment variable in your deployment platform
-    // 2. Restart the application to pick up the new password
-    // 3. Store the password securely (hashed, encrypted, etc.)
+    // Check if new password is different from current
+    const isSamePassword = await verifyPassword(newPassword, admin.password);
+    if (isSamePassword) {
+      return NextResponse.json(
+        { success: false, message: "New password must be different from current password" },
+        { status: 400 }
+      );
+    }
+
+    // Hash new password
+    const hashedNewPassword = await hashPassword(newPassword);
+
+    // Update password in database
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: { 
+        password: hashedNewPassword,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log(`Admin password changed successfully for user: ${admin.username}`);
 
     return NextResponse.json({
       success: true,
-      message: "Password changed successfully. Please note: You may need to restart the application for changes to take effect.",
+      message: "Password changed successfully!",
     });
 
   } catch (error) {
@@ -58,5 +83,7 @@ export async function POST(request: NextRequest) {
       { success: false, message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

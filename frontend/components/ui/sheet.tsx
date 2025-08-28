@@ -67,11 +67,11 @@ const SheetContent = React.forwardRef<
   });
   const handleOnClickHamburgerMenu = () => {
     setHamMenuOpen(false);
-    console.log("ham", hamMenuOpen);
+
   };
   const handleOnClickCartMenu = () => {
     setCartMenuOpen(false);
-    console.log("cart", cartMenuOpen);
+
   };
   return (
     <SheetPortal>

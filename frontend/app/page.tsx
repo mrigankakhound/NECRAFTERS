@@ -28,22 +28,7 @@ const HomePage = async () => {
   const featuredProducts = await getFeaturedProducts(4, 1); // Fetch 4 featured products
   const featuredReviews = await getActiveFeaturedReviews();
 
-  // Debug logging
-  console.log('🔍 HomePage Debug:');
-  console.log('website_banners:', JSON.stringify(website_banners, null, 2));
-  console.log('app_banners:', JSON.stringify(app_banners, null, 2));
-  console.log('BannerCarousel props:');
-  console.log('  banners:', JSON.stringify(website_banners.data ?? [], null, 2));
-  console.log('  app_banners:', JSON.stringify(app_banners.data ?? [], null, 2));
-  
-  // Additional debugging
-  console.log('🔍 Data Structure Analysis:');
-  console.log('  website_banners.success:', website_banners.success);
-  console.log('  website_banners.data:', website_banners.data);
-  console.log('  website_banners.data?.length:', website_banners.data?.length);
-  console.log('  website_banners.data ?? []:', website_banners.data ?? []);
-  console.log('  typeof website_banners.data:', typeof website_banners.data);
-  console.log('  Array.isArray(website_banners.data):', Array.isArray(website_banners.data));
+
 
   // SEO-optimized page title and description
   const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
@@ -58,19 +43,7 @@ const HomePage = async () => {
         app_banners={app_banners.data ?? []}
       />
       
-      {/* Debug the actual props being passed */}
-      {(() => {
-        const bannerProps = {
-          banners: website_banners.data ?? [],
-          app_banners: app_banners.data ?? []
-        };
-        console.log('🎯 Actual BannerCarousel props:', bannerProps);
-        console.log('  banners prop type:', typeof bannerProps.banners);
-        console.log('  banners prop length:', bannerProps.banners?.length);
-        console.log('  app_banners prop type:', typeof bannerProps.app_banners);
-        console.log('  app_banners prop length:', bannerProps.app_banners?.length);
-        return null;
-      })()}
+
       <SpecialCombos offers={specialCombos.data ?? []} />
       <ProductCard
         shop

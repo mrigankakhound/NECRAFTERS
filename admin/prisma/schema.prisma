@@ -162,6 +162,7 @@ model User {
   id                   String   @id @default(auto()) @map("_id") @db.ObjectId
   email                String   @unique
   username             String   @unique
+  password             String   // Added password field
   role                 Role     @default(user)
   defaultPaymentMethod String   @default("")
   address              Address?
@@ -171,6 +172,18 @@ model User {
   orders  Order[]
   reviews Review[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Admin {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String   @unique
+  password  String   // Hashed password
+  email     String?  @unique
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

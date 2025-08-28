@@ -25,7 +25,7 @@ const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
         setOffers(data.offers || []);
       }
     } catch (error) {
-      console.log('Special combos refresh failed:', error);
+
     } finally {
       setIsLoading(false);
     }

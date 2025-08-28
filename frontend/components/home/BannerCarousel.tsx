@@ -46,7 +46,7 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
         setAppBanners(appData.banners || []);
       }
     } catch (error) {
-      console.log('Banner refresh failed:', error);
+
     } finally {
       setIsLoading(false); // Hide loading after fetch
     }
@@ -58,15 +58,7 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
     fetchBanners();
   }, []);
 
-  // Debug logging
-  console.log('🎨 BannerCarousel Component Debug:');
-  console.log('  Props received:');
-  console.log('    banners:', banners);
-  console.log('    app_banners:', app_banners);
-  console.log('    banners.length:', banners?.length);
-  console.log('    app_banners.length:', app_banners?.length);
-  console.log('    banners type:', typeof banners);
-  console.log('    app_banners type:', typeof app_banners);
+
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -85,7 +77,6 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
     const handleResize = () => {
       const width = window.innerWidth;
       const mobile = width <= 768; // More reasonable mobile breakpoint
-      console.log(`Screen width: ${width}px, isMobile: ${mobile}`);
       setIsMobile(mobile);
     };
 
@@ -103,13 +94,7 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
     ? (app_banners.length > 0 ? app_banners.map((banner) => banner.url) : banners.map((banner) => banner.url))
     : banners.map((banner) => banner.url);
 
-  // Add debugging
-  console.log(`BannerCarousel: isMobile=${isMobile}, banners=${banners.length}, app_banners=${app_banners.length}, images=${images.length}`);
-  console.log('  Final images array:', images);
-  console.log('  Image URLs:');
-  images.forEach((url, index) => {
-    console.log(`    Image ${index + 1}: ${url}`);
-  });
+
 
   return (
     <div
@@ -126,26 +111,21 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
           />
         </div>
       ) : (
-        images.map((src, index) => {
-          console.log(`🎯 Rendering image ${index}: ${src}`);
-          return (
-            <div
-              key={index}
-              className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
-                index === currentIndex ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <img
-                src={src}
-                alt={`Slide ${index + 1}`}
-                className="w-full h-full object-cover cursor-pointer"
-                onClick={handleBannerClick}
-                onLoad={() => console.log(`✅ Image ${index} loaded successfully: ${src}`)}
-                onError={(e) => console.error(`❌ Image ${index} failed to load: ${src}`, e)}
-              />
-            </div>
-          );
-        })
+        images.map((src, index) => (
+          <div
+            key={index}
+            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ease-in-out ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={src}
+              alt={`Slide ${index + 1}`}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={handleBannerClick}
+            />
+          </div>
+        ))
       )}
       <Button
         variant={"outline"}

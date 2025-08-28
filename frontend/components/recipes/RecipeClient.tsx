@@ -52,7 +52,7 @@ export default function RecipeClient({ initialRecipe, slug }: RecipeClientProps)
         router.push('/404');
       }
     } catch (error) {
-      console.log('Recipe refresh failed:', error);
+
     } finally {
       setIsLoading(false);
     }
