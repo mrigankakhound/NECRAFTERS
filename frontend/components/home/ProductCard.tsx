@@ -109,11 +109,11 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
           } mb-8`}
         >
           {products.map((product) => {
-            const mainImage = product.images[0]?.url;
-            const secondImageCandidate = product.images[1]?.url;
-            const discountedPrice = product.sizes[0]?.price
-              ? product.sizes[0].price * (1 - (product.discount || 0) / 100)
-              : 0;
+            const mainImage = product.images?.[0]?.url;
+            const secondImageCandidate = product.images?.[1]?.url;
+            const originalPrice = product.sizes?.[0]?.price || 0;
+            const discount = product.discount || 0;
+            const discountedPrice = originalPrice * (1 - discount / 100);
 
             return (
               <Link
@@ -123,32 +123,41 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                 prefetch={false}
               >
                 <div className="relative aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
-                  {mainImage && (
+                  {mainImage ? (
                     <>
-                      {(() => {
-                        const primary = mainImage as string;
-                        const secondary = (secondImageCandidate ?? primary) as string;
-                        return (
-                          <>
-                            <Image
-                              src={primary}
-                              alt={product.title}
-                              fill
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <Image
-                              src={secondary}
-                              alt={`${product.title} - Hover`}
-                              fill
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                              className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
-                            />
-                          </>
-                        );
-                      })()}
+                      <Image
+                        src={mainImage}
+                        alt={product.title}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          // Fallback to placeholder if image fails
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = document.createElement('div');
+                          fallback.className = 'w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center';
+                          fallback.innerHTML = '<div class="text-4xl">🛍️</div>';
+                          target.parentNode?.appendChild(fallback);
+                        }}
+                      />
+                      {secondImageCandidate && secondImageCandidate !== mainImage && (
+                        <Image
+                          src={secondImageCandidate}
+                          alt={`${product.title} - Hover`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                          className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                        />
+                      )}
                     </>
+                  ) : (
+                    // Fallback when no image
+                    <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
+                      <div className="text-4xl">🛍️</div>
+                    </div>
                   )}
+                  
                   {/* Add to Cart Button - appears on hover */}
                   <div className="absolute inset-0 flex items-end justify-center p-2 sm:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <Button
@@ -185,14 +194,14 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                   </div>
                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
                     <p className="text-base sm:text-lg font-semibold">
-                      ₹{discountedPrice.toFixed(2)}
+                      ₹{discountedPrice > 0 ? discountedPrice.toFixed(2) : '0.00'}
                     </p>
-                    {product.discount && product.discount > 0 && (
+                    {discount > 0 && originalPrice > 0 && (
                       <>
                         <p className="text-sm sm:text-base text-gray-500 line-through">
-                          ₹{product.sizes[0]?.price.toFixed(2)}
+                          ₹{originalPrice.toFixed(2)}
                         </p>
-                        <p className="text-sm sm:text-base text-red-500">-{product.discount}%</p>
+                        <p className="text-sm sm:text-base text-red-500">-{discount}%</p>
                       </>
                     )}
                   </div>
