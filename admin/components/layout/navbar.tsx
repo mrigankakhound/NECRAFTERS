@@ -50,10 +50,11 @@ const Navbar = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-white/10 -translate-x-5"
+            className="hover:bg-white/10 -translate-x-5 bg-blue-600 px-3"
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
           >
-            <Settings className="h-5 w-6 text-zinc-400" />
+            <Settings className="h-5 w-6 text-white mr-2" />
+            <span className="text-white text-sm">Settings</span>
           </Button>
           
           {/* Dropdown Menu */}
