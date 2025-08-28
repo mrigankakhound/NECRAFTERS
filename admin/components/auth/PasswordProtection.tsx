@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +16,6 @@ export default function PasswordProtection({ children }: PasswordProtectionProps
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -59,19 +57,18 @@ export default function PasswordProtection({ children }: PasswordProtectionProps
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem("admin_authenticated");
-    localStorage.removeItem("admin_session_expiry");
-    router.push("/");
-  };
+
 
   // Check session expiry
   useEffect(() => {
     const checkSessionExpiry = () => {
       const expiryTime = localStorage.getItem("admin_session_expiry");
       if (expiryTime && Date.now() > parseInt(expiryTime)) {
-        handleLogout();
+        // Clear authentication and redirect to login
+        setIsAuthenticated(false);
+        localStorage.removeItem("admin_authenticated");
+        localStorage.removeItem("admin_session_expiry");
+        window.location.href = "/";
       }
     };
 
@@ -84,16 +81,6 @@ export default function PasswordProtection({ children }: PasswordProtectionProps
   if (isAuthenticated) {
     return (
       <div>
-        <div className="absolute top-4 right-4 z-50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="bg-white/90 backdrop-blur-sm"
-          >
-            Logout
-          </Button>
-        </div>
         {children}
       </div>
     );
