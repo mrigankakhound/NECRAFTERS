@@ -9,18 +9,8 @@ const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyN
 const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
 const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
-// Balance freshness with performance
-export const revalidate = 60;
-import BlogImages from "@/components/home/BlogImages";
-
-// Moved to dynamic imports above
-// import CrazyDeals from "@/components/home/CrazyDeals";
-// import NeedOfWebsite from "@/components/home/NeedOfWebsite";
 import ProductCard from "@/components/home/ProductCard";
-// import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
-// import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
-// import FeaturedReviews from "@/components/home/FeaturedReviews";
 import HashScrollHandler from "@/components/HashScrollHandler";
 import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
@@ -30,119 +20,83 @@ import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
 import { getMainCategories } from "@/actions/categories/get-main-categories";
 import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
-// Type for the data structure
-interface DataResult {
-  data: any[];
-  success?: boolean;
-  error?: string;
-}
-
 const HomePage = async () => {
-  // Add overall timeout to prevent build hanging
-  const pageTimeout = new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Page timeout')), 30000)
-  );
+  // Simple timeout wrapper to prevent build hanging
+  const fetchWithTimeout = async (promise: Promise<any>, timeoutMs: number): Promise<any> => {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+      )
+    ]);
+  };
 
   try {
-    // Fetch critical data with timeouts to prevent build hanging
-    const criticalDataResults = await Promise.race([
-      Promise.allSettled([
-        Promise.race([
-          getWebsiteBanners(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-        ]),
-        Promise.race([
-          getAppBanners(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-        ]),
-        Promise.race([
-          getSpecialCombos(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-        ]),
-        Promise.race([
-          getBestSellerProducts(8),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-        ])
-      ]),
-      pageTimeout
-    ]) as PromiseSettledResult<DataResult>[];
+    // Fetch critical data first with timeouts
+    const [website_banners, app_banners, specialCombos, bestSellers] = await Promise.allSettled([
+      fetchWithTimeout(getWebsiteBanners(), 8000),
+      fetchWithTimeout(getAppBanners(), 8000),
+      fetchWithTimeout(getSpecialCombos(), 8000),
+      fetchWithTimeout(getBestSellerProducts(8), 8000)
+    ]);
 
-    const [website_banners, app_banners, specialCombos, bestSellers] = criticalDataResults;
+    // Fetch remaining data with timeouts
+    const [crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
+      fetchWithTimeout(getCrazyDeals(), 12000),
+      fetchWithTimeout(getFeaturedProducts(4, 1), 12000),
+      fetchWithTimeout(getActiveFeaturedReviews(), 12000)
+    ]);
 
-  // Fetch non-critical data with timeouts
-  const [crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
-    Promise.race([
-      getCrazyDeals(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
-    ]),
-    Promise.race([
-      getFeaturedProducts(4, 1),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
-    ]),
-    Promise.race([
-      getActiveFeaturedReviews(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
-    ])
-  ]);
+    // Extract data safely
+    const banners = website_banners.status === 'fulfilled' ? website_banners.value : { data: [] };
+    const app_banners_data = app_banners.status === 'fulfilled' ? app_banners.value : { data: [] };
+    const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
+    const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
+    const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
+    const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
+    const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
-  // Extract data safely with proper typing
-  const banners = (website_banners.status === 'fulfilled' ? website_banners.value : { data: [] }) as DataResult;
-  const app_banners_data = (app_banners.status === 'fulfilled' ? app_banners.value : { data: [] }) as DataResult;
-  const specialCombos_data = (specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] }) as DataResult;
-  const bestSellers_data = (bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] }) as DataResult;
-  const crazyDeals_data = (crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] }) as DataResult;
-  const featuredProducts_data = (featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] }) as DataResult;
-  const featuredReviews_data = (featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] }) as DataResult;
+    return (
+      <div>
+        <HashScrollHandler />
+        <BannerCarousel
+          banners={banners.data ?? []}
+          app_banners={app_banners_data.data ?? []}
+        />
+        
+        <SpecialCombos offers={specialCombos_data.data ?? []} />
+        <ProductCard
+          shop
+          heading="BEST SELLERS"
+          products={bestSellers_data.data ?? []}
+          sectionId="best-sellers"
+        />
 
-
-
-  // SEO-optimized page title and description
-  const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
-  const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
-
-
-  return (
-    <div>
-      <HashScrollHandler />
-      <BannerCarousel
-        banners={banners.data ?? []}
-        app_banners={app_banners_data.data ?? []}
-      />
-      
-
-      <SpecialCombos offers={specialCombos_data.data ?? []} />
-      <ProductCard
-        shop
-        heading="BEST SELLERS"
-        products={bestSellers_data.data ?? []}
-        sectionId="best-sellers"
-      />
-
-      <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
-      <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
-        ...review,
-        description: review.description || undefined,
-        customerName: review.customerName || undefined,
-        reviewText: review.reviewText || undefined,
-        productName: review.productName || undefined,
-        image: {
-          ...review.image,
-          url: review.image.url || undefined,
-          public_id: review.image.public_id || undefined
-        }
-      })) ?? []} />
-      <ProductCard
-        shop
-        heading="FEATURED PRODUCTS"
-        products={featuredProducts_data.data ?? []}
-        sectionId="featured-products"
-      />
-      <NeedOfWebsiteSection />
-      <WhyNeCraftersDiagramSection />
-      <ReviewSectionSection />
-      <BlogImagesSection />
-    </div>
-  );
+        <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
+        <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
+          ...review,
+          description: review.description || undefined,
+          customerName: review.customerName || undefined,
+          reviewText: review.reviewText || undefined,
+          productName: review.productName || undefined,
+          image: {
+            ...review.image,
+            url: review.image.url || undefined,
+            public_id: review.image.public_id || undefined
+          }
+        })) ?? []} />
+        <ProductCard
+          shop
+          heading="FEATURED PRODUCTS"
+          products={featuredProducts_data.data ?? []}
+          sectionId="featured-products"
+        />
+        <NeedOfWebsiteSection />
+        <WhyNeCraftersDiagramSection />
+        <ReviewSectionSection />
+        <BlogImagesSection />
+      </div>
+    );
   } catch (error) {
     console.error('Error loading homepage:', error);
     // Return fallback content if data fetching fails
