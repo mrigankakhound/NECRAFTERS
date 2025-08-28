@@ -51,7 +51,10 @@ const Navbar = () => {
             variant="ghost" 
             size="icon" 
             className="hover:bg-white/10 -translate-x-5 bg-blue-600 px-3"
-            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            onClick={() => {
+              console.log('Settings clicked, current state:', isSettingsOpen);
+              setIsSettingsOpen(!isSettingsOpen);
+            }}
           >
             <Settings className="h-5 w-6 text-white mr-2" />
             <span className="text-white text-sm">Settings</span>
@@ -59,7 +62,7 @@ const Navbar = () => {
           
           {/* Dropdown Menu */}
           {isSettingsOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
               {/* Change Password Option */}
               <button
                 onClick={handleChangePassword}
