@@ -3,9 +3,11 @@
 import { Bell, Settings, User, LogOut, Key, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
+import ChangePasswordModal from "../modals/ChangePasswordModal";
 
 const Navbar = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -29,8 +31,7 @@ const Navbar = () => {
   };
 
   const handleChangePassword = () => {
-    // TODO: Implement change password functionality
-    alert('Change password functionality coming soon!');
+    setIsChangePasswordOpen(true);
     setIsSettingsOpen(false);
   };
 
@@ -86,6 +87,12 @@ const Navbar = () => {
           <User className="h-5 w-6 text-zinc-400" />
         </Button>
       </div>
+      
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </div>
   );
 };

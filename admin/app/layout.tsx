@@ -20,8 +20,8 @@ export default function RootLayout({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const pathname = usePathname();
 
-  // Don't show sidebar/navbar for login page
-  const isLoginPage = pathname === '/login';
+  // Don't show sidebar/navbar for login page (root path)
+  const isLoginPage = pathname === '/' || pathname === '/login';
 
   return (
     <html lang="en">
