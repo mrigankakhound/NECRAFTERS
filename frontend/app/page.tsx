@@ -11,23 +11,21 @@ const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
 // Balance freshness with performance
 export const revalidate = 60;
-import BlogImages from "@/components/home/BlogImages";
 
-// Moved to dynamic imports above
-// import CrazyDeals from "@/components/home/CrazyDeals";
-// import NeedOfWebsite from "@/components/home/NeedOfWebsite";
+// SEO metadata
+export const metadata = {
+  title: "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS",
+  description: "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.",
+};
+
 import ProductCard from "@/components/home/ProductCard";
-// import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
-// import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
-// import FeaturedReviews from "@/components/home/FeaturedReviews";
 import HashScrollHandler from "@/components/HashScrollHandler";
 import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
 import { getSpecialCombos } from "@/actions/special-combos";
 import { getCrazyDeals } from "@/actions/crazy-deals";
 import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
-import { getMainCategories } from "@/actions/categories/get-main-categories";
 import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
 const HomePage = async () => {
@@ -47,7 +45,7 @@ const HomePage = async () => {
       fetchWithTimeout(getWebsiteBanners(), 8000),
       fetchWithTimeout(getAppBanners(), 8000),
       fetchWithTimeout(getSpecialCombos(), 8000),
-      fetchWithTimeout(getBestSellerProducts(8), 8000)
+      fetchWithTimeout(getBestSellerProducts(8), 15000) // Increased timeout for Best Sellers
     ]);
 
     // Fetch remaining data with timeouts
@@ -66,14 +64,16 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
-    // Debug: Check what data we're getting
-    console.log('Best Sellers Status:', bestSellers.status);
+    // Debug: Check what's happening with Best Sellers
+    console.log('=== DEBUG INFO ===');
+    console.log('Best Sellers Promise Status:', bestSellers.status);
+    console.log('Best Sellers Raw Value:', bestSellers.status === 'fulfilled' ? bestSellers.value : 'REJECTED');
     console.log('Best Sellers Data:', bestSellers_data);
-    console.log('Best Sellers Products:', bestSellers_data.data);
+    console.log('Best Sellers Products Array:', bestSellers_data.data);
+    console.log('Best Sellers Products Length:', bestSellers_data.data?.length);
+    console.log('==================');
 
-    // SEO-optimized page title and description
-    const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
-    const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
+
 
     return (
     <div>
@@ -84,12 +84,29 @@ const HomePage = async () => {
       />
       
       <SpecialCombos offers={specialCombos_data.data ?? []} />
-      <ProductCard
-        shop
-        heading="BEST SELLERS"
-        products={bestSellers_data.data ?? []}
-        sectionId="best-sellers"
-      />
+      {/* Best Sellers Section - Always show even if empty for debugging */}
+      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+          </div>
+          {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+            <ProductCard
+              shop
+              heading="BEST SELLERS"
+              products={bestSellers_data.data}
+              sectionId="best-sellers"
+            />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No best seller products found</p>
+              <p className="text-sm text-gray-400 mt-2">Debug: Data length is {bestSellers_data.data?.length || 0}</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
       <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
