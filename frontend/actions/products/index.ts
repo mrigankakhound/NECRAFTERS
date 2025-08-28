@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    const bestSellers = await prisma.product.findMany({
+    // First try to get products ordered by sold count
+    let bestSellers = await prisma.product.findMany({
       orderBy: {
         sold: "desc",
       },
@@ -12,6 +13,20 @@ export async function getBestSellerProducts(limit: number = 10) {
         category: true,
       },
     });
+
+    // If no products found or all have sold = 0, fallback to newest products
+    if (!bestSellers || bestSellers.length === 0 || bestSellers.every(p => p.sold === 0)) {
+      console.log('No best sellers found, falling back to newest products');
+      bestSellers = await prisma.product.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        include: {
+          category: true,
+        },
+      });
+    }
 
     return {
       success: true,

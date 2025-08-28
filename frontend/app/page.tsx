@@ -71,6 +71,13 @@ const HomePage = async () => {
     console.log('Best Sellers Data:', bestSellers_data);
     console.log('Best Sellers Products Array:', bestSellers_data.data);
     console.log('Best Sellers Products Length:', bestSellers_data.data?.length);
+    
+    // Check if we have any products at all
+    if (bestSellers.status === 'fulfilled' && bestSellers.value) {
+      console.log('Best Sellers Success:', bestSellers.value.success);
+      console.log('Best Sellers Error:', bestSellers.value.error);
+      console.log('Best Sellers Raw Data:', bestSellers.value.data);
+    }
     console.log('==================');
 
 
