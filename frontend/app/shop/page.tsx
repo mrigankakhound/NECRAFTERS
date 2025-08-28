@@ -7,11 +7,7 @@ import ProductCard from "@/components/home/ProductCard";
 import ShopPopup from "@/components/ShopPopup";
 
 import { useEffect, useState } from "react";
-import {
-  getAllProducts,
-  getFilteredProducts,
-  getProductsByCategory,
-} from "@/actions/products/index";
+// Fetches now go through /api/products to avoid importing server-only code in the client
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -195,76 +191,58 @@ const ShopPage = () => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        let result;
-        
+        const params = new URLSearchParams();
+        params.set("page", String(currentPage));
+        params.set("limit", "12");
+
+        // Single category slug
         if (selectedCategory) {
-          // Fetch products by selected category
-          result = await getProductsByCategory(selectedCategory, currentPage, 12);
-          setPagination(result?.pagination || {
-            total: 0,
-            totalPages: 0,
+          params.set("category", selectedCategory);
+        }
+
+        // Multi filters from URL
+        const categories = searchParams.get("categories");
+        const subCategories = searchParams.get("subCategories");
+        const sizes = searchParams.get("sizes");
+        const minPrice = searchParams.get("minPrice");
+        const maxPrice = searchParams.get("maxPrice");
+        const sortBy = searchParams.get("sortBy");
+
+        if (categories) params.set("categories", categories);
+        if (subCategories) params.set("subCategories", subCategories);
+        if (sizes) params.set("sizes", sizes);
+        if (minPrice) params.set("minPrice", minPrice);
+        if (maxPrice) params.set("maxPrice", maxPrice);
+        if (sortBy) params.set("sortBy", sortBy);
+
+        const res = await fetch(`/api/products?${params.toString()}`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          setProducts(json.data || []);
+          setPagination(json.pagination || {
+            total: json.data?.length || 0,
+            totalPages: 1,
             hasNext: false,
             hasPrev: false,
           });
-                } else {
-          // Get all filter parameters from URL
-          const categories = searchParams
-            .get("categories")
-            ?.split(",")
-            .filter(Boolean);
-          const subCategories = searchParams
-            .get("subCategories")
-            ?.split(",")
-            .filter(Boolean);
-          const sizes = searchParams.get("sizes")?.split(",").filter(Boolean);
-          const minPrice = Number(searchParams.get("minPrice")) || undefined;
-          const maxPrice = Number(searchParams.get("maxPrice")) || undefined;
-
-          // Check if any filters are applied
-          const hasFilters =
-            categories?.length ||
-            subCategories?.length ||
-            sizes?.length ||
-            minPrice ||
-            maxPrice;
-
-          if (hasFilters) {
-            // If filters are applied, use getFilteredProducts
-            result = await getFilteredProducts({
-              categories,
-              subCategories,
-              sizes,
-              minPrice,
-              maxPrice,
-            });
-            setPagination({
-              total: result?.data?.length || 0,
-              totalPages: 1,
-              hasNext: false,
-              hasPrev: false,
-            });
-          } else {
-            result = await getAllProducts(currentPage, 12);
-            setPagination(result?.pagination || {
-              total: 0,
-              totalPages: 0,
-              hasNext: false,
-              hasPrev: false,
-            });
-          }
+        } else {
+          console.error("Products API error:", json.error);
+          setProducts([]);
+          setPagination({ total: 0, totalPages: 0, hasNext: false, hasPrev: false });
         }
-
-        setProducts(result?.data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
         setProducts([]);
+        setPagination({ total: 0, totalPages: 0, hasNext: false, hasPrev: false });
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Add debouncing to prevent excessive API calls
-    const timeoutId = setTimeout(fetchProducts, 300);
+    const timeoutId = setTimeout(fetchProducts, 200);
     return () => clearTimeout(timeoutId);
   }, [searchParams, currentPage, selectedCategory]);
 
