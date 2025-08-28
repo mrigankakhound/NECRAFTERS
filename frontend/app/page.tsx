@@ -94,7 +94,7 @@ const HomePage = async () => {
       
       <SpecialCombos offers={specialCombos_data.data ?? []} />
       
-      {/* Best Sellers Section - Always show, with fallback content */}
+      {/* Best Sellers Section - Always show products */}
       <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
         <div className="section-container">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -111,17 +111,23 @@ const HomePage = async () => {
               sectionId="best-sellers"
             />
           ) : (
-            <div className="text-center py-12 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border-2 border-dashed border-orange-200">
-              <div className="max-w-md mx-auto">
-                <div className="text-6xl mb-4">🛍️</div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Coming Soon!</h3>
-                <p className="text-gray-600 mb-4">Our best-selling products will appear here as soon as customers start shopping.</p>
-                <div className="text-sm text-gray-500">
-                  <p>• Products will automatically appear based on sales</p>
-                  <p>• For now, explore our featured products below</p>
-                </div>
+            // Show Featured Products instead when Best Sellers is empty
+            featuredProducts_data.data && featuredProducts_data.data.length > 0 ? (
+              <div>
+                <p className="text-center text-gray-600 mb-4 italic">Discover our featured products while we build our best sellers list</p>
+                <ProductCard
+                  shop
+                  heading="FEATURED PRODUCTS"
+                  products={featuredProducts_data.data}
+                  sectionId="best-sellers"
+                />
               </div>
-            </div>
+            ) : (
+              // If no products at all, show a simple message
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading amazing products...</p>
+              </div>
+            )
           )}
         </div>
       </div>

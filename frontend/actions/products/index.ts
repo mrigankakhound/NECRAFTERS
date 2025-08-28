@@ -5,8 +5,14 @@ export async function getBestSellerProducts(limit: number = 10) {
   try {
     console.log('🔍 Starting getBestSellerProducts...');
     
-    // First try to get products ordered by sold count
+    // First try to get products ordered by sold count (only non-null values)
     let bestSellers = await prisma.product.findMany({
+      where: {
+        sold: {
+          not: null,
+          gt: 0
+        }
+      },
       orderBy: {
         sold: "desc",
       },
@@ -18,17 +24,13 @@ export async function getBestSellerProducts(limit: number = 10) {
     
     console.log('📊 Found products by sold count:', bestSellers.length);
 
-    // If no products found or all have sold = 0, fallback to random products
-    if (!bestSellers || bestSellers.length === 0 || bestSellers.every(p => p.sold === 0)) {
+    // If no products found with sales, fallback to random products
+    if (!bestSellers || bestSellers.length === 0) {
       console.log('🔄 No best sellers found, falling back to random products');
       bestSellers = await prisma.product.findMany({
         take: limit,
         include: {
           category: true,
-        },
-        // Use random ordering for variety
-        orderBy: {
-          id: 'asc', // This will be combined with random selection
         },
       });
       
@@ -41,26 +43,9 @@ export async function getBestSellerProducts(limit: number = 10) {
       }
     }
 
-    // If still no products, try to get any products at all with random selection
-    if (!bestSellers || bestSellers.length === 0) {
-      console.log('⚠️ No random products found, trying any available products');
-      bestSellers = await prisma.product.findMany({
-        take: limit,
-        include: {
-          category: true,
-        },
-      });
-      
-      console.log('📦 Found any available products:', bestSellers.length);
-      
-      // Shuffle these products too for variety
-      if (bestSellers.length > 0) {
-        bestSellers = bestSellers.sort(() => Math.random() - 0.5);
-        console.log('🔀 Available products shuffled');
-      }
-    }
 
-    // If we still have no products, return empty array but don't fail
+
+    // If still no products, return empty array but don't fail
     if (!bestSellers || bestSellers.length === 0) {
       console.log('❌ No products found in database at all');
       return {

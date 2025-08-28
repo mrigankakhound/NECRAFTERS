@@ -33,7 +33,7 @@ const WhyNeCraftersDiagram = () => {
     }
   ];
 
-  // Always show the features section instead of the large image
+p  // Always show the features section instead of the large image
   return (
     <div id="why-ne-crafters" className="container mx-auto px-4 py-16">
       <div className="max-w-5xl mx-auto">
