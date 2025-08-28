@@ -84,8 +84,8 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      const mobile = width <= 768; // More reasonable mobile breakpoint
-      console.log(`Screen width: ${width}px, isMobile: ${mobile}`);
+      const mobile = width <= 768; // Mobile breakpoint at 768px
+      console.log(`📱 Screen width: ${width}px, isMobile: ${mobile}`);
       setIsMobile(mobile);
     };
 
@@ -99,17 +99,32 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
     };
   }, []);
 
-  const images = isMobile
-    ? (app_banners.length > 0 ? app_banners.map((banner) => banner.url) : banners.map((banner) => banner.url))
-    : banners.map((banner) => banner.url);
+  // Mobile logic: prefer app_banners if available, otherwise fallback to website banners
+  // Ensure we always have images to display
+  let images: string[] = [];
+  
+  if (isMobile) {
+    if (app_banners && app_banners.length > 0) {
+      images = app_banners.map((banner) => banner.url);
+      console.log(`📱 Using mobile banners: ${images.length} images`);
+    } else {
+      images = banners.map((banner) => banner.url);
+      console.log(`📱 Mobile banners not available, using website banners: ${images.length} images`);
+    }
+  } else {
+    images = banners.map((banner) => banner.url);
+    console.log(`🖥️  Using website banners: ${images.length} images`);
+  }
 
-  // Add debugging
-  console.log(`BannerCarousel: isMobile=${isMobile}, banners=${banners.length}, app_banners=${app_banners.length}, images=${images.length}`);
-  console.log('  Final images array:', images);
-  console.log('  Image URLs:');
-  images.forEach((url, index) => {
-    console.log(`    Image ${index + 1}: ${url}`);
-  });
+  // Enhanced debugging for mobile banner issues
+  console.log(`🎨 BannerCarousel Debug:`);
+  console.log(`  📱 isMobile: ${isMobile}`);
+  console.log(`  🖥️  website banners: ${banners.length}`);
+  console.log(`  📱 mobile banners: ${app_banners.length}`);
+  console.log(`  🎯 final images: ${images.length}`);
+  console.log(`  📱 mobile banner URLs:`, app_banners.map(b => b.url));
+  console.log(`  🖥️  website banner URLs:`, banners.map(b => b.url));
+  console.log(`  🎯 final image URLs:`, images);
 
   return (
     <div
@@ -124,6 +139,13 @@ const BannerCarousel = ({ banners: initialBanners, app_banners: initialAppBanner
             text="Crafting Mode On" 
             className="text-orange-600"
           />
+        </div>
+      ) : images.length === 0 ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
+          <div className="text-center text-orange-600">
+            <p className="text-lg font-semibold">No Banners Available</p>
+            <p className="text-sm">Please check banner configuration</p>
+          </div>
         </div>
       ) : (
         images.map((src, index) => {
