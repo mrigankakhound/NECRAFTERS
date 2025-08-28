@@ -82,8 +82,6 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        
-
       </div>
       
       {/* Change Password Modal */}
