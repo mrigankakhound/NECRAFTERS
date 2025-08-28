@@ -28,16 +28,52 @@ export async function getBestSellerProducts(limit: number = 10) {
       });
     }
 
+    // If still no products, try to get any products at all
+    if (!bestSellers || bestSellers.length === 0) {
+      console.log('No newest products found, falling back to any available products');
+      bestSellers = await prisma.product.findMany({
+        take: limit,
+        include: {
+          category: true,
+        },
+      });
+    }
+
+    // If we still have no products, return empty array but don't fail
+    if (!bestSellers || bestSellers.length === 0) {
+      console.log('No products found in database at all');
+      return {
+        success: true,
+        data: [],
+      };
+    }
+
     return {
       success: true,
       data: bestSellers,
     };
   } catch (error) {
     console.error("Error fetching best seller products:", error);
-    return {
-      success: false,
-      error: "Failed to fetch best seller products",
-    };
+    // Even on error, try to get any products as last resort
+    try {
+      const fallbackProducts = await prisma.product.findMany({
+        take: limit,
+        include: {
+          category: true,
+        },
+      });
+      return {
+        success: true,
+        data: fallbackProducts,
+      };
+    } catch (fallbackError) {
+      console.error("Fallback also failed:", fallbackError);
+      return {
+        success: false,
+        error: "Failed to fetch best seller products",
+        data: [],
+      };
+    }
   }
 }
 
