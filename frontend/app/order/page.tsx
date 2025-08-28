@@ -1,53 +1,198 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Package, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+interface OrderProduct {
+  productId: string;
+  name: string;
+  image: string;
+  size: string;
+  qty: number;
+  price: number;
+}
+
+interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+interface Order {
+  id: string;
+  userId: string;
+  products: OrderProduct[];
+  shippingAddress: ShippingAddress;
+  paymentMethod: string;
+  total: number;
+  totalBeforeDiscount?: number;
+  couponApplied?: string;
+  totalSaved?: number;
+  shippingPrice: number;
+  taxPrice?: number;
+  status: string;
+  isPaid: boolean;
+  paidAt?: Date;
+  createdAt: Date;
+  user: {
+    username: string;
+    email: string;
+  };
+}
 
 const OrderPage = () => {
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchLatestOrder();
+  }, []);
+
+  const fetchLatestOrder = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/orders/latest');
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("No orders found");
+        } else {
+          throw new Error('Failed to fetch order');
+        }
+        return;
+      }
+
+      const data = await response.json();
+      setOrder(data.order);
+    } catch (err) {
+      console.error('Error fetching order:', err);
+      setError('Failed to load order details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-gray-600">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">No Orders Found</h2>
+          <p className="text-gray-600 mb-6">
+            {error === "No orders found" 
+              ? "You haven't placed any orders yet. Start shopping to see your order details here!"
+              : "There was an error loading your order details. Please try again later."}
+          </p>
+          <div className="space-y-3">
+            <Link href="/">
+              <Button className="w-full">Start Shopping</Button>
+            </Link>
+            <Link href="/profile">
+              <Button variant="outline" className="w-full">View Profile</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return null;
+  }
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Main container for the order page content */}
       <div className="max-w-full mx-auto bg-white shadow-md">
         <div className="p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {/* Back to Home link */}
             <div className="flex items-center mb-4">
               <ArrowLeft className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium">Home</span>
+              <Link href="/" className="text-sm font-medium hover:text-primary">
+                Back to Home
+              </Link>
             </div>
 
             {/* Thank You message and Order ID */}
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold">THANK YOU Suraj M.</h1>
-              <p className="text-gray-600">Order ID: VC-451633</p>
+              <h1 className="text-2xl font-bold">
+                THANK YOU {order.user.username}
+              </h1>
+              <p className="text-gray-600">Order ID: {order.id}</p>
             </div>
 
             {/* Order Details Section */}
             <div className="mb-6 border rounded-lg overflow-hidden">
               <div className="flex flex-wrap">
                 {/* Order number */}
-                <div className="w-full sm:w-1/2 md:w-1/5 p-4 border-b sm:border-b-0 sm:border-r">
+                <div className="w-full sm:w-1/2 md:w-1/4 p-4 border-b sm:border-b-0 sm:border-r">
                   <div className="font-semibold text-sm mb-1">
                     ORDER NUMBER:
                   </div>
-                  <div>VC-451633</div>
+                  <div className="font-mono text-sm">{order.id}</div>
+                </div>
+
+                {/* Order status */}
+                <div className="w-full sm:w-1/2 md:w-1/4 p-4 border-b sm:border-b-0 sm:border-r">
+                  <div className="font-semibold text-sm mb-1">
+                    ORDER STATUS:
+                  </div>
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                    order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                    order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {order.status}
+                  </div>
                 </div>
 
                 {/* Order date */}
                 <div className="w-full sm:w-1/2 md:w-1/4 p-4 border-b md:border-b-0 md:border-r">
                   <div className="font-semibold text-sm mb-1">DATE:</div>
-                  <div>AUG 3, 2024</div>
+                  <div>{formatDate(order.createdAt)}</div>
                 </div>
 
                 {/* Customer email */}
-                <div className="w-full sm:w-1/2 md:w-1/4 p-4 sm:border-r">
+                <div className="w-full sm:w-1/2 md:w-1/4 p-4 border-b sm:border-b-0 sm:border-r">
                   <div className="font-semibold text-sm mb-1">EMAIL:</div>
-                  <div className="truncate">surajm_89@email.com</div>
+                  <div className="truncate">{order.user.email}</div>
                 </div>
 
                 {/* Total amount */}
                 <div className="w-full sm:w-1/2 md:w-1/4 p-4">
                   <div className="font-semibold text-sm mb-1">TOTAL:</div>
-                  <div>₹404.00</div>
+                  <div className="text-lg font-bold text-primary">₹{order.total.toFixed(2)}</div>
                 </div>
               </div>
 
@@ -56,7 +201,14 @@ const OrderPage = () => {
                 <div className="font-semibold text-sm mb-1">
                   PAYMENT METHOD:
                 </div>
-                <div>Cash on Delivery (COD)</div>
+                <div className="flex items-center justify-between">
+                  <span>{order.paymentMethod}</span>
+                  {order.isPaid && order.paidAt && (
+                    <div className="text-sm text-green-600">
+                      Paid on {formatDate(order.paidAt)}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -80,85 +232,87 @@ const OrderPage = () => {
                 {/* Shipping address */}
                 <div className="bg-gray-100 p-4 rounded-lg mb-4">
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium">Suraj M.v</span>
-                    <span className="text-gray-600">0123456789</span>
+                    <span className="font-medium">
+                      {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                    </span>
+                    <span className="text-gray-600">
+                      {order.shippingAddress.phoneNumber}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600">
-                    123 Main Street, Mumbai
+                    {order.shippingAddress.address1}
+                    {order.shippingAddress.address2 && (
+                      <>
+                        <br />
+                        {order.shippingAddress.address2}
+                      </>
+                    )}
                     <br />
-                    Maharashtra,
+                    {order.shippingAddress.city}, {order.shippingAddress.state}
                     <br />
-                    PIN Code: 400001,
+                    PIN Code: {order.shippingAddress.zipCode}
                     <br />
-                    India.
+                    {order.shippingAddress.country}
                   </p>
                 </div>
 
                 {/* Ordered items list */}
                 <div className="border rounded-lg p-4">
-                  {/* First item */}
                   <div className="flex justify-between items-center mb-4">
-                    <span className="font-medium">1 Item</span>
-                    <span className="font-medium">₹ 334</span>
+                    <span className="font-medium">
+                      {order.products.length} Item{order.products.length > 1 ? 's' : ''}
+                    </span>
+                    <span className="font-medium">
+                      ₹{order.totalBeforeDiscount?.toFixed(2) || order.total.toFixed(2)}
+                    </span>
                   </div>
 
                   {/* Product details */}
-                  <div className="flex items-center">
-                    <img
-                      src="https://res.cloudinary.com/dtxh3ew7s/image/upload/v1727352106/2_upscaled_g6ibby.png"
-                      alt="Product Image"
-                      className="mr-4 w-[60px] h-[60px]"
-                    />
-                    <div>
-                      <h3 className="font-medium">
-                        High-End Fragrance Collection for Males
-                      </h3>
-                      <p className="text-sm text-gray-600">300ml • Qty 1</p>
-                      <div className="flex items-center mt-1">
-                        <span className="font-medium mr-2">₹334</span>
-                        <span className="text-sm text-gray-500 line-through mr-2">
-                          ₹468
-                        </span>
-                        <span className="text-sm text-green-600">29% off</span>
+                  <div className="space-y-4">
+                    {order.products.map((product, index) => (
+                      <div key={index} className="flex items-center">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="mr-4 w-[60px] h-[60px] object-cover rounded border"
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/placeholder-product.png';
+                          }}
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-medium">{product.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {product.size} • Qty {product.qty}
+                          </p>
+                          <div className="flex items-center mt-1">
+                            <span className="font-medium mr-2">
+                              ₹{product.price.toFixed(2)}
+                            </span>
+                            {order.totalBeforeDiscount && order.totalBeforeDiscount > order.total && (
+                              <span className="text-sm text-green-600">
+                                {Math.round(((order.totalBeforeDiscount - order.total) / order.totalBeforeDiscount) * 100)}% off
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Second item */}
-                  <div className="flex items-center mt-4">
-                    <img
-                      src="https://res.cloudinary.com/dtxh3ew7s/image/upload/v1727352106/1_upscaled_pku7p3.png"
-                      alt="Product Image"
-                      className="mr-4 w-[60px] h-[60px]"
-                    />
-                    <div>
-                      <h3 className="font-medium">
-                        High-End Fragrance Collection for Males
-                      </h3>
-                      <p className="text-sm text-gray-600">300ml • Qty 1</p>
-                      <div className="flex items-center mt-1">
-                        <span className="font-medium mr-2">₹334</span>
-                        <span className="text-sm text-gray-500 line-through mr-2">
-                          ₹468
-                        </span>
-                        <span className="text-sm text-green-600">29% off</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
               {/* Billing and Savings Section */}
               <div className="flex-1">
-                {/* Savings message */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                  <div className="flex items-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
-                    <span className="text-green-700">
-                      Yay! You have saved ₹134 on this order
-                    </span>
+                {order.totalSaved && order.totalSaved > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-center">
+                      <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
+                      <span className="text-green-700">
+                        Yay! You have saved ₹{order.totalSaved.toFixed(2)} on this order
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Bill details */}
                 <div className="bg-gray-100 rounded-lg p-4">
@@ -167,39 +321,48 @@ const OrderPage = () => {
                     {/* Total MRP */}
                     <div className="flex justify-between">
                       <span>Total MRP</span>
-                      <span>₹468</span>
+                      <span>₹{order.totalBeforeDiscount?.toFixed(2) || order.total.toFixed(2)}</span>
                     </div>
 
                     {/* Total discount */}
-                    <div className="flex justify-between text-green-600">
-                      <span>Total Discount</span>
-                      <span>- ₹134</span>
-                    </div>
+                    {order.totalSaved && order.totalSaved > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Total Discount</span>
+                        <span>- ₹{order.totalSaved.toFixed(2)}</span>
+                      </div>
+                    )}
 
                     {/* Shipping charges */}
                     <div className="flex justify-between">
                       <span>Shipping Charges</span>
-                      <span>₹50</span>
+                      <span>₹{order.shippingPrice.toFixed(2)}</span>
                     </div>
 
-                    {/* COD charges */}
-                    <div className="flex justify-between">
-                      <span>COD Charges</span>
-                      <span>₹20</span>
-                    </div>
+                    {/* Tax */}
+                    {order.taxPrice && order.taxPrice > 0 && (
+                      <div className="flex justify-between">
+                        <span>Tax</span>
+                        <span>₹{order.taxPrice.toFixed(2)}</span>
+                      </div>
+                    )}
 
                     {/* Subtotal */}
                     <div className="flex justify-between font-semibold pt-2 border-t">
-                      <span>Subtotal</span>
-                      <span>₹404</span>
+                      <span>Total Amount</span>
+                      <span>₹{order.total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Continue shopping button */}
-                <Link href={"/"}>
-                  <Button className="w-full mt-3">CONTINUE SHOPPING</Button>
-                </Link>
+                {/* Action buttons */}
+                <div className="space-y-3 mt-4">
+                  <Link href="/">
+                    <Button className="w-full">CONTINUE SHOPPING</Button>
+                  </Link>
+                  <Link href="/profile/orders">
+                    <Button variant="outline" className="w-full">VIEW ALL ORDERS</Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

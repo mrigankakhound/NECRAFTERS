@@ -14,32 +14,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all orders for the user
-    const orders = await prisma.order.findMany({
+    // Fetch the latest order for the user
+    const latestOrder = await prisma.order.findFirst({
       where: {
         userId: userId,
       },
-      select: {
-        id: true,
-        products: true,
-        paymentMethod: true,
-        total: true,
-        status: true,
-        isPaid: true,
-        createdAt: true,
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
+    if (!latestOrder) {
+      return NextResponse.json(
+        { error: "No orders found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      orders: orders,
+      order: latestOrder,
     });
 
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching latest order:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
