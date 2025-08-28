@@ -262,6 +262,7 @@ export async function updateProductFeatured(
     });
 
     revalidatePath("/products");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error updating product featured status:", error);

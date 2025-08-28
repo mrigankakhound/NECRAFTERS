@@ -1,4 +1,5 @@
 import BannerCarousel from "@/components/home/BannerCarousel";
+export const revalidate = 0;
 import BlogImages from "@/components/home/BlogImages";
 
 import CrazyDeals from "@/components/home/CrazyDeals";
