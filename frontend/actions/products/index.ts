@@ -450,6 +450,68 @@ export async function getFilteredProducts(filters: {
   }
 }
 
+export async function getProductsByCategory(categorySlug: string, page: number = 1, limit: number = 12) {
+  try {
+    const skip = (page - 1) * limit;
+    
+    // First find the category by slug
+    const category = await prisma.category.findFirst({
+      where: {
+        slug: categorySlug,
+      },
+    });
+
+    if (!category) {
+      return {
+        success: false,
+        error: "Category not found",
+      };
+    }
+
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          categoryId: category.id,
+        },
+        skip,
+        take: limit,
+        include: {
+          category: true,
+          productSubCategories: {
+            include: {
+              subCategory: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      prisma.product.count({
+        where: {
+          categoryId: category.id,
+        },
+      }),
+    ]);
+
+    return { 
+      success: true, 
+      data: products,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    return { success: false, error: "Failed to fetch products by category" };
+  }
+}
+
 
 
 

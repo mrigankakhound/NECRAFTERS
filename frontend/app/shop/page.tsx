@@ -11,7 +11,9 @@ import {
   getAllProducts,
   sortProducts,
   getFilteredProducts,
+  getProductsByCategory,
 } from "@/actions/products/index";
+import { getMainCategories } from "@/actions/categories/get-main-categories";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -122,6 +124,10 @@ const ShopPage = () => {
     searchParams.get("sortBy") || "Featured"
   );
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    searchParams.get("category") || null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -131,6 +137,21 @@ const ShopPage = () => {
     hasNext: false,
     hasPrev: false,
   });
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await getMainCategories();
+        if (result.success && result.data) {
+          setCategories(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     // Check if popup should be shown (session-based logic)
@@ -159,52 +180,21 @@ const ShopPage = () => {
   useEffect(() => {
     // Reset to first page when filters change
     setCurrentPage(1);
+    
+    // Update selectedCategory from URL params
+    const categoryParam = searchParams.get("category");
+    setSelectedCategory(categoryParam);
   }, [searchParams, sortBy]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        // Get all filter parameters from URL
-        const categories = searchParams
-          .get("categories")
-          ?.split(",")
-          .filter(Boolean);
-        const subCategories = searchParams
-          .get("subCategories")
-          ?.split(",")
-          .filter(Boolean);
-        const sizes = searchParams.get("sizes")?.split(",").filter(Boolean);
-        const minPrice = Number(searchParams.get("minPrice")) || undefined;
-        const maxPrice = Number(searchParams.get("maxPrice")) || undefined;
-
-        // Check if any filters are applied
-        const hasFilters =
-          categories?.length ||
-          subCategories?.length ||
-          sizes?.length ||
-          minPrice ||
-          maxPrice;
-
         let result;
-        if (hasFilters) {
-          // If filters are applied, use getFilteredProducts
-          result = await getFilteredProducts({
-            categories,
-            subCategories,
-            sizes,
-            minPrice,
-            maxPrice,
-            sortBy,
-          });
-          setPagination({
-            total: result?.data?.length || 0,
-            totalPages: 1,
-            hasNext: false,
-            hasPrev: false,
-          });
-        } else if (sortBy === "Featured") {
-          result = await getAllProducts(currentPage, 12); // Reduced from 20 to 12 for faster loading
+        
+        if (selectedCategory) {
+          // Fetch products by selected category
+          result = await getProductsByCategory(selectedCategory, currentPage, 12);
           setPagination(result?.pagination || {
             total: 0,
             totalPages: 0,
@@ -212,13 +202,60 @@ const ShopPage = () => {
             hasPrev: false,
           });
         } else {
-          result = await sortProducts(sortBy, currentPage, 12); // Reduced from 20 to 12 for faster loading
-          setPagination(result?.pagination || {
-            total: 0,
-            totalPages: 0,
-            hasNext: false,
-            hasPrev: false,
-          });
+          // Get all filter parameters from URL
+          const categories = searchParams
+            .get("categories")
+            ?.split(",")
+            .filter(Boolean);
+          const subCategories = searchParams
+            .get("subCategories")
+            ?.split(",")
+            .filter(Boolean);
+          const sizes = searchParams.get("sizes")?.split(",").filter(Boolean);
+          const minPrice = Number(searchParams.get("minPrice")) || undefined;
+          const maxPrice = Number(searchParams.get("maxPrice")) || undefined;
+
+          // Check if any filters are applied
+          const hasFilters =
+            categories?.length ||
+            subCategories?.length ||
+            sizes?.length ||
+            minPrice ||
+            maxPrice;
+
+          if (hasFilters) {
+            // If filters are applied, use getFilteredProducts
+            result = await getFilteredProducts({
+              categories,
+              subCategories,
+              sizes,
+              minPrice,
+              maxPrice,
+              sortBy,
+            });
+            setPagination({
+              total: result?.data?.length || 0,
+              totalPages: 1,
+              hasNext: false,
+              hasPrev: false,
+            });
+          } else if (sortBy === "Featured") {
+            result = await getAllProducts(currentPage, 12);
+            setPagination(result?.pagination || {
+              total: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            });
+          } else {
+            result = await sortProducts(sortBy, currentPage, 12);
+            setPagination(result?.pagination || {
+              total: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrev: false,
+            });
+          }
         }
 
         setProducts(result?.data || []);
@@ -233,7 +270,7 @@ const ShopPage = () => {
     // Add debouncing to prevent excessive API calls
     const timeoutId = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchParams, sortBy, currentPage]);
+  }, [searchParams, sortBy, currentPage, selectedCategory]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -261,13 +298,65 @@ const ShopPage = () => {
     }
   };
 
+  const handleCategorySelect = (categorySlug: string) => {
+    if (categorySlug === "" || selectedCategory === categorySlug) {
+      // If "All Products" is clicked or same category is clicked, deselect it
+      setSelectedCategory(null);
+      setCurrentPage(1);
+      const params = new URLSearchParams(window.location.search);
+      params.delete("category");
+      router.push(`?${params.toString()}`);
+    } else {
+      // Select new category
+      setSelectedCategory(categorySlug);
+      setCurrentPage(1);
+      const params = new URLSearchParams(window.location.search);
+      params.set("category", categorySlug);
+      router.push(`?${params.toString()}`);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Shop Popup */}
       <ShopPopup isOpen={showPopup} onClose={handlePopupClose} />
       
       {/* Page title */}
-      <h1 className="text-lg font-bold sm:text-3xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">Shop All Products</h1>
+      <h1 className="text-lg font-bold sm:text-3xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+        {selectedCategory && categories.length > 0
+          ? categories.find(cat => cat.slug === selectedCategory)?.name || 'Shop Products'
+          : 'Shop All Products'
+        }
+      </h1>
+
+      {/* Category Selection */}
+      {categories.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <button
+            onClick={() => handleCategorySelect("")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+              !selectedCategory
+                ? "bg-orange-600 text-white shadow-lg scale-105"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
+            }`}
+          >
+            All Products
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategorySelect(category.slug)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                selectedCategory === category.slug
+                  ? "bg-orange-600 text-white shadow-lg scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Container for the filter button and sorting dropdown */}
       <div className="flex justify-center items-center mb-8">
