@@ -84,14 +84,14 @@ type Product = {
 // Loading skeleton component for products
 const ProductsSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {Array(8)
+    {Array(12)
       .fill(0)
       .map((_, i) => (
-        <div key={i} className="space-y-4">
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-1/4" />
+        <div key={i} className="space-y-4 animate-pulse">
+          <Skeleton className="h-[300px] w-full bg-gray-200" />
+          <Skeleton className="h-4 w-3/4 bg-gray-200" />
+          <Skeleton className="h-4 w-1/2 bg-gray-200" />
+          <Skeleton className="h-4 w-1/4 bg-gray-200" />
         </div>
       ))}
   </div>
@@ -147,10 +147,10 @@ const ShopPage = () => {
 
     // Show popup if it hasn't been dismissed in this session
     if (shouldShowPopup()) {
-      // Small delay to ensure page is fully loaded
+      // Reduced delay for faster popup display
       const timer = setTimeout(() => {
         setShowPopup(true);
-      }, 1000);
+      }, 500);
       
       return () => clearTimeout(timer);
     }
@@ -204,7 +204,7 @@ const ShopPage = () => {
             hasPrev: false,
           });
         } else if (sortBy === "Featured") {
-          result = await getAllProducts(currentPage, 20);
+          result = await getAllProducts(currentPage, 12); // Reduced from 20 to 12 for faster loading
           setPagination(result?.pagination || {
             total: 0,
             totalPages: 0,
@@ -212,7 +212,7 @@ const ShopPage = () => {
             hasPrev: false,
           });
         } else {
-          result = await sortProducts(sortBy, currentPage, 20);
+          result = await sortProducts(sortBy, currentPage, 12); // Reduced from 20 to 12 for faster loading
           setPagination(result?.pagination || {
             total: 0,
             totalPages: 0,
@@ -230,7 +230,9 @@ const ShopPage = () => {
       }
     };
 
-    fetchProducts();
+    // Add debouncing to prevent excessive API calls
+    const timeoutId = setTimeout(fetchProducts, 300);
+    return () => clearTimeout(timeoutId);
   }, [searchParams, sortBy, currentPage]);
 
   const handlePageChange = (newPage: number) => {
@@ -240,6 +242,7 @@ const ShopPage = () => {
   };
 
   const handleSortChange = (value: string) => {
+    if (value === sortBy) return; // Prevent unnecessary re-renders
     setSortBy(value);
     setCurrentPage(1); // Reset to first page when sorting changes
     const params = new URLSearchParams(window.location.search);
@@ -286,6 +289,11 @@ const ShopPage = () => {
               className="relative z-10 appearance-none bg-white text-gray-800 px-4 py-3 pr-12 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:opacity-50 cursor-pointer min-w-[200px] text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg transform-gpu"
               disabled={isLoading}
             >
+              {isLoading && (
+                <option disabled className="py-2 px-3 bg-white text-gray-400">
+                  Loading...
+                </option>
+              )}
               <option className="py-2 px-3 bg-white text-gray-800">Featured</option>
               <option className="py-2 px-3 bg-white text-gray-800">Price: Low to High</option>
               <option className="py-2 px-3 bg-white text-gray-800">Price: High to Low</option>
@@ -342,7 +350,14 @@ const ShopPage = () => {
           
           {/* Results Count */}
           <div className="text-center text-gray-600 mt-4">
-            Showing {products.length} of {pagination.total} products
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                <span>Loading products...</span>
+              </div>
+            ) : (
+              `Showing ${products.length} of ${pagination.total} products`
+            )}
           </div>
         </>
       )}
