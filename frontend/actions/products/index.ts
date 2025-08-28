@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
+    console.log('🔍 Starting getBestSellerProducts...');
+    
     // First try to get products ordered by sold count
     let bestSellers = await prisma.product.findMany({
       orderBy: {
@@ -13,10 +15,12 @@ export async function getBestSellerProducts(limit: number = 10) {
         category: true,
       },
     });
+    
+    console.log('📊 Found products by sold count:', bestSellers.length);
 
     // If no products found or all have sold = 0, fallback to random products
     if (!bestSellers || bestSellers.length === 0 || bestSellers.every(p => p.sold === 0)) {
-      console.log('No best sellers found, falling back to random products');
+      console.log('🔄 No best sellers found, falling back to random products');
       bestSellers = await prisma.product.findMany({
         take: limit,
         include: {
@@ -28,15 +32,18 @@ export async function getBestSellerProducts(limit: number = 10) {
         },
       });
       
+      console.log('🎲 Found random products:', bestSellers.length);
+      
       // Shuffle the products to make them truly random
       if (bestSellers.length > 0) {
         bestSellers = bestSellers.sort(() => Math.random() - 0.5);
+        console.log('🔀 Products shuffled for variety');
       }
     }
 
     // If still no products, try to get any products at all with random selection
     if (!bestSellers || bestSellers.length === 0) {
-      console.log('No random products found, falling back to any available products');
+      console.log('⚠️ No random products found, trying any available products');
       bestSellers = await prisma.product.findMany({
         take: limit,
         include: {
@@ -44,29 +51,34 @@ export async function getBestSellerProducts(limit: number = 10) {
         },
       });
       
+      console.log('📦 Found any available products:', bestSellers.length);
+      
       // Shuffle these products too for variety
       if (bestSellers.length > 0) {
         bestSellers = bestSellers.sort(() => Math.random() - 0.5);
+        console.log('🔀 Available products shuffled');
       }
     }
 
     // If we still have no products, return empty array but don't fail
     if (!bestSellers || bestSellers.length === 0) {
-      console.log('No products found in database at all');
+      console.log('❌ No products found in database at all');
       return {
         success: true,
         data: [],
       };
     }
 
+    console.log('✅ Successfully returning', bestSellers.length, 'products');
     return {
       success: true,
       data: bestSellers,
     };
   } catch (error) {
-    console.error("Error fetching best seller products:", error);
+    console.error("❌ Error fetching best seller products:", error);
     // Even on error, try to get any products as last resort with random selection
     try {
+      console.log('🆘 Trying emergency fallback...');
       const fallbackProducts = await prisma.product.findMany({
         take: limit,
         include: {
@@ -74,9 +86,12 @@ export async function getBestSellerProducts(limit: number = 10) {
         },
       });
       
+      console.log('🆘 Emergency fallback found:', fallbackProducts.length, 'products');
+      
       // Shuffle fallback products for variety
       if (fallbackProducts.length > 0) {
         fallbackProducts.sort(() => Math.random() - 0.5);
+        console.log('🔀 Emergency products shuffled');
       }
       
       return {
@@ -84,7 +99,7 @@ export async function getBestSellerProducts(limit: number = 10) {
         data: fallbackProducts,
       };
     } catch (fallbackError) {
-      console.error("Fallback also failed:", fallbackError);
+      console.error("💥 Emergency fallback also failed:", fallbackError);
       return {
         success: false,
         error: "Failed to fetch best seller products",
