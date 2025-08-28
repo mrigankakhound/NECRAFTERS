@@ -1,4 +1,4 @@
-import { getProductBySlug } from "@/actions/product";
+import { getProductBySlug, getRelatedProducts } from "@/actions/product";
 import ImageCarousel from "@/components/product/ImageCarousel";
 import ProductDetailsAccordian from "@/components/product/ProductDetailsAccordian";
 import ProductActions from "@/components/product/ProductActions";
@@ -23,6 +23,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     const product = result.data;
+    const related = await getRelatedProducts(product.categoryId, product.id, 4);
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -68,6 +69,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        {related.success && related.data && related.data.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 pb-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">You May Also Like</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {related.data.map((rp) => (
+                <a
+                  key={rp.id}
+                  href={`/product/${rp.slug}`}
+                  className="group bg-white rounded-lg p-2 sm:p-3"
+                >
+                  <div className="relative aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
+                    {rp.images?.[0]?.url && (
+                      <img
+                        src={rp.images[0].url}
+                        alt={rp.title}
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
+                  </div>
+                  <p className="font-semibold text-sm sm:text-base line-clamp-2">{rp.title}</p>
+                  <p className="text-base sm:text-lg font-semibold mt-1">
+                    ₹{(rp.sizes?.[0]?.price ?? 0).toFixed(2)}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   } catch (error) {

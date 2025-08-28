@@ -1,14 +1,26 @@
 import BannerCarousel from "@/components/home/BannerCarousel";
-export const revalidate = 0;
+import dynamic from "next/dynamic";
+
+// Reduce initial JS by code-splitting non-critical sections
+const CrazyDealsSection = dynamic(() => import("@/components/home/CrazyDeals"), { ssr: false });
+const FeaturedReviewsSection = dynamic(() => import("@/components/home/FeaturedReviews"), { ssr: false });
+const NeedOfWebsiteSection = dynamic(() => import("@/components/home/NeedOfWebsite"), { ssr: false });
+const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyNeCraftersDiagram"), { ssr: false });
+const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"), { ssr: false });
+const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"), { ssr: false });
+
+// Balance freshness with performance
+export const revalidate = 60;
 import BlogImages from "@/components/home/BlogImages";
 
-import CrazyDeals from "@/components/home/CrazyDeals";
-import NeedOfWebsite from "@/components/home/NeedOfWebsite";
+// Moved to dynamic imports above
+// import CrazyDeals from "@/components/home/CrazyDeals";
+// import NeedOfWebsite from "@/components/home/NeedOfWebsite";
 import ProductCard from "@/components/home/ProductCard";
-import ReviewSection from "@/components/home/ReviewSection";
+// import ReviewSection from "@/components/home/ReviewSection";
 import SpecialCombos from "@/components/home/SpecialCombos";
-import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
-import FeaturedReviews from "@/components/home/FeaturedReviews";
+// import WhyNeCraftersDiagram from "@/components/home/WhyNeCraftersDiagram";
+// import FeaturedReviews from "@/components/home/FeaturedReviews";
 import HashScrollHandler from "@/components/HashScrollHandler";
 import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
@@ -53,8 +65,8 @@ const HomePage = async () => {
         sectionId="best-sellers"
       />
 
-      <CrazyDeals offers={crazyDeals.data ?? []} />
-      <FeaturedReviews reviews={featuredReviews.data?.map(review => ({
+      <CrazyDealsSection offers={crazyDeals.data ?? []} />
+      <FeaturedReviewsSection reviews={featuredReviews.data?.map(review => ({
         ...review,
         description: review.description || undefined,
         customerName: review.customerName || undefined,
@@ -72,10 +84,10 @@ const HomePage = async () => {
         products={featuredProducts.data ?? []}
         sectionId="featured-products"
       />
-      <NeedOfWebsite />
-      <WhyNeCraftersDiagram />
-      <ReviewSection />
-      <BlogImages />
+      <NeedOfWebsiteSection />
+      <WhyNeCraftersDiagramSection />
+      <ReviewSectionSection />
+      <BlogImagesSection />
     </div>
   );
 };

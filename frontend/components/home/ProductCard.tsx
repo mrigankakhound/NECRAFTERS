@@ -3,6 +3,7 @@
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { Product } from "@prisma/client";
 import { useCart } from "@/store/useCart";
 import { toast } from "sonner";
@@ -109,7 +110,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
         >
           {products.map((product) => {
             const mainImage = product.images[0]?.url;
-            const secondImage = product.images[1]?.url || mainImage; // Fallback to main image if no second image
+            const secondImageCandidate = product.images[1]?.url;
             const discountedPrice = product.sizes[0]?.price
               ? product.sizes[0].price * (1 - (product.discount || 0) / 100)
               : 0;
@@ -123,16 +124,28 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                 <div className="relative aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
                   {mainImage && (
                     <>
-                      <img
-                        src={mainImage}
-                        alt={product.title}
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <img
-                        src={secondImage}
-                        alt={`${product.title} - Hover`}
-                        className="absolute inset-0 object-cover w-full h-full opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
-                      />
+                      {(() => {
+                        const primary = mainImage as string;
+                        const secondary = (secondImageCandidate ?? primary) as string;
+                        return (
+                          <>
+                            <Image
+                              src={primary}
+                              alt={product.title}
+                              fill
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <Image
+                              src={secondary}
+                              alt={`${product.title} - Hover`}
+                              fill
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                              className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                            />
+                          </>
+                        );
+                      })()}
                     </>
                   )}
                   {/* Add to Cart Button - appears on hover */}
