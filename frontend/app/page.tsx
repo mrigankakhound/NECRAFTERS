@@ -66,11 +66,16 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
-  // SEO-optimized page title and description
-  const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
-  const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
+    // Debug: Check what data we're getting
+    console.log('Best Sellers Status:', bestSellers.status);
+    console.log('Best Sellers Data:', bestSellers_data);
+    console.log('Best Sellers Products:', bestSellers_data.data);
 
-  return (
+    // SEO-optimized page title and description
+    const pageTitle = "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS";
+    const pageDescription = "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.";
+
+    return (
     <div>
       <HashScrollHandler />
       <BannerCarousel
