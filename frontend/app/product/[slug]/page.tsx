@@ -1,12 +1,11 @@
 import { getProductBySlug, getRelatedProducts } from "@/actions/product";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-const ImageCarousel = dynamic(() => import("@/components/product/ImageCarousel"), { ssr: false });
+const ImageCarousel = dynamic(() => import("@/components/product/ImageCarousel"));
 const ProductDetailsAccordian = dynamic(
-  () => import("@/components/product/ProductDetailsAccordian"),
-  { ssr: false }
+  () => import("@/components/product/ProductDetailsAccordian")
 );
-const ProductActions = dynamic(() => import("@/components/product/ProductActions"), { ssr: false });
+const ProductActions = dynamic(() => import("@/components/product/ProductActions"));
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {
