@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Key } from "lucide-react";
+import { Settings, Key, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
 import ChangePasswordModal from "../modals/ChangePasswordModal";
@@ -25,6 +25,14 @@ const Navbar = () => {
   const handleChangePassword = () => {
     setIsChangePasswordOpen(true);
     setIsSettingsOpen(false);
+  };
+
+  const handleLogout = () => {
+    // Clear authentication
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_session_expiry');
+    // Redirect to login (now at root path)
+    window.location.href = '/';
   };
 
   return (
@@ -54,6 +62,18 @@ const Navbar = () => {
             >
               <Key className="h-4 w-4 text-gray-500" />
               <span>Change Password</span>
+            </button>
+            
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-1" />
+            
+            {/* Logout Option */}
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center space-x-3 transition-colors duration-150"
+            >
+              <LogOut className="h-4 w-4 text-red-500" />
+              <span>Logout</span>
             </button>
           </div>
         )}
