@@ -568,7 +568,7 @@ export default function NewProductPage() {
                   setProductData((prev) => ({ ...prev, featured: checked }))
                 }
               />
-              <Label htmlFor="featured">Review of Food Enthusiasts</Label>
+              <Label htmlFor="featured">Featured Product</Label>
             </div>
           </Card>
 

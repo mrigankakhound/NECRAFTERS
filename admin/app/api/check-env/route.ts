@@ -11,9 +11,12 @@ export async function GET() {
       VERCEL_URL: !!process.env.VERCEL_URL,
     };
 
-    const missingVars = Object.entries(envVars)
-      .filter(([, status]) => !status)
-      .map(([key]) => key);
+    // In development, VERCEL_URL is not required
+    const requiredVars = process.env.NODE_ENV === 'development' 
+      ? ['DATABASE_URL', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'NEXTAUTH_URL']
+      : ['DATABASE_URL', 'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'NEXTAUTH_URL', 'VERCEL_URL'];
+
+    const missingVars = requiredVars.filter(key => !envVars[key as keyof typeof envVars]);
 
     return NextResponse.json({
       success: true,

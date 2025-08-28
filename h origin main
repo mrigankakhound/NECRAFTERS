@@ -1,5 +1,0 @@
-[33m1eb5ba6[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m Add detailed image debugging to troubleshoot image display issues
-[33m50556ec[m Add debug displays to troubleshoot offers not showing in frontend
-[33m65f4e9b[m[33m ([m[1;31morigin/main[m[33m)[m Fix category creation: resolve body size limit issue and optimize image upload flow
-[33m18f76e8[m SEO improvements
-[33m2000d6b[m 🚀 Major SEO Optimization & Bug Fixes

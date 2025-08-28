@@ -13,7 +13,7 @@ import React from "react";
 import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
 import { getSpecialCombos } from "@/actions/special-combos";
 import { getCrazyDeals } from "@/actions/crazy-deals";
-import { getBestSellerProducts, getNewArrivals } from "@/actions/products";
+import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
 import { getMainCategories } from "@/actions/categories/get-main-categories";
 import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
@@ -25,7 +25,7 @@ const HomePage = async () => {
   const bestSellers = await getBestSellerProducts(8); // Fetch top 8 best sellers
   const mainCategories = await getMainCategories();
   const crazyDeals = await getCrazyDeals();
-  const newArrivals = await getNewArrivals(4); // Fetch 4 newest products
+  const featuredProducts = await getFeaturedProducts(4, 1); // Fetch 4 featured products
   const featuredReviews = await getActiveFeaturedReviews();
 
   // Debug logging
@@ -94,8 +94,9 @@ const HomePage = async () => {
       })) ?? []} />
       <ProductCard
         shop
-        heading="NEW ARRIVALS"
-        products={newArrivals.data ?? []}
+        heading="FEATURED PRODUCTS"
+        products={featuredProducts.data ?? []}
+        sectionId="featured-products"
       />
       <NeedOfWebsite />
       <WhyNeCraftersDiagram />

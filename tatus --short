@@ -1,3 +1,0 @@
-[33m35eb828[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Add debug logging for banner deletion issue - troubleshoot Cloudinary deletion in live environment
-[33m1da1977[m Fix product page issues and improve image handling: resolve getProductBySlug function errors, fix product detail page rendering, update image configurations, and clean up debug elements
-[33m1eb5ba6[m Add detailed image debugging to troubleshoot image display issues
