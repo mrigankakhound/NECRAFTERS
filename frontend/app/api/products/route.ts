@@ -56,6 +56,15 @@ export async function GET(request: Request) {
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 400 });
       }
+      // If filters return empty, gracefully fall back to page 1 of all products
+      if (!result.data || result.data.length === 0) {
+        const fallback = await getAllProducts(1, limit);
+        if (!fallback.success) {
+          return NextResponse.json({ success: false, error: fallback.error }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, ...fallback });
+      }
+
       // Wrap to include minimal pagination for filtered list
       return NextResponse.json({
         success: true,
