@@ -3,25 +3,47 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    console.log('🎲 Getting random products for Best Sellers...');
+    console.log('🏆 Getting admin-selected Best Seller products...');
     
-    // Always get random products - no complex logic
+    // Get only products marked as best sellers by admin
     let bestSellers = await prisma.product.findMany({
+      where: {
+        bestSeller: true,
+      },
       take: limit,
       include: {
         category: true,
       },
     });
     
-    console.log('📦 Found products:', bestSellers.length);
+    console.log('📦 Found best seller products:', bestSellers.length);
     
-    // Shuffle the products to make them truly random
+    // If we have best sellers, shuffle them for variety
     if (bestSellers.length > 0) {
       bestSellers = bestSellers.sort(() => Math.random() - 0.5);
-      console.log('🔀 Products shuffled for variety');
+      console.log('🔀 Best seller products shuffled for variety');
     }
 
-
+    // If no best sellers selected yet, show some featured products as fallback
+    if (!bestSellers || bestSellers.length === 0) {
+      console.log('⚠️ No best sellers selected yet, showing featured products as fallback');
+      bestSellers = await prisma.product.findMany({
+        where: {
+          featured: true,
+        },
+        take: limit,
+        include: {
+          category: true,
+        },
+      });
+      
+      console.log('📦 Found featured products as fallback:', bestSellers.length);
+      
+      if (bestSellers.length > 0) {
+        bestSellers = bestSellers.sort(() => Math.random() - 0.5);
+        console.log('🔀 Featured products shuffled for variety');
+      }
+    }
 
     // If still no products, return empty array but don't fail
     if (!bestSellers || bestSellers.length === 0) {

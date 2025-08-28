@@ -24,6 +24,7 @@ import { Edit2, Trash2 } from "lucide-react";
 import {
   getAllProducts,
   updateProductFeatured,
+  updateProductBestSeller,
   deleteProduct,
 } from "@/app/actions/product.actions";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ interface Product {
   category: string;
   sizes: ProductSize[];
   featured: boolean;
+  bestSeller: boolean;
 }
 
 export default function ProductsPage() {
@@ -107,6 +109,42 @@ export default function ProductsPage() {
         products.map((product) =>
           product.id === productId
             ? { ...product, featured: !featured }
+            : product
+        )
+      );
+    }
+  };
+
+  const handleBestSellerToggle = async (productId: string, bestSeller: boolean) => {
+    try {
+      // Update best seller status in the UI immediately
+      setProducts(
+        products.map((product) =>
+          product.id === productId ? { ...product, bestSeller } : product
+        )
+      );
+
+      // Update in the backend
+      const result = await updateProductBestSeller(productId, bestSeller);
+      if (!result.success) {
+        // Revert UI change if backend update fails
+        setProducts(
+          products.map((product) =>
+            product.id === productId
+              ? { ...product, bestSeller: !bestSeller }
+              : product
+          )
+        );
+        toast.error(result.error || "Failed to update best seller status");
+      }
+    } catch (error) {
+      console.error("Error updating best seller status:", error);
+      toast.error("Failed to update best seller status");
+      // Revert UI change
+      setProducts(
+        products.map((product) =>
+          product.id === productId
+            ? { ...product, bestSeller: !bestSeller }
             : product
         )
       );
@@ -190,6 +228,7 @@ export default function ProductsPage() {
               <TableHead>Price</TableHead>
               <TableHead>Sizes</TableHead>
               <TableHead>Featured</TableHead>
+              <TableHead>Best Seller</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -232,6 +271,14 @@ export default function ProductsPage() {
                     checked={product.featured}
                     onCheckedChange={(checked) =>
                       handleFeaturedToggle(product.id, checked)
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={product.bestSeller}
+                    onCheckedChange={(checked) =>
+                      handleBestSellerToggle(product.id, checked)
                     }
                   />
                 </TableCell>

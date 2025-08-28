@@ -200,6 +200,7 @@ model Product {
   rating          Float    @default(0)
   numReviews      Int      @default(0)
   featured        Boolean  @default(false)
+  bestSeller      Boolean  @default(false)
   sku             String   @unique
   images          Image[]
   sizes           ProductSize[]

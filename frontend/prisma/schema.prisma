@@ -191,6 +191,7 @@ model Product {
   sizes           ProductSize[]
   discount        Float?              @default(0)
   sold            Int?                @default(0)
+  bestSeller      Boolean             @default(false)
 
   // Relations
   category             Category             @relation(fields: [categoryId], references: [id])

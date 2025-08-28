@@ -273,6 +273,28 @@ export async function updateProductFeatured(
   }
 }
 
+export async function updateProductBestSeller(
+  productId: string,
+  bestSeller: boolean
+) {
+  try {
+    await prisma.product.update({
+      where: { id: productId },
+      data: { bestSeller },
+    });
+
+    revalidatePath("/products");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating product best seller status:", error);
+    return {
+      success: false,
+      error: "Failed to update product best seller status",
+    };
+  }
+}
+
 export async function deleteProduct(productId: string) {
   try {
     console.log(`🗑️  Starting deletion of product: ${productId}`);
