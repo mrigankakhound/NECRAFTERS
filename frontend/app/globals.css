@@ -69,6 +69,19 @@
     scroll-behavior: smooth;
     data-scroll-behavior: smooth;
   }
+  
+  /* Add scroll margin for sections to account for fixed navbar */
+  [id^="best-sellers"],
+  [id^="crazy-deals"],
+  [id^="gift-hamper"],
+  [id^="featured-products"],
+  [id^="featured-reviews"],
+  [id^="recipes"],
+  [id^="blog"],
+  [id^="about-us"],
+  [id^="contact-us"] {
+    scroll-margin-top: 140px;
+  }
 }
 
 /* Custom modal animations */

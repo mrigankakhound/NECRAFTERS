@@ -32,7 +32,7 @@ const FeaturedReviews = ({ reviews }: FeaturedReviewsProps) => {
   }
 
   return (
-         <div className="container mx-auto mt-24 mb-0 px-4">
+         <div id="featured-reviews" className="container mx-auto mt-24 mb-0 px-4">
                     <div className="text-center mb-10">
           {/* Decorative elements */}
           <div className="flex justify-center items-center mb-3">

@@ -60,16 +60,30 @@ const Navbar = () => {
         setTimeout(() => {
           const element = document.getElementById(sectionId);
           if (element) {
-
-            element.scrollIntoView({ behavior: 'smooth' });
+            // Calculate offset for fixed navbar (navbar height + some padding)
+            const navbarHeight = 140; // Approximate height of navbar including horizontal nav
+            const elementTop = element.offsetTop;
+            const offsetPosition = elementTop - navbarHeight;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
           } else {
 
             // Try alternative selectors
             const alternativeElement = document.querySelector(`[data-section="${sectionId}"]`) || 
                                     document.querySelector(`[id*="${sectionId}"]`);
             if (alternativeElement) {
-
-              alternativeElement.scrollIntoView({ behavior: 'smooth' });
+              // Calculate offset for fixed navbar
+              const navbarHeight = 140;
+              const elementTop = alternativeElement.offsetTop;
+              const offsetPosition = elementTop - navbarHeight;
+              
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+              });
             } else {
   
             }
@@ -116,7 +130,7 @@ const Navbar = () => {
     { 
       name: "GIFT HAMPER", 
       icon: <RiDiscountPercentFill size={24} />,
-      link: "/#crazy-deals"
+      link: "/#gift-hamper"
     },
     {
       name: "RECIPES",
@@ -244,7 +258,7 @@ const Navbar = () => {
               </Link>
 
               {/* Special Combos */}
-              <Link href="/#crazy-deals" className="flex flex-col items-center space-y-2 group">
+              <Link href="/#gift-hamper" className="flex flex-col items-center space-y-2 group">
                 <div className="w-16 h-16 p-3 transition-all duration-300">
                   <img 
                     src="/images/navicons/gift_hamper.png" 
