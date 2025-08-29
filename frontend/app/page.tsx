@@ -1,3 +1,5 @@
+"use client";
+
 import BannerCarousel from "@/components/home/BannerCarousel";
 import dynamic from "next/dynamic";
 
@@ -9,90 +11,83 @@ const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyN
 const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
 const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
-// Make page static during build to prevent timeouts
-export const revalidate = false;
-
-// SEO metadata
-export const metadata = {
-  title: "Premium Chili Oil & Northeast Indian Spices | NE CRAFTERS",
-  description: "Discover authentic Northeast Indian chili oil, premium spices, and traditional flavors. Shop the best quality chili oil, spice blends, and regional delicacies online.",
-};
-
+// SEO metadata - moved to layout.tsx for static pages
 import ProductCard from "@/components/home/ProductCard";
 import SpecialCombos from "@/components/home/SpecialCombos";
 import HashScrollHandler from "@/components/HashScrollHandler";
-import React from "react";
-import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
-import { getSpecialCombos } from "@/actions/special-combos";
-import { getCrazyDeals } from "@/actions/crazy-deals";
-import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
-import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
+import React, { useEffect, useState } from "react";
 
-const HomePage = async () => {
-  // Add timeouts to prevent build hanging
-  const fetchWithTimeout = async (promise: Promise<any>, timeoutMs: number) => {
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
-      )
-    ]);
-  };
+const HomePage = () => {
+  const [data, setData] = useState({
+    banners: { data: [] },
+    app_banners: { data: [] },
+    specialCombos: { data: [] },
+    bestSellers: { data: [] },
+    crazyDeals: { data: [] },
+    featuredProducts: { data: [] },
+    featuredReviews: { data: [] }
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  try {
-    // Fetch critical data - remove timeout for best sellers to prevent false timeouts
-    const [website_banners, app_banners, specialCombos, bestSellers] = await Promise.allSettled([
-      fetchWithTimeout(getWebsiteBanners(), 8000),
-      fetchWithTimeout(getAppBanners(), 8000),
-      fetchWithTimeout(getSpecialCombos(), 8000),
-      getBestSellerProducts(8) // No timeout - let it run naturally
-    ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch all data on client side
+        const [banners, appBanners, specialCombos, bestSellers, crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
+          fetch('/api/banners/website').then(res => res.json()),
+          fetch('/api/banners/app').then(res => res.json()),
+          fetch('/api/offers/special-combos').then(res => res.json()),
+          fetch('/api/products/best-sellers?limit=8').then(res => res.json()),
+          fetch('/api/offers/crazy-deals').then(res => res.json()),
+          fetch('/api/products/featured?limit=4&page=1').then(res => res.json()),
+          fetch('/api/featured-reviews').then(res => res.json())
+        ]);
 
-    // Fetch remaining data with timeouts
-    const [crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
-      fetchWithTimeout(getCrazyDeals(), 12000),
-      fetchWithTimeout(getFeaturedProducts(4, 1), 12000),
-      fetchWithTimeout(getActiveFeaturedReviews(), 12000)
-    ]);
+        setData({
+          banners: banners.status === 'fulfilled' ? banners.value : { data: [] },
+          app_banners: appBanners.status === 'fulfilled' ? appBanners.value : { data: [] },
+          specialCombos: specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] },
+          bestSellers: bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] },
+          crazyDeals: crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] },
+          featuredProducts: featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] },
+          featuredReviews: featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] }
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Extract data safely with detailed debugging
-    const banners = website_banners.status === 'fulfilled' ? website_banners.value : { data: [] };
-    const app_banners_data = app_banners.status === 'fulfilled' ? app_banners.value : { data: [] };
-    const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
-    const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
-    const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
-    const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
-    const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
+    fetchData();
+  }, []);
 
-    // Log any failed requests for debugging - this helps identify build issues
-    if (website_banners.status === 'rejected') console.log('Website banners fetch failed');
-    if (app_banners.status === 'rejected') console.log('App banners fetch failed');
-    if (specialCombos.status === 'rejected') console.log('Special combos fetch failed');
-    if (bestSellers.status === 'rejected') console.log('Best sellers fetch failed');
-    if (crazyDeals.status === 'rejected') console.log('Crazy deals fetch failed');
-    if (featuredProducts.status === 'rejected') console.log('Featured products fetch failed');
-    if (featuredReviews.status === 'rejected') console.log('Featured reviews fetch failed');
-
-    // Data extraction complete
-
-
-
-
-
-
-
+  if (isLoading) {
     return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading NE CRAFTERS</h1>
+          <p className="text-gray-600">Preparing amazing products for you...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div>
       <HashScrollHandler />
       <BannerCarousel
-        banners={banners.data ?? []}
-        app_banners={app_banners_data.data ?? []}
+        banners={data.banners.data ?? []}
+        app_banners={data.app_banners.data ?? []}
       />
       
-      <SpecialCombos offers={specialCombos_data.data ?? []} />
+      <SpecialCombos offers={data.specialCombos.data ?? []} />
       
       {/* Best Sellers Section - Only show if admin has marked products as best sellers */}
-      {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+      {data.bestSellers.data && data.bestSellers.data.length > 0 ? (
         <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -105,15 +100,15 @@ const HomePage = async () => {
             <ProductCard
               shop
               heading="BEST SELLERS"
-              products={bestSellers_data.data}
+              products={data.bestSellers.data}
               sectionId="best-sellers"
             />
           </div>
         </div>
              ) : null}
 
-      <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
-      <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
+      <CrazyDealsSection offers={data.crazyDeals.data ?? []} />
+      <FeaturedReviewsSection reviews={data.featuredReviews.data?.map((review: any) => ({
         ...review,
         description: review.description || undefined,
         customerName: review.customerName || undefined,
@@ -127,7 +122,7 @@ const HomePage = async () => {
       })) ?? []} />
       
       {/* Featured Products Section - Always show if we have featured products */}
-      {featuredProducts_data.data && featuredProducts_data.data.length > 0 && (
+      {data.featuredProducts.data && data.featuredProducts.data.length > 0 && (
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -138,7 +133,7 @@ const HomePage = async () => {
             <ProductCard
               shop
               heading="FEATURED PRODUCTS"
-              products={featuredProducts_data.data}
+              products={data.featuredProducts.data}
               sectionId="featured-products"
             />
           </div>
@@ -150,19 +145,6 @@ const HomePage = async () => {
       <BlogImagesSection />
     </div>
   );
-  } catch (error) {
-    console.error('Error loading homepage:', error);
-    // Return fallback content if data fetching fails - this prevents build failures
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to NE CRAFTERS</h1>
-          <p className="text-gray-600">Loading amazing products for you...</p>
-          <p className="text-sm text-gray-500 mt-2">Please refresh the page to see the latest content.</p>
-        </div>
-      </div>
-    );
-  }
 };
 
 export default HomePage;
