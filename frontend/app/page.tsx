@@ -9,8 +9,8 @@ const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyN
 const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
 const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
-// Balance freshness with performance
-export const revalidate = 60;
+// Make page static during build to prevent timeouts
+export const revalidate = false;
 
 // SEO metadata
 export const metadata = {
@@ -64,6 +64,15 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
+    // Log any failed requests for debugging - this helps identify build issues
+    if (website_banners.status === 'rejected') console.log('Website banners fetch failed');
+    if (app_banners.status === 'rejected') console.log('App banners fetch failed');
+    if (specialCombos.status === 'rejected') console.log('Special combos fetch failed');
+    if (bestSellers.status === 'rejected') console.log('Best sellers fetch failed');
+    if (crazyDeals.status === 'rejected') console.log('Crazy deals fetch failed');
+    if (featuredProducts.status === 'rejected') console.log('Featured products fetch failed');
+    if (featuredReviews.status === 'rejected') console.log('Featured reviews fetch failed');
+
     // Data extraction complete
 
 
@@ -89,6 +98,7 @@ const HomePage = async () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
                 
+              
                 BEST SELLERS
               </h2>
             </div>
@@ -142,12 +152,13 @@ const HomePage = async () => {
   );
   } catch (error) {
     console.error('Error loading homepage:', error);
-    // Return fallback content if data fetching fails
+    // Return fallback content if data fetching fails - this prevents build failures
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to NE CRAFTERS</h1>
           <p className="text-gray-600">Loading amazing products for you...</p>
+          <p className="text-sm text-gray-500 mt-2">Please refresh the page to see the latest content.</p>
         </div>
       </div>
     );
