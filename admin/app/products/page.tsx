@@ -116,6 +116,7 @@ export default function ProductsPage() {
   };
 
   const handleBestSellerToggle = async (productId: string, bestSeller: boolean) => {
+    console.log(`🔄 Toggling best seller for product ${productId} to ${bestSeller}`);
     try {
       // Update best seller status in the UI immediately
       setProducts(
@@ -124,9 +125,12 @@ export default function ProductsPage() {
         )
       );
 
+      console.log(`📞 Calling updateProductBestSeller...`);
       // Update in the backend
       const result = await updateProductBestSeller(productId, bestSeller);
+      console.log(`📡 Backend response:`, result);
       if (!result.success) {
+        console.log(`❌ Backend update failed, reverting UI...`);
         // Revert UI change if backend update fails
         setProducts(
           products.map((product) =>
@@ -136,6 +140,9 @@ export default function ProductsPage() {
           )
         );
         toast.error(result.error || "Failed to update best seller status");
+      } else {
+        console.log(`✅ Backend update successful!`);
+        toast.success(`Best seller status updated successfully!`);
       }
     } catch (error) {
       console.error("Error updating best seller status:", error);
@@ -193,8 +200,10 @@ export default function ProductsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8 flex justify-center items-center">
+      <div className="p-8 flex flex-col justify-center items-center space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p className="text-gray-600">Loading products...</p>
+        <p className="text-sm text-gray-500">This should be much faster now!</p>
       </div>
     );
   }
@@ -241,13 +250,13 @@ export default function ProductsPage() {
                 <TableCell>
                   <div className="relative h-12 w-12">
                     <img
-                      src={product.mainImage || "/placeholder.png"}
+                      src={product.mainImage || "/next.svg"}
                       alt={product.title}
                       className="w-12 h-12 rounded-full object-cover"
                       onError={(e) => {
-                        // Fallback to placeholder if image fails to load
+                        // Fallback to next.svg if image fails to load
                         const target = e.target as HTMLImageElement;
-                        target.src = "/placeholder.png";
+                        target.src = "/next.svg";
                       }}
                     />
                   </div>

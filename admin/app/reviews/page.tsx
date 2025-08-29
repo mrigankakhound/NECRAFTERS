@@ -126,7 +126,7 @@ export default function ReviewsPage() {
                     <div className="relative w-20 h-20">
                       <Image
                         src={
-                          review.product.images[0]?.url || "/placeholder.png"
+                          review.product.images[0]?.url || "/next.svg"
                         }
                         alt={review.product.title}
                         fill
