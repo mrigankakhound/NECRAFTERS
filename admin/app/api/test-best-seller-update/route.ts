@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     
     // Test 1: Check database connection
     console.log('🔌 Testing database connection...');
-    const connectionTest = await prisma.$queryRaw`SELECT 1 as test`;
-    console.log('✅ Database connection successful:', connectionTest);
+    const connectionTest = await prisma.product.count();
+    console.log('✅ Database connection successful, product count:', connectionTest);
     
     // Test 2: Check if product exists
     console.log('🔍 Checking if product exists...');

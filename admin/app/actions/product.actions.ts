@@ -98,16 +98,61 @@ export async function updateProductBestSeller(
     });
 
     console.log(`✅ Successfully updated product:`, result);
-    
+
     revalidatePath("/products");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("❌ Error updating product best seller status:", error);
+    console.error("Error updating product best seller status:", error);
     return {
       success: false,
       error: "Failed to update product best seller status",
     };
+  }
+}
+
+export async function getProduct(productId: string) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        images: true,
+        sizes: true,
+        category: true,
+        subcategory: true,
+      },
+    });
+
+    if (!product) {
+      return { success: false, error: "Product not found" };
+    }
+
+    return { success: true, data: product };
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return { success: false, error: "Failed to fetch product" };
+  }
+}
+
+export async function updateProduct(productId: string, data: any) {
+  try {
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data,
+      include: {
+        images: true,
+        sizes: true,
+        category: true,
+        subcategory: true,
+      },
+    });
+
+    revalidatePath("/products");
+    revalidatePath(`/products/${productId}`);
+    return { success: true, data: updatedProduct };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return { success: false, error: "Failed to update product" };
   }
 }
 
