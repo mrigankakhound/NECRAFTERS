@@ -93,11 +93,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
   return (
     <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-            {heading}
-          </h2>
-        </div>
+        {/* Removed duplicate heading - main page already provides it */}
       </div>
 
       <div className="relative">

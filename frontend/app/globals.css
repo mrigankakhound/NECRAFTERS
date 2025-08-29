@@ -70,6 +70,24 @@
     data-scroll-behavior: smooth;
   }
   
+  /* Prevent image blur across the entire website */
+  img, 
+  [data-nimg],
+  [data-nimg-intrinsic] {
+    image-rendering: auto;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Ensure Next.js Image components render crisply */
+  .next-image {
+    image-rendering: auto;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
   /* Add scroll margin for sections to account for fixed navbar */
   [id^="best-sellers"],
   [id^="crazy-deals"],

@@ -40,12 +40,12 @@ const HomePage = async () => {
   };
 
   try {
-    // Fetch critical data with timeouts
+    // Fetch critical data - remove timeout for best sellers to prevent false timeouts
     const [website_banners, app_banners, specialCombos, bestSellers] = await Promise.allSettled([
       fetchWithTimeout(getWebsiteBanners(), 8000),
       fetchWithTimeout(getAppBanners(), 8000),
       fetchWithTimeout(getSpecialCombos(), 8000),
-      fetchWithTimeout(getBestSellerProducts(8), 15000) // Increased timeout for Best Sellers
+      getBestSellerProducts(8) // No timeout - let it run naturally
     ]);
 
     // Fetch remaining data with timeouts
@@ -55,7 +55,7 @@ const HomePage = async () => {
       fetchWithTimeout(getActiveFeaturedReviews(), 12000)
     ]);
 
-    // Extract data safely
+    // Extract data safely with detailed debugging
     const banners = website_banners.status === 'fulfilled' ? website_banners.value : { data: [] };
     const app_banners_data = app_banners.status === 'fulfilled' ? app_banners.value : { data: [] };
     const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
@@ -64,21 +64,9 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
-    // Debug: Check what's happening with Best Sellers
-    console.log('=== DEBUG INFO ===');
-    console.log('Best Sellers Promise Status:', bestSellers.status);
-    console.log('Best Sellers Raw Value:', bestSellers.status === 'fulfilled' ? bestSellers.value : 'REJECTED');
-    console.log('Best Sellers Data:', bestSellers_data);
-    console.log('Best Sellers Products Array:', bestSellers_data.data);
-    console.log('Best Sellers Products Length:', bestSellers_data.data?.length);
-    
-    // Check if we have any products at all
-    if (bestSellers.status === 'fulfilled' && bestSellers.value) {
-      console.log('Best Sellers Success:', bestSellers.value.success);
-      console.log('Best Sellers Error:', bestSellers.value.error);
-      console.log('Best Sellers Raw Data:', bestSellers.value.data);
-    }
-    console.log('==================');
+    // Data extraction complete
+
+
 
 
 
@@ -94,43 +82,25 @@ const HomePage = async () => {
       
       <SpecialCombos offers={specialCombos_data.data ?? []} />
       
-      {/* Best Sellers Section - Always show products */}
-      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-        <div className="section-container">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-              BEST SELLERS
-            </h2>
-          </div>
-          
-          {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+      {/* Best Sellers Section - Only show if admin has marked products as best sellers */}
+      {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+        <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                
+                BEST SELLERS
+              </h2>
+            </div>
             <ProductCard
               shop
               heading="BEST SELLERS"
               products={bestSellers_data.data}
               sectionId="best-sellers"
             />
-          ) : (
-            // Show Featured Products instead when Best Sellers is empty
-            featuredProducts_data.data && featuredProducts_data.data.length > 0 ? (
-              <div>
-                <p className="text-center text-gray-600 mb-4 italic">Discover our featured products while we build our best sellers list</p>
-                <ProductCard
-                  shop
-                  heading="FEATURED PRODUCTS"
-                  products={featuredProducts_data.data}
-                  sectionId="best-sellers"
-                />
-              </div>
-            ) : (
-              // If no products at all, show a simple message
-              <div className="text-center py-8">
-                <p className="text-gray-500">Loading amazing products...</p>
-              </div>
-            )
-          )}
+          </div>
         </div>
-      </div>
+             ) : null}
 
       <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
       <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
@@ -145,12 +115,25 @@ const HomePage = async () => {
           public_id: review.image.public_id || undefined
         }
       })) ?? []} />
-      <ProductCard
-        shop
-        heading="FEATURED PRODUCTS"
-        products={featuredProducts_data.data ?? []}
-        sectionId="featured-products"
-      />
+      
+      {/* Featured Products Section - Always show if we have featured products */}
+      {featuredProducts_data.data && featuredProducts_data.data.length > 0 && (
+        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <h2 className="text-xl font-bold sm:text-4xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                FEATURED PRODUCTS
+              </h2>
+            </div>
+            <ProductCard
+              shop
+              heading="FEATURED PRODUCTS"
+              products={featuredProducts_data.data}
+              sectionId="featured-products"
+            />
+          </div>
+        </div>
+      )}
       <NeedOfWebsiteSection />
       <WhyNeCraftersDiagramSection />
       <ReviewSectionSection />

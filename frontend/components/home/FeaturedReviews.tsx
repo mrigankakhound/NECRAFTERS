@@ -46,7 +46,7 @@ const FeaturedReviews = ({ reviews }: FeaturedReviewsProps) => {
           </div>
           
           {/* Main heading */}
-          <h2 className="text-2xl md:text-3xl font-bold mb-3 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent font-capriola">
+          <h2 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent font-capriola">
             REVIEWS OF FOOD ENTHUSIASTS
           </h2>
           

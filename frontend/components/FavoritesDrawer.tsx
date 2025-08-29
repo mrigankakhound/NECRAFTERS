@@ -130,10 +130,10 @@ const FavoritesDrawer = () => {
               ))
             )}
 
-            {/* Recommended Products */}
+            {/* Best Sellers - Only show if we have actual best sellers */}
             {recommendedProducts.length > 0 && (
               <div className="mt-8">
-                <h3 className="font-semibold mb-4">Recommended Products</h3>
+                <h3 className="font-semibold mb-4">Best Sellers</h3>
                 <div className="flex gap-4 overflow-x-auto pb-4">
                   {recommendedProducts.map((product) => (
                     <Link
