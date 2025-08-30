@@ -39,7 +39,7 @@ const HomePage = async () => {
       fetchWithTimeout(getWebsiteBanners(), 3000),
       fetchWithTimeout(getAppBanners(), 3000),
       fetchWithTimeout(getSpecialCombos(), 3000),
-      fetchWithTimeout(fetch('/api/test-db').then(res => res.json()), 5000),
+      fetchWithTimeout(fetch('/api/best-sellers').then(res => res.json()), 5000),
       fetchWithTimeout(getCrazyDeals(), 3000),
       fetchWithTimeout(getFeaturedProducts(4, 1), 3000),
       fetchWithTimeout(getActiveFeaturedReviews(), 3000)
@@ -59,7 +59,7 @@ const HomePage = async () => {
     const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
     const app_banners_data = appBanners.status === 'fulfilled' ? appBanners.value : { data: [] };
     const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
-    const bestSellers_data = bestSellers.status === 'fulfilled' ? { data: bestSellers.value.bestSellers || [] } : { data: [] };
+    const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
     const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
