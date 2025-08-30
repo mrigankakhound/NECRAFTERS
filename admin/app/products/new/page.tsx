@@ -70,6 +70,7 @@ export default function NewProductPage() {
     categoryId: "",
     subcategoryIds: [] as string[],
     featured: false,
+    bestSeller: false,
     longDescription: "",
   });
 
@@ -366,8 +367,8 @@ export default function NewProductPage() {
         longDescription: productData.longDescription,
         brand: productData.brand || null,
         slug: slugify(productData.title, { lower: true }),
-        benefits: benefits.filter((b) => b.trim()),
-        ingredients: ingredients.filter((i) => i.trim()),
+        benefits: benefits.filter((b) => b.trim()).map((name) => ({ name })),
+        ingredients: ingredients.filter((i) => i.trim()).map((name) => ({ name })),
         sku: productData.sku,
         images: uploadedImages.map((img) => img.url), // Now using URLs instead of base64
         sizes: sizes.map((s) => ({
@@ -378,6 +379,7 @@ export default function NewProductPage() {
         })),
         discount: Number(productData.discount) || 0,
         featured: productData.featured,
+        bestSeller: productData.bestSeller,
         categoryId: productData.categoryId,
         subCategoryIds: productData.subcategoryIds,
       });
@@ -569,6 +571,17 @@ export default function NewProductPage() {
                 }
               />
               <Label htmlFor="featured">Featured Product</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="bestSeller"
+                checked={productData.bestSeller}
+                onCheckedChange={(checked) =>
+                  setProductData((prev) => ({ ...prev, bestSeller: checked }))
+                }
+              />
+              <Label htmlFor="bestSeller">Best Seller</Label>
             </div>
           </Card>
 

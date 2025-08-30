@@ -51,6 +51,11 @@ const HomePage = async () => {
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
+    // Debug logging
+    console.log('🔍 Best Sellers Data:', bestSellers_data);
+    console.log('🔍 Best Sellers Status:', bestSellers.status);
+    console.log('🔍 Best Sellers Length:', bestSellers_data.data?.length);
+
     // Return the page with data
     return (
       <div>
@@ -79,7 +84,22 @@ const HomePage = async () => {
               />
             </div>
           </div>
-        ) : null}
+        ) : (
+          // Show a message when no best sellers exist
+          <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+            <div className="section-container">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                  BEST SELLERS
+                </h2>
+              </div>
+              <div className="text-center py-8 text-gray-500">
+                <p>No best sellers available at the moment.</p>
+                <p className="text-sm mt-2">Check back soon for our top products!</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
         <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({

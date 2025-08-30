@@ -115,11 +115,39 @@ export async function getProduct(productId: string) {
   try {
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        longDescription: true,
+        brand: true,
+        slug: true,
+        benefits: true,
+        ingredients: true,
+        rating: true,
+        numReviews: true,
+        featured: true,
+        bestSeller: true,
+        sku: true,
         images: true,
         sizes: true,
+        discount: true,
+        sold: true,
+        categoryId: true,
+        createdAt: true,
+        updatedAt: true,
         category: true,
-        subcategory: true,
+        productSubCategories: {
+          select: {
+            id: true,
+            subCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -139,11 +167,39 @@ export async function updateProduct(productId: string, data: any) {
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data,
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        longDescription: true,
+        brand: true,
+        slug: true,
+        benefits: true,
+        ingredients: true,
+        rating: true,
+        numReviews: true,
+        featured: true,
+        bestSeller: true,
+        sku: true,
         images: true,
         sizes: true,
+        discount: true,
+        sold: true,
+        categoryId: true,
+        createdAt: true,
+        updatedAt: true,
         category: true,
-        subcategory: true,
+        productSubCategories: {
+          select: {
+            id: true,
+            subCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -220,13 +276,14 @@ export async function createProduct(data: {
   longDescription: string;
   brand: string | null;
   slug: string;
-  benefits: string[];
-  ingredients: string[];
+  benefits: { name: string }[];
+  ingredients: { name: string }[];
   sku: string;
   images: string[];
   sizes: { size: string; qty: number; price: number }[];
   discount: number;
   featured: boolean;
+  bestSeller: boolean;
   categoryId: string;
   subCategoryIds: string[];
 }) {
@@ -270,8 +327,8 @@ export async function createProduct(data: {
         longDescription: data.longDescription,
         brand: data.brand,
         slug: data.slug,
-        benefits: data.benefits.map((name) => ({ name })),
-        ingredients: data.ingredients.map((name) => ({ name })),
+        benefits: data.benefits,
+        ingredients: data.ingredients,
         sku: data.sku,
         images: data.images.map((url) => ({
           url: url,
@@ -280,6 +337,7 @@ export async function createProduct(data: {
         sizes: data.sizes,
         discount: data.discount,
         featured: data.featured,
+        bestSeller: data.bestSeller,
         categoryId: data.categoryId,
         productSubCategories: {
           create: data.subCategoryIds.map((subCategoryId) => ({

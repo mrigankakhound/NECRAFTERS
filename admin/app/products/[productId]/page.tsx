@@ -79,6 +79,7 @@ export default function ProductPage({ params }: PageProps) {
     categoryId: "",
     subcategoryIds: [] as string[],
     featured: false,
+    bestSeller: false,
     longDescription: "",
   });
 
@@ -110,10 +111,11 @@ export default function ProductPage({ params }: PageProps) {
             description: product.description,
             brand: product.brand || "",
             sku: product.sku,
-            discount: product.discount.toString(),
+            discount: (product.discount || 0).toString(),
             categoryId: product.categoryId,
-            subcategoryIds: product.subCategories.map((sub) => sub.id),
+            subcategoryIds: product.productSubCategories.map((sub) => sub.subCategory.id),
             featured: product.featured,
+            bestSeller: product.bestSeller,
             longDescription: product.longDescription,
           });
 
@@ -125,8 +127,8 @@ export default function ProductPage({ params }: PageProps) {
             }))
           );
 
-          setBenefits(product.benefits);
-          setIngredients(product.ingredients);
+          setBenefits(product.benefits.map((b: any) => b.name));
+          setIngredients(product.ingredients.map((i: any) => i.name));
           setImages(
             product.images.map((img: any) => ({
               id: img.public_id || Math.random().toString(36).substring(7),
@@ -299,8 +301,8 @@ export default function ProductPage({ params }: PageProps) {
         longDescription: productData.longDescription,
         brand: productData.brand || null,
         slug: slugify(productData.title, { lower: true }),
-        benefits: benefits.filter((b) => b.trim()),
-        ingredients: ingredients.filter((i) => i.trim()),
+        benefits: benefits.filter((b) => b.trim()).map((name) => ({ name })),
+        ingredients: ingredients.filter((i) => i.trim()).map((name) => ({ name })),
         sku: productData.sku,
         images: images.map((img) => img.url),
         sizes: sizes.map((s) => ({
@@ -311,6 +313,7 @@ export default function ProductPage({ params }: PageProps) {
         })),
         discount: Number(productData.discount) || 0,
         featured: productData.featured,
+        bestSeller: productData.bestSeller,
         categoryId: productData.categoryId,
         subCategoryIds: productData.subcategoryIds,
         imagesToDelete,
@@ -455,6 +458,17 @@ export default function ProductPage({ params }: PageProps) {
                 }
               />
               <Label htmlFor="featured">Featured Product</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="bestSeller"
+                checked={productData.bestSeller}
+                onCheckedChange={(checked) =>
+                  setProductData((prev) => ({ ...prev, bestSeller: checked }))
+                }
+              />
+              <Label htmlFor="bestSeller">Best Seller</Label>
             </div>
           </Card>
 
