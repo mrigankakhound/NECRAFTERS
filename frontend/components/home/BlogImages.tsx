@@ -8,7 +8,7 @@ const BlogImages = () => {
       {/* Heading */}
       <div className="text-center mb-9">
         <h2 className="text-3xl font-bold tracking-wide font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-          MOMENTS OF NE CRAFTERS
+         GLORY MOMENTS OF NE CRAFTERS
         </h2>
       </div>
 

@@ -12,7 +12,13 @@ import BannerCarousel from '@/components/home/BannerCarousel';
 import SpecialCombos from '@/components/home/SpecialCombos';
 import ProductCard from '@/components/home/ProductCard';
 import CrazyDealsSection from '@/components/home/CrazyDeals';
-import FeaturedReviewsSection from '@/components/home/FeaturedReviews';
+import FeaturedReviews from '@/components/home/FeaturedReviews';
+import WhyNeCraftersDiagram from '@/components/home/WhyNeCraftersDiagram';
+import BlogImages from '@/components/home/BlogImages';
+import NeedOfWebsite from '@/components/home/NeedOfWebsite';
+import CategorySection from '@/components/home/CategorySection';
+import MainCategorySection from '@/components/home/MainCategorySection';
+import ReviewSection from '@/components/home/ReviewSection';
 import HashScrollHandler from '@/components/HashScrollHandler';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 
@@ -53,6 +59,15 @@ const BestSellersSection = async () => {
   );
 };
 
+const GiftHampersSection = async () => {
+  const crazyDeals = await getCrazyDeals();
+  return (
+    <div id="gift-hamper" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+      <CrazyDealsSection offers={crazyDeals.data ?? []} />
+    </div>
+  );
+};
+
 const FeaturedProductsSection = async () => {
   const featuredProducts = await getFeaturedProducts(4, 1);
   return (
@@ -82,6 +97,34 @@ const FeaturedProductsSection = async () => {
   );
 };
 
+const FeaturedReviewsSection = async () => {
+  const featuredReviews = await getActiveFeaturedReviews();
+  
+  // If no reviews or section is not active, don't render anything
+  if (!featuredReviews.success || !featuredReviews.data || featuredReviews.data.length === 0) {
+    return null;
+  }
+
+  // Map the data to match the FeaturedReview interface (convert null to undefined)
+  const mappedReviews = featuredReviews.data.map(review => ({
+    ...review,
+    description: review.description || undefined,
+    customerName: review.customerName || undefined,
+    reviewText: review.reviewText || undefined,
+    productName: review.productName || undefined,
+    image: {
+      url: review.image.url || undefined,
+      public_id: review.image.public_id || undefined
+    }
+  }));
+
+  return (
+    <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+      <FeaturedReviews reviews={mappedReviews} />
+    </div>
+  );
+};
+
 export default async function Home() {
   // Load critical data first (banners, special combos)
   const [banners, specialCombos] = await Promise.allSettled([
@@ -97,15 +140,16 @@ export default async function Home() {
     <div>
       <HashScrollHandler />
       
-      {/* Critical sections - load immediately */}
+      {/* 1. Banners */}
       <BannerCarousel
         banners={banners_data.data ?? []}
         app_banners={[]} // Will be loaded separately
       />
       
+      {/* 2. Special Combos */}
       <SpecialCombos offers={specialCombos_data.data ?? []} />
       
-      {/* Progressive loading sections */}
+      {/* 3. Best Sellers */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
@@ -121,7 +165,23 @@ export default async function Home() {
         <BestSellersSection />
       </Suspense>
 
-      {/* Load other sections in parallel */}
+      {/* 4. Gift Hampers */}
+      <Suspense fallback={
+        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              GIFT HAMPER
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Gift Hampers..." className="text-orange-600" />
+            </div>
+          </div>
+        </div>
+      }>
+        <GiftHampersSection />
+      </Suspense>
+
+      {/* 5. Featured Products */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
@@ -137,47 +197,52 @@ export default async function Home() {
         <FeaturedProductsSection />
       </Suspense>
 
-      {/* Load remaining sections asynchronously */}
+      {/* 6. Reviews of Food Enthusiasts (Admin Controlled) */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" text="Loading More Content..." className="text-orange-600" />
+          <div className="section-container">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              REVIEWS OF FOOD ENTHUSIASTS
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Reviews..." className="text-orange-600" />
+            </div>
           </div>
         </div>
       }>
-        <AsyncSections />
+        <FeaturedReviewsSection />
       </Suspense>
+
+      {/* 7. Why NE Crafters (Icons) */}
+      <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <NeedOfWebsite />
+        </div>
+      </div>
+
+      {/* 8. Why NE Crafters (Image) */}
+      <WhyNeCraftersDiagram />
+
+      {/* 9. What Our Customers Have to Say */}
+      <ReviewSection />
+
+      {/* 10. Moments of NE Crafters */}
+      <BlogImages />
     </div>
   );
 }
 
 // Async component for non-critical sections
 async function AsyncSections() {
-  const [appBanners, crazyDeals, featuredReviews] = await Promise.allSettled([
-    fetchWithTimeout(getAppBanners(), 5000),
-    fetchWithTimeout(getCrazyDeals(), 5000),
-    fetchWithTimeout(getActiveFeaturedReviews(), 5000)
+  const [appBanners] = await Promise.allSettled([
+    fetchWithTimeout(getAppBanners(), 5000)
   ]);
 
   const app_banners_data = appBanners.status === 'fulfilled' ? appBanners.value : { data: [] };
-  const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
-  const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
 
   return (
     <>
-      <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
-      <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
-        ...review,
-        description: review.description || undefined,
-        customerName: review.customerName || undefined,
-        reviewText: review.reviewText || undefined,
-        productName: review.productName || undefined,
-        image: {
-          ...review.image,
-          url: review.image.url || undefined,
-          public_id: review.image.public_id || undefined
-        }
-      })) ?? []} />
+      {/* App banners can be loaded here if needed */}
     </>
   );
 }
