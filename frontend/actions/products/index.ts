@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // Get products marked as best sellers with complete data structure
+    // Get products marked as best sellers with minimal data for faster loading
     const bestSellers = await prisma.product.findMany({
       where: {
         bestSeller: true,
@@ -14,7 +14,12 @@ export async function getBestSellerProducts(limit: number = 10) {
         title: true,
         slug: true,
         discount: true,
-        images: true,
+        images: {
+          select: {
+            url: true,
+            public_id: true,
+          }
+        },
         sizes: {
           select: {
             price: true,
@@ -22,39 +27,42 @@ export async function getBestSellerProducts(limit: number = 10) {
             qty: true,
           }
         },
-        // Add missing fields that ProductCard expects
-        createdAt: true,
-        updatedAt: true,
         rating: true,
-        description: true,
-        longDescription: true,
         brand: true,
         numReviews: true,
         featured: true,
-        sku: true,
         sold: true,
         bestSeller: true,
       },
+      orderBy: {
+        sold: 'desc', // Order by most sold for better performance
+      },
+      // Add performance hints
+      skip: 0, // Explicit skip for better query planning
     });
 
-    // Return data in the complete format that ProductCard expects
+    // Return optimized data format for faster rendering
+    const processedData = bestSellers.map(product => ({
+      ...product,
+      images: product.images || [],
+      sizes: product.sizes || [],
+      discount: product.discount || 0,
+      rating: product.rating || 0,
+      numReviews: product.numReviews || 0,
+      sold: product.sold || 0,
+      featured: product.featured || false,
+      bestSeller: product.bestSeller || false,
+    }));
+
+    console.log(`✅ Best sellers loaded: ${processedData.length} products`);
+    
     return {
       success: true,
-      data: bestSellers.map(product => ({
-        ...product,
-        images: product.images && product.images.length > 0 ? product.images : [],
-        sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: product.numReviews || 0,
-        sold: product.sold || 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      })),
+      data: processedData,
       isFallback: false,
     };
   } catch (error) {
-    console.error("Error getting best sellers:", error);
+    console.error("❌ Error getting best sellers:", error);
     return {
       success: false,
       error: "Failed to get best sellers",

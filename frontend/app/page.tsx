@@ -24,8 +24,9 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 
 // Loading components for progressive loading
 const BestSellersSection = async () => {
-  const bestSellers = await getBestSellerProducts(8);
-  return (
+  try {
+    const bestSellers = await fetchWithTimeout(getBestSellerProducts(8), 3000); // 3 second timeout
+    return (
     <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         <div className="flex items-center justify-center gap-2 mb-4">
@@ -56,7 +57,25 @@ const BestSellersSection = async () => {
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error loading best sellers:', error);
+    return (
+      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+          </div>
+          <div className="text-center py-8 text-gray-500">
+            <p>Unable to load best sellers at the moment.</p>
+            <p className="text-sm mt-2">Please check back later!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 const GiftHampersSection = async () => {
@@ -156,8 +175,8 @@ export default async function Home() {
             <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               BEST SELLERS
             </h2>
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="lg" text="Loading Best Sellers..." className="text-orange-600" />
+            <div className="flex justify-center py-8">
+              <LoadingSpinner size="md" text="Loading Best Sellers..." className="text-orange-600" />
             </div>
           </div>
         </div>
