@@ -12,14 +12,16 @@ export async function getAllProducts() {
         images: {
           select: {
             url: true
-          }
+          },
+          take: 1 // Only get first image for performance
         },
         sizes: {
           select: {
             size: true,
             price: true,
             qty: true
-          }
+          },
+          take: 3 // Limit to 3 sizes for performance
         },
         featured: true,
         bestSeller: true,
