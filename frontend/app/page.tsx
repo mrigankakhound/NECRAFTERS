@@ -1,5 +1,3 @@
-"use client";
-
 import BannerCarousel from "@/components/home/BannerCarousel";
 import dynamic from "next/dynamic";
 
@@ -11,140 +9,129 @@ const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyN
 const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
 const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
 
-// SEO metadata - moved to layout.tsx for static pages
 import ProductCard from "@/components/home/ProductCard";
 import SpecialCombos from "@/components/home/SpecialCombos";
 import HashScrollHandler from "@/components/HashScrollHandler";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { getWebsiteBanners, getAppBanners } from "@/actions/banner.actions";
+import { getSpecialCombos } from "@/actions/special-combos";
+import { getCrazyDeals } from "@/actions/crazy-deals";
+import { getBestSellerProducts, getFeaturedProducts } from "@/actions/products";
+import { getActiveFeaturedReviews } from "@/actions/featured-reviews";
 
-const HomePage = () => {
-  const [data, setData] = useState({
-    banners: { data: [] },
-    app_banners: { data: [] },
-    specialCombos: { data: [] },
-    bestSellers: { data: [] },
-    crazyDeals: { data: [] },
-    featuredProducts: { data: [] },
-    featuredReviews: { data: [] }
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch all data on client side
-        const [banners, appBanners, specialCombos, bestSellers, crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
-          fetch('/api/banners/website').then(res => res.json()),
-          fetch('/api/banners/app').then(res => res.json()),
-          fetch('/api/offers/special-combos').then(res => res.json()),
-          fetch('/api/products/best-sellers?limit=8').then(res => res.json()),
-          fetch('/api/offers/crazy-deals').then(res => res.json()),
-          fetch('/api/products/featured?limit=4&page=1').then(res => res.json()),
-          fetch('/api/featured-reviews').then(res => res.json())
-        ]);
-
-        setData({
-          banners: banners.status === 'fulfilled' ? banners.value : { data: [] },
-          app_banners: appBanners.status === 'fulfilled' ? appBanners.value : { data: [] },
-          specialCombos: specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] },
-          bestSellers: bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] },
-          crazyDeals: crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] },
-          featuredProducts: featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] },
-          featuredReviews: featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] }
-        });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
+const HomePage = async () => {
+  try {
+    // Fast server-side data fetching with short timeouts
+    const fetchWithTimeout = async (promise: Promise<any>, timeoutMs: number) => {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+        )
+      ]);
     };
 
-    fetchData();
-  }, []);
+    // Fetch critical data with very short timeouts
+    const [banners, appBanners, specialCombos, bestSellers, crazyDeals, featuredProducts, featuredReviews] = await Promise.allSettled([
+      fetchWithTimeout(getWebsiteBanners(), 3000),
+      fetchWithTimeout(getAppBanners(), 3000),
+      fetchWithTimeout(getSpecialCombos(), 3000),
+      fetchWithTimeout(getBestSellerProducts(8), 5000),
+      fetchWithTimeout(getCrazyDeals(), 3000),
+      fetchWithTimeout(getFeaturedProducts(4, 1), 3000),
+      fetchWithTimeout(getActiveFeaturedReviews(), 3000)
+    ]);
 
-  if (isLoading) {
+    // Extract data safely
+    const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
+    const app_banners_data = appBanners.status === 'fulfilled' ? appBanners.value : { data: [] };
+    const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
+    const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
+    const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
+    const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
+    const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
+
+    // Return the page with data
+    return (
+      <div>
+        <HashScrollHandler />
+        <BannerCarousel
+          banners={banners_data.data ?? []}
+          app_banners={app_banners_data.data ?? []}
+        />
+        
+        <SpecialCombos offers={specialCombos_data.data ?? []} />
+        
+        {/* Best Sellers Section - Only show if admin has marked products as best sellers */}
+        {bestSellers_data.data && bestSellers_data.data.length > 0 ? (
+          <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+            <div className="section-container">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                  BEST SELLERS
+                </h2>
+              </div>
+              <ProductCard
+                shop
+                heading="BEST SELLERS"
+                products={bestSellers_data.data}
+                sectionId="best-sellers"
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <CrazyDealsSection offers={crazyDeals_data.data ?? []} />
+        <FeaturedReviewsSection reviews={featuredReviews_data.data?.map((review: any) => ({
+          ...review,
+          description: review.description || undefined,
+          customerName: review.customerName || undefined,
+          reviewText: review.reviewText || undefined,
+          productName: review.productName || undefined,
+          image: {
+            ...review.image,
+            url: review.image.url || undefined,
+            public_id: review.image.public_id || undefined
+          }
+        })) ?? []} />
+        
+        {/* Featured Products Section - Always show if we have featured products */}
+        {featuredProducts_data.data && featuredProducts_data.data.length > 0 && (
+          <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+            <div className="section-container">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <h2 className="text-xl font-bold sm:text-4xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                  FEATURED PRODUCTS
+                </h2>
+              </div>
+              <ProductCard
+                shop
+                heading="FEATURED PRODUCTS"
+                products={featuredProducts_data.data}
+                sectionId="featured-products"
+              />
+            </div>
+          </div>
+        )}
+        <NeedOfWebsiteSection />
+        <WhyNeCraftersDiagramSection />
+        <ReviewSectionSection />
+        <BlogImagesSection />
+      </div>
+    );
+  } catch (error) {
+    console.error('Error loading homepage:', error);
+    // Return fallback content if data fetching fails
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading NE CRAFTERS</h1>
-          <p className="text-gray-600">Preparing amazing products for you...</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to NE CRAFTERS</h1>
+          <p className="text-gray-600">Loading amazing products for you...</p>
+          <p className="text-sm text-gray-500 mt-2">Please refresh the page to see the latest content.</p>
         </div>
       </div>
     );
   }
-
-  return (
-    <div>
-      <HashScrollHandler />
-      <BannerCarousel
-        banners={data.banners.data ?? []}
-        app_banners={data.app_banners.data ?? []}
-      />
-      
-      <SpecialCombos offers={data.specialCombos.data ?? []} />
-      
-      {/* Best Sellers Section - Only show if admin has marked products as best sellers */}
-      {data.bestSellers.data && data.bestSellers.data.length > 0 ? (
-        <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <h2 className="text-lg font-bold sm:text-3xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                
-              
-                BEST SELLERS
-              </h2>
-            </div>
-            <ProductCard
-              shop
-              heading="BEST SELLERS"
-              products={data.bestSellers.data}
-              sectionId="best-sellers"
-            />
-          </div>
-        </div>
-             ) : null}
-
-      <CrazyDealsSection offers={data.crazyDeals.data ?? []} />
-      <FeaturedReviewsSection reviews={data.featuredReviews.data?.map((review: any) => ({
-        ...review,
-        description: review.description || undefined,
-        customerName: review.customerName || undefined,
-        reviewText: review.reviewText || undefined,
-        productName: review.productName || undefined,
-        image: {
-          ...review.image,
-          url: review.image.url || undefined,
-          public_id: review.image.public_id || undefined
-        }
-      })) ?? []} />
-      
-      {/* Featured Products Section - Always show if we have featured products */}
-      {data.featuredProducts.data && data.featuredProducts.data.length > 0 && (
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <h2 className="text-xl font-bold sm:text-4xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                FEATURED PRODUCTS
-              </h2>
-            </div>
-            <ProductCard
-              shop
-              heading="FEATURED PRODUCTS"
-              products={data.featuredProducts.data}
-              sectionId="featured-products"
-            />
-          </div>
-        </div>
-      )}
-      <NeedOfWebsiteSection />
-      <WhyNeCraftersDiagramSection />
-      <ReviewSectionSection />
-      <BlogImagesSection />
-    </div>
-  );
 };
 
 export default HomePage;
