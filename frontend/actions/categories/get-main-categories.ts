@@ -3,8 +3,13 @@ import { prisma } from "@/lib/prisma";
 export async function getMainCategories() {
   try {
     const categories = await prisma.category.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         images: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 

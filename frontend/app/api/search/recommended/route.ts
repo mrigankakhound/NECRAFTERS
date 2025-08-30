@@ -8,14 +8,20 @@ export async function GET() {
       orderBy: {
         sold: "desc",
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        rating: true,
+        sold: true,
+        images: true,
+        sizes: true,
         category: {
           select: {
             name: true,
           },
         },
-        images: true,
-        sizes: true,
       },
     });
 

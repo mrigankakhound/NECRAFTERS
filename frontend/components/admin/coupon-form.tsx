@@ -38,9 +38,9 @@ export default function CouponForm({
       endDate: "",
       discount: 0,
       minimumOrderValue: undefined,
-      globalUsageLimit: undefined,
+      maxUsers: undefined,
       perUserLimit: false,
-      currentUsageCount: 0,
+      currentUserCount: 0,
     }
   );
 
@@ -62,8 +62,8 @@ export default function CouponForm({
       if (formData.minimumOrderValue && formData.minimumOrderValue < 0) {
         throw new Error("Minimum order value cannot be negative");
       }
-      if (formData.globalUsageLimit && formData.globalUsageLimit < 1) {
-        throw new Error("Global usage limit must be at least 1");
+      if (formData.maxUsers && formData.maxUsers < 1) {
+        throw new Error("Maximum users must be at least 1");
       }
 
       await onSubmit(formData);
@@ -76,9 +76,9 @@ export default function CouponForm({
           endDate: "",
           discount: 0,
           minimumOrderValue: undefined,
-          globalUsageLimit: undefined,
+          maxUsers: undefined,
           perUserLimit: false,
-          currentUsageCount: 0,
+          currentUserCount: 0,
         });
       }
     } catch (error) {
@@ -189,21 +189,21 @@ export default function CouponForm({
           <Switch
             id="perUserLimit"
             checked={formData.perUserLimit}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, perUserLimit: checked })
+            onChange={(e) =>
+              setFormData({ ...formData, perUserLimit: e.target.checked })
             }
             disabled={loading}
           />
           <Label htmlFor="perUserLimit">One-time use per user</Label>
         </div>
 
-        {isEditing && typeof formData.currentUsageCount !== 'undefined' && (
+        {isEditing && typeof formData.currentUserCount !== 'undefined' && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
-              Current Usage: {formData.currentUsageCount}
-              {formData.globalUsageLimit &&
-                ` / ${formData.globalUsageLimit} (${
-                  formData.globalUsageLimit - formData.currentUsageCount
+              Current Usage: {formData.currentUserCount}
+              {formData.maxUsers &&
+                ` / ${formData.maxUsers} (${
+                  formData.maxUsers - formData.currentUserCount
                 } remaining)`}
             </p>
           </div>

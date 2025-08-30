@@ -118,8 +118,9 @@ export const useCart = create(
         // Apply discount based on coupon
         // This is a simple implementation - you can enhance it based on your coupon logic
         let discount = 0;
-        if (get().appliedCoupon) {
-          discount = subtotal * (get().appliedCoupon.discount / 100);
+        const appliedCoupon = get().appliedCoupon;
+        if (appliedCoupon) {
+          discount = subtotal * (appliedCoupon.discount / 100);
         }
 
         const total = subtotal - discount;

@@ -71,8 +71,8 @@ export default function CouponList({
             {coupons.map((coupon) => {
               const isExpired = new Date(coupon.endDate) < new Date();
               const isLimitReached =
-                coupon.globalUsageLimit &&
-                coupon.currentUsageCount >= coupon.globalUsageLimit;
+                coupon.maxUsers &&
+                coupon.currentUserCount >= coupon.maxUsers;
 
               return (
                 <TableRow key={coupon.id}>

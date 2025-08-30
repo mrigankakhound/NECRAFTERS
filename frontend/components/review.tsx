@@ -93,10 +93,10 @@ const IndividualProductReviewPage = async ({
     1: 1,
   };
 
-  const totalRatings = Object.values(ratingCounts).reduce((a, b) => a + b, 0);
+  const totalRatings = Object.values(ratingCounts).reduce((a, b) => (a as number) + (b as number), 0) as number;
   const averageRating = (
     Object.entries(ratingCounts).reduce(
-      (acc, [rating, count]) => acc + Number(rating) * count,
+      (acc, [rating, count]) => acc + Number(rating) * (count as number),
       0
     ) / totalRatings
   ).toFixed(1);

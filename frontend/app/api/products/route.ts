@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 400 });
       }
-      return NextResponse.json({ success: true, ...result });
+      return NextResponse.json(result);
     }
 
     // If any filters are provided, use filter endpoint
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
         if (!fallback.success) {
           return NextResponse.json({ success: false, error: fallback.error }, { status: 400 });
         }
-        return NextResponse.json({ success: true, ...fallback });
+        return NextResponse.json(fallback);
       }
 
       // Wrap to include minimal pagination for filtered list
@@ -85,7 +85,7 @@ export async function GET(request: Request) {
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
-    return NextResponse.json({ success: true, ...result });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error in /api/products:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });

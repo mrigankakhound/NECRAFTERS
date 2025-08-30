@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
     });
 
     // Update the username cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set("username", username, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

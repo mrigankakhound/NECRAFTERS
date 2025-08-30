@@ -43,6 +43,7 @@ type Product = {
   rating: number;
   numReviews: number;
   featured: boolean;
+  bestSeller: boolean;
   sku: string;
   images: Image[];
   sizes: ProductSize[];

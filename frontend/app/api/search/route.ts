@@ -22,14 +22,19 @@ export async function GET(request: Request) {
           mode: "insensitive",
         },
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        rating: true,
+        images: true,
+        sizes: true,
         category: {
           select: {
             name: true,
           },
         },
-        images: true,
-        sizes: true,
       },
       take: 8,
     });

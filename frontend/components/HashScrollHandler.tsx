@@ -32,7 +32,7 @@ const HashScrollHandler = () => {
           // Try alternative selectors
           const alternativeElement = document.querySelector(`[data-section="${sectionId}"]`) || 
                                   document.querySelector(`[id*="${sectionId}"]`);
-          if (alternativeElement) {
+          if (alternativeElement && alternativeElement instanceof HTMLElement) {
             // Calculate offset for fixed navbar
             const navbarHeight = 140;
             const elementTop = alternativeElement.offsetTop;

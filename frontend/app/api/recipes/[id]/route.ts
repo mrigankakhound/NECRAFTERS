@@ -9,9 +9,6 @@ export async function GET(
     const { id } = await params;
     const recipe = await prisma.recipe.findUnique({
       where: { id },
-      include: {
-        images: true,
-      },
     });
 
     if (!recipe) {

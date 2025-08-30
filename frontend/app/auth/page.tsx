@@ -72,7 +72,7 @@ export default function AuthPage() {
     setIsLoading(true);
     try {
       const result = await checkEmail(formData.email);
-      if (result.exists) {
+      if (result.exists && result.username) {
         // Existing user - send verification code directly
         const authResult = await initiateAuth(formData.email, result.username);
         if (authResult.success) {
@@ -83,6 +83,10 @@ export default function AuthPage() {
         } else {
           toast.error(authResult.error || "Failed to send verification code");
         }
+      } else if (result.exists) {
+        // User exists but no username - ask for username
+        setStep("username");
+        toast.success("Please choose a username to continue");
       } else {
         // New user - ask for username
         setStep("username");

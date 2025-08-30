@@ -20,9 +20,11 @@ interface Coupon {
   endDate: string;
   discount: number;
   minimumOrderValue?: number;
-  globalUsageLimit?: number;
+  maxUsers?: number;
   perUserLimit: boolean;
-  currentUsageCount: number;
+  currentUserCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export default function CouponsPage() {

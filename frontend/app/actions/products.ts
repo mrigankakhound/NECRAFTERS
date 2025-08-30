@@ -14,23 +14,33 @@ export interface ProductFilters {
 
 type ProductWithIncludes = {
   id: string;
-  name: string;
-  description: string | null;
+  title: string;
+  description: string;
+  longDescription: string;
+  brand: string | null;
   slug: string;
-  rating: number | null;
-  createdAt: Date;
-  updatedAt: Date;
+  benefits: Array<{ name: string }>;
+  ingredients: Array<{ name: string }>;
+  rating: number;
+  numReviews: number;
+  featured: boolean;
+  sku: string;
   images: Array<{
-    id: string;
     url: string | null;
-    public_url: string | null;
+    public_id: string | null;
   }>;
   sizes: Array<{
-    id: string;
     size: string;
     price: number;
-    stock: number;
+    qty: number;
+    sold: number;
   }>;
+  discount: number | null;
+  sold: number | null;
+  bestSeller: boolean;
+  categoryId: string;
+  createdAt: Date;
+  updatedAt: Date;
   productSubCategories: Array<{
     subCategory: {
       id: string;
@@ -106,12 +116,36 @@ export async function getProducts(filters: ProductFilters = {}) {
         orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          longDescription: true,
+          brand: true,
+          slug: true,
+          benefits: true,
+          ingredients: true,
+          rating: true,
+          numReviews: true,
+          featured: true,
+          sku: true,
           images: true,
           sizes: true,
+          discount: true,
+          sold: true,
+          bestSeller: true,
+          categoryId: true,
+          createdAt: true,
+          updatedAt: true,
           productSubCategories: {
-            include: {
-              subCategory: true,
+            select: {
+              subCategory: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
             },
           },
         },

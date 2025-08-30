@@ -24,9 +24,21 @@ export async function getAllCategories() {
 export async function getAllSubCategories() {
   try {
     const subCategories = await prisma.subCategory.findMany({
-      include: {
-        parent: true,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         images: true,
+        parentId: true,
+        parent: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
       },
     });
     

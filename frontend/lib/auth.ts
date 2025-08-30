@@ -1,19 +1,29 @@
 "use server";
 import { cookies } from "next/headers";
+import { prisma } from "./prisma";
 
 export async function getAuthenticatedUser() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId");
-  const userEmail = cookieStore.get("userEmail");
-  const username = cookieStore.get("username");
 
-  if (!userId || !userEmail || !username) {
+  if (!userId) {
     return null;
   }
 
-  return {
-    id: userId.value,
-    email: userEmail.value,
-    username: username.value,
-  };
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId.value },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error("Error fetching authenticated user:", error);
+    return null;
+  }
 }
