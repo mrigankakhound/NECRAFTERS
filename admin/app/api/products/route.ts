@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     
     // Step 3: Get categories for these products
     const categoryIds = [...new Set(products.map(p => p.categoryId))];
-    let categories: any[] = [];
+    let categories: Array<{ id: string; name: string }> = [];
     
     if (categoryIds.length > 0) {
       const categoriesStart = Date.now();
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
       title: product.title,
       mainImage: product.images?.[0]?.url || "",
       category: categoryMap.get(product.categoryId) || "Unknown",
-      sizes: product.sizes?.map((size: any) => ({
+      sizes: product.sizes?.map((size: { size: string; price: number; qty: number }) => ({
         size: size.size,
         price: size.price,
         quantity: size.qty,

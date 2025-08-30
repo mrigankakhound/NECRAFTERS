@@ -17,10 +17,8 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const body = await request.json();
-    
     // Create sample data if none exists (for initial setup/testing)
     const existingReviews = await prisma.featuredReviews.count();
     

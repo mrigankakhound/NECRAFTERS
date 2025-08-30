@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { getAllProducts, updateProductFeatured, updateProductBestSeller, deleteProduct } from "@/app/actions/product.actions";
-import { Plus, Search, Edit, Trash2, Star, TrendingUp, Package, Eye } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Star, TrendingUp, Package } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 
 interface ProductSize {

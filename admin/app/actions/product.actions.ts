@@ -12,16 +12,14 @@ export async function getAllProducts() {
         images: {
           select: {
             url: true
-          },
-          take: 1 // Only get first image for performance
+          }
         },
         sizes: {
           select: {
             size: true,
             price: true,
             qty: true
-          },
-          take: 3 // Limit to 3 sizes for performance
+          }
         },
         featured: true,
         bestSeller: true,
@@ -179,7 +177,7 @@ export async function getProduct(productId: string) {
   }
 }
 
-export async function updateProduct(productId: string, data: any) {
+export async function updateProduct(productId: string, data: Record<string, unknown>) {
   try {
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
