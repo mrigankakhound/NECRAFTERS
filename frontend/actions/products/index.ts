@@ -14,12 +14,11 @@ export async function getBestSellerProducts(limit: number = 10) {
         images: true,
         sizes: true,
       },
+      // Remove random sorting to improve performance
+      orderBy: {
+        createdAt: 'desc', // Use consistent ordering instead of random
+      },
     });
-    
-    // If we have best sellers, shuffle them for variety
-    if (bestSellers.length > 0) {
-      bestSellers.sort(() => Math.random() - 0.5);
-    }
 
     // Return only actual best sellers - no fallbacks
     return {

@@ -39,7 +39,7 @@ const HomePage = async () => {
       fetchWithTimeout(getWebsiteBanners(), 3000),
       fetchWithTimeout(getAppBanners(), 3000),
       fetchWithTimeout(getSpecialCombos(), 3000),
-      fetchWithTimeout(getBestSellerProducts(8), 5000),
+      fetchWithTimeout(getBestSellerProducts(8), 10000),
       fetchWithTimeout(getCrazyDeals(), 3000),
       fetchWithTimeout(getFeaturedProducts(4, 1), 3000),
       fetchWithTimeout(getActiveFeaturedReviews(), 3000)
