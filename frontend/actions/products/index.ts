@@ -11,6 +11,8 @@ export async function getBestSellerProducts(limit: number = 10) {
       take: limit,
       include: {
         category: true,
+        images: true,
+        sizes: true,
       },
     });
     
@@ -47,6 +49,8 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
         take: limit,
         include: {
           category: true,
+          images: true,
+          sizes: true,
           productSubCategories: {
             include: {
               subCategory: true,
