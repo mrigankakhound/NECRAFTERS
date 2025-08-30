@@ -5,7 +5,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 // PATCH /api/coupons/[couponId]
 export async function PATCH(
   request: Request,
-  { params }: { params: { couponId: string } }
+  { params }: { params: Promise<{ couponId: string }> }
 ) {
   try {
     const user = await getAuthenticatedUser();
@@ -13,6 +13,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { couponId } = await params;
     const data = await request.json();
 
     // Validate required fields
@@ -25,7 +26,7 @@ export async function PATCH(
 
     // Update coupon
     const coupon = await prisma.coupon.update({
-      where: { id: params.couponId },
+      where: { id: couponId },
       data: {
         coupon: data.coupon,
         startDate: data.startDate,
@@ -50,7 +51,7 @@ export async function PATCH(
 // DELETE /api/coupons/[couponId]
 export async function DELETE(
   request: Request,
-  { params }: { params: { couponId: string } }
+  { params }: { params: Promise<{ couponId: string }> }
 ) {
   try {
     const user = await getAuthenticatedUser();
@@ -58,8 +59,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { couponId } = await params;
+
     await prisma.coupon.delete({
-      where: { id: params.couponId },
+      where: { id: couponId },
     });
 
     return NextResponse.json({ success: true });
