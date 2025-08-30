@@ -13,9 +13,9 @@ import {
 import { prisma } from "@/lib/prisma";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getProductReviews(slug: string) {
@@ -47,7 +47,8 @@ async function getProductReviews(slug: string) {
 }
 
 export default async function ProductReviewPage({ params }: PageProps) {
-  const product = await getProductReviews(params.slug);
+  const { slug } = await params;
+  const product = await getProductReviews(slug);
 
   if (!product) {
     notFound();

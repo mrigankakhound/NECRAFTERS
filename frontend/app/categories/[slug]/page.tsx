@@ -2,13 +2,14 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const categoryName = params.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const { slug } = await params;
+  const categoryName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   
   const title = `${categoryName} - Premium Northeast Indian Spices | NE CRAFTERS`;
   const description = `Discover authentic ${categoryName.toLowerCase()} from Northeast India. Premium quality spices, traditional flavors, and regional delicacies. Shop now for authentic Northeast Indian ${categoryName.toLowerCase()}.`;
@@ -39,13 +40,14 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description,
     },
     alternates: {
-      canonical: `/categories/${params.slug}`,
+      canonical: `/categories/${slug}`,
     },
   };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const categoryName = params.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const { slug } = await params;
+  const categoryName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   
   return (
     <div className="min-h-screen bg-gray-50">

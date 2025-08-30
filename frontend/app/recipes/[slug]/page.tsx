@@ -22,9 +22,10 @@ async function getRecipe(slug: string) {
 export default async function RecipePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const recipe = await getRecipe(params.slug);
+  const { slug } = await params;
+  const recipe = await getRecipe(slug);
 
-  return <RecipeClient initialRecipe={recipe} slug={params.slug} />;
+  return <RecipeClient initialRecipe={recipe} slug={slug} />;
 }

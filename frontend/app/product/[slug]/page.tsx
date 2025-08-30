@@ -9,16 +9,16 @@ const ProductActions = dynamic(() => import("@/components/product/ProductActions
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   try {
-
+    const { slug } = await params;
     
-    const result = await getProductBySlug(params.slug);
+    const result = await getProductBySlug(slug);
     
     
     if (!result.success || !result.data) {
