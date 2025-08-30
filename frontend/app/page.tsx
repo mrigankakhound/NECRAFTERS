@@ -1,13 +1,16 @@
+// Force dynamic rendering to avoid build-time database issues
+export const dynamic = 'force-dynamic';
+
 import BannerCarousel from "@/components/home/BannerCarousel";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 
 // Reduce initial JS by code-splitting non-critical sections
-const CrazyDealsSection = dynamic(() => import("@/components/home/CrazyDeals"));
-const FeaturedReviewsSection = dynamic(() => import("@/components/home/FeaturedReviews"));
-const NeedOfWebsiteSection = dynamic(() => import("@/components/home/NeedOfWebsite"));
-const WhyNeCraftersDiagramSection = dynamic(() => import("@/components/home/WhyNeCraftersDiagram"));
-const ReviewSectionSection = dynamic(() => import("@/components/home/ReviewSection"));
-const BlogImagesSection = dynamic(() => import("@/components/home/BlogImages"));
+const CrazyDealsSection = dynamicImport(() => import("@/components/home/CrazyDeals"));
+const FeaturedReviewsSection = dynamicImport(() => import("@/components/home/FeaturedReviews"));
+const NeedOfWebsiteSection = dynamicImport(() => import("@/components/home/NeedOfWebsite"));
+const WhyNeCraftersDiagramSection = dynamicImport(() => import("@/components/home/WhyNeCraftersDiagram"));
+const ReviewSectionSection = dynamicImport(() => import("@/components/home/ReviewSection"));
+const BlogImagesSection = dynamicImport(() => import("@/components/home/BlogImages"));
 
 import ProductCard from "@/components/home/ProductCard";
 import SpecialCombos from "@/components/home/SpecialCombos";
@@ -42,7 +45,17 @@ const HomePage = async () => {
       fetchWithTimeout(getActiveFeaturedReviews(), 3000)
     ]);
 
-    // Extract data safely
+    // Debug logging for troubleshooting
+    console.log('🔍 All API Responses:');
+    console.log('Banners:', banners.status, banners.status === 'fulfilled' ? banners.value?.data?.length || 0 : 'rejected');
+    console.log('App Banners:', appBanners.status, appBanners.status === 'fulfilled' ? appBanners.value?.data?.length || 0 : 'rejected');
+    console.log('Special Combos:', specialCombos.status, specialCombos.status === 'fulfilled' ? specialCombos.value?.data?.length || 0 : 'rejected');
+    console.log('Best Sellers:', bestSellers.status, bestSellers.status === 'fulfilled' ? bestSellers.value?.data?.length || 0 : 'rejected');
+    console.log('Crazy Deals:', crazyDeals.status, crazyDeals.status === 'fulfilled' ? crazyDeals.value?.data?.length || 0 : 'rejected');
+    console.log('Featured Products:', featuredProducts.status, featuredProducts.status === 'fulfilled' ? featuredProducts.value?.data?.length || 0 : 'rejected');
+    console.log('Featured Reviews:', featuredReviews.status, featuredReviews.status === 'fulfilled' ? featuredReviews.value?.data?.length || 0 : 'rejected');
+
+    // Extract data safely with better error handling
     const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
     const app_banners_data = appBanners.status === 'fulfilled' ? appBanners.value : { data: [] };
     const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
@@ -50,6 +63,14 @@ const HomePage = async () => {
     const crazyDeals_data = crazyDeals.status === 'fulfilled' ? crazyDeals.value : { data: [] };
     const featuredProducts_data = featuredProducts.status === 'fulfilled' ? featuredProducts.value : { data: [] };
     const featuredReviews_data = featuredReviews.status === 'fulfilled' ? featuredReviews.value : { data: [] };
+
+    // Log specific errors for debugging
+    if (bestSellers.status === 'rejected') {
+      console.error('❌ Best Sellers API failed:', bestSellers.reason);
+    }
+    if (featuredProducts.status === 'rejected') {
+      console.error('❌ Featured Products API failed:', featuredProducts.reason);
+    }
 
     // Debug logging
     console.log('🔍 Best Sellers Data:', bestSellers_data);
