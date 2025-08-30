@@ -54,9 +54,8 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
 
   // Fetch products on mount only (no auto-refresh)
   useEffect(() => {
-    // Only fetch for Best Sellers and New Arrivals on mount
     if (heading === "BEST SELLERS" || heading === "NEW ARRIVALS") {
-      // Fetch fresh data on mount
+      // Only fetch fresh data on mount, no auto-refresh
       fetchProducts();
     }
   }, [heading]);
@@ -93,7 +92,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
   return (
     <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        {/* Removed duplicate heading - main page already provides it */}
+        {/* Removed refresh button - no longer needed */}
       </div>
 
       <div className="relative">

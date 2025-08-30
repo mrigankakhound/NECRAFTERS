@@ -40,7 +40,7 @@ const SpecialCombos = ({ offers: initialOffers }: SpecialCombosProps) => {
   return (
     <div id="gift-hamper" className="container mx-auto mb-[20px] px-4">
       <div className="section-container">
-        <h2 className="text-xl font-bold sm:text-4xl text-center w-full relative py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
           SPECIAL COMBOS
         </h2>
       </div>

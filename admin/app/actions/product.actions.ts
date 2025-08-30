@@ -5,9 +5,6 @@ import { revalidatePath } from "next/cache";
 
 export async function getAllProducts() {
   try {
-    console.log("=== getAllProducts: Starting optimized query ===");
-    const startTime = Date.now();
-    
     const products = await prisma.product.findMany({
       select: {
         id: true,
@@ -37,9 +34,6 @@ export async function getAllProducts() {
       },
       take: 100, // Limit to 100 products for performance
     });
-
-    const queryTime = Date.now() - startTime;
-    console.log(`=== getAllProducts: Query completed in ${queryTime}ms, found ${products.length} products ===`);
     
     return {
       success: true,
@@ -90,23 +84,44 @@ export async function updateProductBestSeller(
   bestSeller: boolean
 ) {
   try {
-    console.log(`🏆 Updating best seller status for product ${productId} to ${bestSeller}`);
+    // First, verify the product exists
+    const existingProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, title: true, bestSeller: true }
+    });
+
+    if (!existingProduct) {
+      console.error(`Product not found: ${productId}`);
+      return {
+        success: false,
+        error: "Product not found",
+      };
+    }
     
+    // Update the product
     const result = await prisma.product.update({
       where: { id: productId },
       data: { bestSeller },
+      select: {
+        id: true,
+        title: true,
+        bestSeller: true,
+      }
     });
 
-    console.log(`✅ Successfully updated product:`, result);
-
+    // Revalidate paths to refresh the UI
     revalidatePath("/products");
     revalidatePath("/");
-    return { success: true };
+    
+    return { 
+      success: true,
+      data: result
+    };
   } catch (error) {
     console.error("Error updating product best seller status:", error);
     return {
       success: false,
-      error: "Failed to update product best seller status",
+      error: error instanceof Error ? error.message : "Failed to update product best seller status",
     };
   }
 }

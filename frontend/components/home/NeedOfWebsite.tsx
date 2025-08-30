@@ -39,7 +39,7 @@ const NeedOfWebsite = () => {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h2 className="text-xl font-bold sm:text-4xl text-center w-full py-4 sm:py-6 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">WHY NE CRAFTERS?</h2>
+              <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">WHY NE CRAFTERS?</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col items-center text-center p-4 sm:p-6">

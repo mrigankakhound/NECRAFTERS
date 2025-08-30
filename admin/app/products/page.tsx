@@ -59,13 +59,9 @@ export default function ProductsPage() {
   const loadProducts = async () => {
     try {
       setIsLoading(true);
-      console.log("=== LOADING PRODUCTS ===");
-      
       const result = await getAllProducts();
-      console.log("getAllProducts result:", result);
       
       if (result.success && result.data) {
-        console.log("Products loaded successfully:", result.data);
         setProducts(result.data);
       } else {
         console.error("Failed to load products:", result.error);
@@ -116,21 +112,22 @@ export default function ProductsPage() {
   };
 
   const handleBestSellerToggle = async (productId: string, bestSeller: boolean) => {
-    console.log(`🔄 Toggling best seller for product ${productId} to ${bestSeller}`);
+    // Find the product to show better feedback
+    const product = products.find(p => p.id === productId);
+    const productTitle = product?.title || 'Unknown Product';
+    
     try {
-      // Update best seller status in the UI immediately
+      // Update best seller status in the UI immediately for better UX
       setProducts(
         products.map((product) =>
           product.id === productId ? { ...product, bestSeller } : product
         )
       );
-
-      console.log(`📞 Calling updateProductBestSeller...`);
+      
       // Update in the backend
       const result = await updateProductBestSeller(productId, bestSeller);
-      console.log(`📡 Backend response:`, result);
+      
       if (!result.success) {
-        console.log(`❌ Backend update failed, reverting UI...`);
         // Revert UI change if backend update fails
         setProducts(
           products.map((product) =>
@@ -139,14 +136,20 @@ export default function ProductsPage() {
               : product
           )
         );
+        
         toast.error(result.error || "Failed to update best seller status");
       } else {
-        console.log(`✅ Backend update successful!`);
-        toast.success(`Best seller status updated successfully!`);
+        toast.success(`${productTitle} ${bestSeller ? 'marked as' : 'removed from'} best sellers!`);
+        
+        // Refresh the products list to ensure consistency
+        setTimeout(() => {
+          loadProducts();
+        }, 1000);
       }
     } catch (error) {
       console.error("Error updating best seller status:", error);
       toast.error("Failed to update best seller status");
+      
       // Revert UI change
       setProducts(
         products.map((product) =>
@@ -223,6 +226,22 @@ export default function ProductsPage() {
           <Button onClick={() => router.push("/products/new")}>
             Add New Product
           </Button>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <div className="text-sm text-gray-600">Total Products</div>
+          <div className="text-2xl font-bold text-gray-900">{products.length}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <div className="text-sm text-gray-600">Featured Products</div>
+          <div className="text-2xl font-bold text-blue-600">{products.filter(p => p.featured).length}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <div className="text-sm text-gray-600">Best Sellers</div>
+          <div className="text-2xl font-bold text-orange-600">{products.filter(p => p.bestSeller).length}</div>
         </div>
       </div>
 

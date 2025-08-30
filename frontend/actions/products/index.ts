@@ -3,33 +3,61 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // Get ONLY products marked as best sellers by admin - no fallbacks
+    // Get products marked as best sellers with complete data structure
     const bestSellers = await prisma.product.findMany({
       where: {
         bestSeller: true,
       },
       take: limit,
-      include: {
-        category: true,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
         images: true,
-        sizes: true,
-      },
-      // Remove random sorting to improve performance
-      orderBy: {
-        createdAt: 'desc', // Use consistent ordering instead of random
+        sizes: {
+          select: {
+            price: true,
+            size: true,
+            qty: true,
+          }
+        },
+        // Add missing fields that ProductCard expects
+        createdAt: true,
+        updatedAt: true,
+        rating: true,
+        description: true,
+        longDescription: true,
+        brand: true,
+        numReviews: true,
+        featured: true,
+        sku: true,
+        sold: true,
+        bestSeller: true,
       },
     });
 
-    // Return only actual best sellers - no fallbacks
+    // Return data in the complete format that ProductCard expects
     return {
       success: true,
-      data: bestSellers,
+      data: bestSellers.map(product => ({
+        ...product,
+        images: product.images && product.images.length > 0 ? product.images : [],
+        sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [],
+        discount: product.discount || 0,
+        rating: product.rating || 0,
+        numReviews: product.numReviews || 0,
+        sold: product.sold || 0,
+        featured: product.featured || false,
+        bestSeller: product.bestSeller || false,
+      })),
+      isFallback: false,
     };
   } catch (error) {
-    console.error("❌ Error fetching best seller products:", error);
+    console.error("Error getting best sellers:", error);
     return {
       success: false,
-      error: "Failed to fetch best seller products",
+      error: "Failed to get best sellers",
       data: [],
     };
   }
@@ -39,48 +67,51 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
   try {
     const skip = (page - 1) * limit;
     
-    const [featuredProducts, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where: {
-          featured: true,
+    const featuredProducts = await prisma.product.findMany({
+      where: {
+        featured: true,
+      },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
+        images: {
+          select: {
+            url: true,
+          }
         },
-        skip,
-        take: limit,
-        include: {
-          category: true,
-          images: true,
-          sizes: true,
-          productSubCategories: {
-            include: {
-              subCategory: true,
-            },
-          },
+        sizes: {
+          select: {
+            price: true,
+          }
         },
-      }),
-      prisma.product.count({
-        where: {
-          featured: true,
-        },
-      }),
-    ]);
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Process the results to get only the first image and size
+    const processedFeaturedProducts = featuredProducts.map(product => ({
+      ...product,
+      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+      discount: product.discount || 0,
+    }));
 
     return {
       success: true,
-      data: featuredProducts,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasNext: page * limit < totalCount,
-        hasPrev: page > 1,
-      }
+      data: processedFeaturedProducts,
     };
   } catch (error) {
     console.error("Error fetching featured products:", error);
     return {
       success: false,
       error: "Failed to fetch featured products",
+      data: [],
     };
   }
 }
