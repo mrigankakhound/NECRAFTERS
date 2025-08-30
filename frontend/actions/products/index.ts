@@ -1,9 +1,33 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 
+// Simple in-memory cache for best sellers (resets on server restart)
+let bestSellersCache: {
+  data: any[];
+  timestamp: number;
+  ttl: number;
+} | null = null;
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // Get products marked as best sellers with complete data structure
+    // Check cache first for better performance
+    if (bestSellersCache && (Date.now() - bestSellersCache.timestamp) < CACHE_TTL) {
+      console.log(`✅ Best sellers served from cache: ${bestSellersCache.data.length} products`);
+      return {
+        success: true,
+        data: bestSellersCache.data.slice(0, limit),
+        isFallback: false,
+        performance: {
+          queryTime: 0,
+          productCount: bestSellersCache.data.length,
+          fromCache: true,
+        },
+      };
+    }
+
+    // Performance optimization: Only fetch essential fields for ProductCard
     const bestSellers = await prisma.product.findMany({
       where: {
         bestSeller: true,
@@ -14,7 +38,12 @@ export async function getBestSellerProducts(limit: number = 10) {
         title: true,
         slug: true,
         discount: true,
-        images: true,
+        images: {
+          select: {
+            url: true,
+            public_id: true,
+          }
+        },
         sizes: {
           select: {
             price: true,
@@ -22,39 +51,58 @@ export async function getBestSellerProducts(limit: number = 10) {
             qty: true,
           }
         },
-        // Add missing fields that ProductCard expects
-        createdAt: true,
-        updatedAt: true,
         rating: true,
-        description: true,
-        longDescription: true,
         brand: true,
         numReviews: true,
         featured: true,
-        sku: true,
         sold: true,
         bestSeller: true,
       },
+      // Performance hint: Order by most relevant first
+      orderBy: [
+        { bestSeller: 'desc' },
+        { sold: 'desc' },
+      ],
     });
 
-    // Return data in the complete format that ProductCard expects
+    // Performance monitoring
+    const startTime = Date.now();
+    
+    // Process data efficiently
+    const processedData = bestSellers.map(product => ({
+      ...product,
+      images: product.images || [],
+      sizes: product.sizes || [],
+      discount: product.discount || 0,
+      rating: product.rating || 0,
+      numReviews: product.numReviews || 0,
+      sold: product.sold || 0,
+      featured: product.featured || false,
+      bestSeller: product.bestSeller || false,
+    }));
+
+    const processingTime = Date.now() - startTime;
+    console.log(`✅ Best sellers loaded: ${processedData.length} products in ${processingTime}ms`);
+    
+    // Update cache for future requests
+    bestSellersCache = {
+      data: processedData,
+      timestamp: Date.now(),
+      ttl: CACHE_TTL,
+    };
+    
     return {
       success: true,
-      data: bestSellers.map(product => ({
-        ...product,
-        images: product.images && product.images.length > 0 ? product.images : [],
-        sizes: product.sizes && product.sizes.length > 0 ? product.sizes : [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: product.numReviews || 0,
-        sold: product.sold || 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      })),
+      data: processedData,
       isFallback: false,
+      performance: {
+        queryTime: processingTime,
+        productCount: processedData.length,
+        fromCache: false,
+      },
     };
   } catch (error) {
-    console.error("Error getting best sellers:", error);
+    console.error("❌ Error getting best sellers:", error);
     return {
       success: false,
       error: "Failed to get best sellers",
