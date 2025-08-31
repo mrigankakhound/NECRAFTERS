@@ -28,7 +28,8 @@ export async function GET() {
     try {
       // Import prisma dynamically to avoid build issues
       const prisma = (await import('@/lib/prisma')).default;
-      await prisma.$queryRaw`SELECT 1`;
+      // Use a simple count query instead of $queryRaw for compatibility
+      await prisma.product.count();
       dbStatus = 'connected';
     } catch (error) {
       dbStatus = 'error';

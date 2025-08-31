@@ -22,7 +22,8 @@ export async function POST() {
     // Test 2: Check database connection
     try {
       const prisma = (await import('@/lib/prisma')).default;
-      await prisma.$queryRaw`SELECT 1`;
+      // Use a simple count query instead of $queryRaw for compatibility
+      await prisma.product.count();
       results.database = {
         status: 'success',
         message: 'Database connection successful'
