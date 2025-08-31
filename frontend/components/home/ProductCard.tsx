@@ -114,10 +114,10 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
               <Link
                 href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
-                className="group bg-white rounded-lg p-4 sm:p-3"
+                className="group bg-white rounded-lg p-5 sm:p-3"
                 prefetch={false}
               >
-                <div className="relative aspect-square mb-4 sm:mb-3 overflow-hidden rounded-md">
+                <div className="relative aspect-square mb-5 sm:mb-3 overflow-hidden rounded-md">
                   {mainImage ? (
                     <>
                       <Image
