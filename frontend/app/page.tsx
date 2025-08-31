@@ -25,7 +25,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 // Loading components for progressive loading
 const BestSellersSection = async () => {
   try {
-    const bestSellers = await fetchWithTimeout(getBestSellerProducts(8), 3000); // 3 second timeout
+    const bestSellers = await getBestSellerProducts(8); // Remove timeout wrapper
     return (
     <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
