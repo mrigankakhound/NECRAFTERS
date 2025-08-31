@@ -10,47 +10,24 @@ let bestSellersCache: {
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// Function to clear cache for debugging
+// Function to clear cache
 export async function clearBestSellersCache() {
   bestSellersCache = null;
-  console.log("🧹 Best sellers cache cleared");
+  return { success: true, message: "Cache cleared successfully" };
 }
 
-// Function to check database stats for debugging
-export async function checkBestSellersStats() {
-  try {
-    const totalProducts = await prisma.product.count();
-    const bestSellerCount = await prisma.product.count({ where: { bestSeller: true } });
-    const featuredCount = await prisma.product.count({ where: { featured: true } });
-    
-    console.log(`📊 Database Stats:`);
-    console.log(`   Total products: ${totalProducts}`);
-    console.log(`   Best sellers: ${bestSellerCount}`);
-    console.log(`   Featured: ${featuredCount}`);
-    
-    return { totalProducts, bestSellerCount, featuredCount };
-  } catch (error) {
-    console.error("❌ Error checking database stats:", error);
-    return null;
-  }
-}
+
 
 // Clear cache on server restart to ensure fresh data
 if (typeof window === 'undefined') {
   bestSellersCache = null;
-  console.log("🔄 Server restart detected, cache cleared");
 }
 
 export async function getBestSellerProducts(limit: number = 10) {
-  console.log(`🔍 getBestSellerProducts called with limit: ${limit}`);
-  
-  // Check database stats first
-  await checkBestSellersStats();
-  
-  // Check cache first
-  if (bestSellersCache && (Date.now() - bestSellersCache.timestamp) < CACHE_TTL) {
-    console.log(`✅ Best sellers served from cache: ${bestSellersCache.data.length} products`);
-    console.log(`📊 Cache data: ${JSON.stringify(bestSellersCache.data.map(p => ({ id: p.id, title: p.title, bestSeller: p.bestSeller, featured: p.featured })))}`);
+  // Check cache first - but only if we have enough products
+  if (bestSellersCache && 
+      (Date.now() - bestSellersCache.timestamp) < CACHE_TTL && 
+      bestSellersCache.data.length >= limit) {
     return {
       success: true,
       data: bestSellersCache.data.slice(0, limit),
@@ -62,72 +39,67 @@ export async function getBestSellerProducts(limit: number = 10) {
       },
     };
   }
+  
+  // If cache doesn't have enough products, clear it and fetch fresh data
+  if (bestSellersCache && bestSellersCache.data.length < limit) {
+    bestSellersCache = null;
+  }
 
   // FIRST PRIORITY: Try to get actual best sellers
-  console.log("🎯 Attempting to fetch actual best sellers...");
   try {
     const startTime = Date.now();
     
-    console.log(`🔍 Querying for best sellers with limit: ${limit}`);
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
-      take: limit,
+      take: Math.max(limit, 20), // Always fetch at least 20 to have buffer for cache
       select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    console.log(`🔍 Raw query result: ${bestSellers.length} products found`);
-    console.log(`📊 Best sellers data: ${JSON.stringify(bestSellers.map(p => ({ id: p.id, title: p.title, bestSeller: p.bestSeller, featured: p.featured })))}`);
+       id: true,
+       title: true,
+       slug: true,
+       discount: true,
+       rating: true,
+       bestSeller: true,
+       featured: true,
+       images: { select: { url: true } },
+       sizes: { select: { price: true, size: true, qty: true } },
+     },
+     orderBy: { createdAt: 'desc' },
+   });
 
-    const queryTime = Date.now() - startTime;
-    console.log(`⏱️ Best sellers query took: ${queryTime}ms`);
+   const queryTime = Date.now() - startTime;
 
-    if (bestSellers.length > 0) {
-      console.log(`✅ Actual best sellers found: ${bestSellers.length} products`);
-      
-      const processedData = bestSellers.map(product => ({
-        ...product,
-        images: product.images || [],
-        sizes: product.sizes || [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
+   if (bestSellers.length > 0) {
+     const processedData = bestSellers.map(product => ({
+       ...product,
+       images: product.images || [],
+       sizes: product.sizes || [],
+       discount: product.discount || 0,
+       rating: product.rating || 0,
+       numReviews: 0,
+       sold: 0,
+       featured: product.featured || false,
+       bestSeller: product.bestSeller || false,
+     }));
 
-      // Cache the actual best sellers
-      bestSellersCache = {
-        data: processedData,
-        timestamp: Date.now(),
-        ttl: CACHE_TTL,
-      };
+     // Cache the actual best sellers
+     bestSellersCache = {
+       data: processedData,
+       timestamp: Date.now(),
+       ttl: CACHE_TTL,
+     };
 
-      return {
-        success: true,
-        data: processedData,
-        isFallback: false,
-        performance: { queryTime, productCount: processedData.length, fromCache: false },
-      };
-    } else {
-      console.log("⚠️ No products marked as best sellers, trying featured products...");
-    }
-  } catch (error) {
-    console.log("❌ Best sellers query failed, falling back to featured products:", error);
-  }
+     return {
+       success: true,
+       data: processedData,
+       isFallback: false,
+       performance: { queryTime, productCount: processedData.length, fromCache: false },
+     };
+   }
+ } catch (error) {
+   // Silently continue to fallback
+ }
 
   // SECOND PRIORITY: Fallback to featured products
-  console.log("🔄 Falling back to featured products...");
   try {
     const featuredProducts = await prisma.product.findMany({
       where: { featured: true },
@@ -147,8 +119,6 @@ export async function getBestSellerProducts(limit: number = 10) {
     });
 
     if (featuredProducts.length > 0) {
-      console.log(`✅ Featured products fallback loaded: ${featuredProducts.length} products`);
-      
       const processedData = featuredProducts.map(product => ({
         ...product,
         images: product.images || [],
@@ -176,7 +146,7 @@ export async function getBestSellerProducts(limit: number = 10) {
       };
     }
   } catch (error) {
-    console.log("⚠️ Featured products failed, trying latest products:", error);
+    // Silently continue to fallback
   }
 
   // Final fallback: Get latest products
@@ -198,8 +168,6 @@ export async function getBestSellerProducts(limit: number = 10) {
     });
 
     if (latestProducts.length > 0) {
-      console.log(`✅ Latest products fallback loaded: ${latestProducts.length} products`);
-      
       const processedData = latestProducts.map(product => ({
         ...product,
         images: product.images || [],
@@ -227,55 +195,10 @@ export async function getBestSellerProducts(limit: number = 10) {
       };
     }
   } catch (error) {
-    console.log("⚠️ Featured products fallback failed, using latest products:", error);
-  }
-
-  // Final fallback: Get latest products
-  try {
-    console.log("🔄 Final fallback to latest products...");
-    const latestProducts = await prisma.product.findMany({
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (latestProducts.length > 0) {
-      console.log(`✅ Latest products fallback successful: ${latestProducts.length} products`);
-      const processedData = latestProducts.map(product => ({
-        ...product,
-        images: product.images || [],
-        sizes: product.sizes || [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
-
-      return {
-        success: true,
-        data: processedData,
-        isFallback: true,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
-      };
-    }
-  } catch (error) {
-    console.error("❌ All fallback queries failed:", error);
+    // Silently continue
   }
 
   // If we reach here, no products at all
-  console.log("❌ No products found at all");
   return {
     success: true,
     data: [],
