@@ -90,7 +90,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
   }
 
   return (
-    <div id={sectionId} className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+    <div id={sectionId} className="w-full sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         {/* Removed refresh button - no longer needed */}
       </div>
@@ -99,9 +99,9 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
         <div
           className={`${
             shop
-              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
-              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
-          } mb-8`}
+              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4"
+              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4"
+          } mb-8 px-2 sm:px-4`}
         >
           {products.map((product) => {
             const mainImage = product.images?.[0]?.url;
@@ -114,7 +114,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
               <Link
                 href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
-                className="group bg-white rounded-lg p-6 sm:p-4"
+                className="group bg-white rounded-lg p-4 sm:p-6 w-full"
                 prefetch={false}
               >
                 <div className="relative aspect-square mb-6 sm:mb-4 overflow-hidden rounded-md">
