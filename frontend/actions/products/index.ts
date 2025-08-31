@@ -16,17 +16,41 @@ export async function clearBestSellersCache() {
   console.log("🧹 Best sellers cache cleared");
 }
 
+// Function to check database stats for debugging
+export async function checkBestSellersStats() {
+  try {
+    const totalProducts = await prisma.product.count();
+    const bestSellerCount = await prisma.product.count({ where: { bestSeller: true } });
+    const featuredCount = await prisma.product.count({ where: { featured: true } });
+    
+    console.log(`📊 Database Stats:`);
+    console.log(`   Total products: ${totalProducts}`);
+    console.log(`   Best sellers: ${bestSellerCount}`);
+    console.log(`   Featured: ${featuredCount}`);
+    
+    return { totalProducts, bestSellerCount, featuredCount };
+  } catch (error) {
+    console.error("❌ Error checking database stats:", error);
+    return null;
+  }
+}
+
 // Clear cache on server restart to ensure fresh data
 if (typeof window === 'undefined') {
   bestSellersCache = null;
+  console.log("🔄 Server restart detected, cache cleared");
 }
 
 export async function getBestSellerProducts(limit: number = 10) {
   console.log(`🔍 getBestSellerProducts called with limit: ${limit}`);
   
-  // AGGRESSIVE CACHING STRATEGY - Load instantly from cache if available
+  // Check database stats first
+  await checkBestSellersStats();
+  
+  // Check cache first
   if (bestSellersCache && (Date.now() - bestSellersCache.timestamp) < CACHE_TTL) {
     console.log(`✅ Best sellers served from cache: ${bestSellersCache.data.length} products`);
+    console.log(`📊 Cache data: ${JSON.stringify(bestSellersCache.data.map(p => ({ id: p.id, title: p.title, bestSeller: p.bestSeller, featured: p.featured })))}`);
     return {
       success: true,
       data: bestSellersCache.data.slice(0, limit),
@@ -44,6 +68,7 @@ export async function getBestSellerProducts(limit: number = 10) {
   try {
     const startTime = Date.now();
     
+    console.log(`🔍 Querying for best sellers with limit: ${limit}`);
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
       take: limit,
@@ -60,6 +85,8 @@ export async function getBestSellerProducts(limit: number = 10) {
       },
       orderBy: { createdAt: 'desc' },
     });
+    console.log(`🔍 Raw query result: ${bestSellers.length} products found`);
+    console.log(`📊 Best sellers data: ${JSON.stringify(bestSellers.map(p => ({ id: p.id, title: p.title, bestSeller: p.bestSeller, featured: p.featured })))}`);
 
     const queryTime = Date.now() - startTime;
     console.log(`⏱️ Best sellers query took: ${queryTime}ms`);
