@@ -257,7 +257,7 @@ const Navbar = () => {
                 </span>
               </Link>
 
-              {/* Special Combos */}
+              {/* Gift Hamper */}
               <Link href="/#gift-hamper" className="flex flex-col items-center space-y-2 group">
                 <div className="w-16 h-16 p-3 transition-all duration-300">
                   <img 
