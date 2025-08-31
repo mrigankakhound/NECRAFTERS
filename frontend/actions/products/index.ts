@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // Simple, direct query like featured products
+    // EXACTLY like featured products - ONE SINGLE QUERY, no fallbacks
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
       take: limit,
@@ -23,85 +23,8 @@ export async function getBestSellerProducts(limit: number = 10) {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (bestSellers.length > 0) {
-      // Simple processing like featured products
-      const processedData = bestSellers.map(product => ({
-        ...product,
-        images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
-        sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
-
-      return {
-        success: true,
-        data: processedData,
-        isFallback: false,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
-      };
-    }
-
-    // If no best sellers, fallback to featured (same as before but simplified)
-    const featuredProducts = await prisma.product.findMany({
-      where: { featured: true },
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (featuredProducts.length > 0) {
-      const processedData = featuredProducts.map(product => ({
-        ...product,
-        images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
-        sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
-
-      return {
-        success: true,
-        data: processedData,
-        isFallback: true,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
-      };
-    }
-
-    // Final fallback to latest products
-    const latestProducts = await prisma.product.findMany({
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const processedData = latestProducts.map(product => ({
+    // Simple processing exactly like featured products
+    const processedData = bestSellers.map(product => ({
       ...product,
       images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
       sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
@@ -116,7 +39,7 @@ export async function getBestSellerProducts(limit: number = 10) {
     return {
       success: true,
       data: processedData,
-      isFallback: true,
+      isFallback: false,
       performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
     };
 
