@@ -724,9 +724,6 @@ export async function getProductsByCategory(categorySlug: string, page: number =
         select: { id: true, name: true, slug: true }
       }),
       prisma.product.findMany({
-        where: { 
-          categoryId: { not: null } // Ensure categoryId exists and is not null
-        },
         skip,
         take: limit,
         select: {
@@ -761,7 +758,6 @@ export async function getProductsByCategory(categorySlug: string, page: number =
       }),
       prisma.product.count({
         where: { 
-          categoryId: { not: null },
           category: { slug: categorySlug }
         }
       }),
