@@ -30,7 +30,7 @@ const BestSellersSection = async () => {
     <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
             BEST SELLERS
           </h2>
         </div>
@@ -64,7 +64,7 @@ const BestSellersSection = async () => {
       <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
         <div className="section-container">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               BEST SELLERS
             </h2>
           </div>
@@ -93,7 +93,7 @@ const FeaturedProductsSection = async () => {
     <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
             FEATURED PRODUCTS
           </h2>
         </div>
@@ -172,7 +172,7 @@ export default async function Home() {
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               BEST SELLERS
             </h2>
             <div className="flex justify-center py-8">
@@ -188,7 +188,7 @@ export default async function Home() {
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               GIFT HAMPER
             </h2>
             <div className="flex justify-center py-12">
@@ -204,7 +204,7 @@ export default async function Home() {
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               FEATURED PRODUCTS
             </h2>
             <div className="flex justify-center py-12">
@@ -220,7 +220,7 @@ export default async function Home() {
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
               REVIEWS OF FOOD ENTHUSIASTS
             </h2>
             <div className="flex justify-center py-12">

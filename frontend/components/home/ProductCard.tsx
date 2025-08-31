@@ -99,8 +99,8 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
         <div
           className={`${
             shop
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4"
-              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4"
+              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
           } mb-8`}
         >
           {products.map((product) => {
@@ -188,7 +188,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                    <p className="text-lg sm:text-lg font-semibold">
+                    <p className="text-base sm:text-lg font-semibold">
                       ₹{discountedPrice > 0 ? discountedPrice.toFixed(2) : '0.00'}
                     </p>
                     {discount > 0 && originalPrice > 0 && (
