@@ -7,7 +7,7 @@ const BlogImages = () => {
     <div className="w-full overflow-hidden bg-white py-8">
       {/* Heading */}
       <div className="text-center mb-9">
-        <h2 className="text-3xl font-bold tracking-wide font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold tracking-wide font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
          GLORY MOMENTS OF NE CRAFTERS
         </h2>
       </div>

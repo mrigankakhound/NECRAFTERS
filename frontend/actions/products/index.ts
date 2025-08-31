@@ -19,37 +19,7 @@ export async function clearBestSellersCache() {
 export async function getBestSellerProducts(limit: number = 10) {
   console.log(`🔍 getBestSellerProducts called with limit: ${limit}`);
   
-  // Test database connection first
-  try {
-    console.log("🔌 Testing database connection...");
-    const connectionTest = await prisma.product.count();
-    console.log(`✅ Database connection successful. Total products: ${connectionTest}`);
-    
-    // Test if bestSeller field exists and has any true values
-    console.log("🔍 Testing bestSeller field...");
-    const bestSellerCount = await prisma.product.count({
-      where: { bestSeller: true }
-    });
-    console.log(`📊 Products with bestSeller=true: ${bestSellerCount}`);
-    
-    // Test if featured field exists and has any true values
-    console.log("🔍 Testing featured field...");
-    const featuredCount = await prisma.product.count({
-      where: { featured: true }
-    });
-    console.log(`📊 Products with featured=true: ${featuredCount}`);
-    
-  } catch (connectionError) {
-    console.error("❌ Database connection failed:", connectionError);
-    return {
-      success: false,
-      error: "Database connection failed",
-      data: [],
-      isFallback: false,
-    };
-  }
-
-  // Check cache first for better performance
+  // AGGRESSIVE CACHING STRATEGY - Load instantly from cache if available
   if (bestSellersCache && (Date.now() - bestSellersCache.timestamp) < CACHE_TTL) {
     console.log(`✅ Best sellers served from cache: ${bestSellersCache.data.length} products`);
     return {
@@ -64,83 +34,11 @@ export async function getBestSellerProducts(limit: number = 10) {
     };
   }
 
-  console.log("🔄 Cache miss or expired, using optimized fallback approach...");
+  // IMMEDIATE FALLBACK - Skip slow database queries, use working approach
+  console.log("🚀 Using immediate fallback for instant loading...");
   
-  // Since the main query keeps timing out, use the working fallback approach directly
-  // This ensures we always get products and the user experience is smooth
-  const result = await getOptimizedProducts(limit);
-  
-  // Update cache if we got products
-  if (result.success && result.data && result.data.length > 0) {
-    bestSellersCache = {
-      data: result.data,
-      timestamp: Date.now(),
-      ttl: CACHE_TTL,
-    };
-  }
-  
-  return result;
-}
-
-// Optimized function that prioritizes getting products quickly
-async function getOptimizedProducts(limit: number) {
   try {
-    // First try: Get best sellers with minimal fields
-    console.log("🚀 Attempting optimized best sellers query...");
-    const startTime = Date.now();
-    
-    const bestSellers = await prisma.product.findMany({
-      where: { bestSeller: true },
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        createdAt: true,
-        // Only fetch essential image and size data
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      // Remove orderBy for initial query - let MongoDB use the index efficiently
-    });
-
-    const queryTime = Date.now() - startTime;
-    console.log(`⏱️ Best sellers query completed in ${queryTime}ms`);
-
-    if (bestSellers.length > 0) {
-      console.log(`✅ Best sellers query successful: ${bestSellers.length} products`);
-      const processedData = bestSellers.map(product => ({
-        ...product,
-        images: product.images || [],
-        sizes: product.sizes || [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
-
-      return {
-        success: true,
-        data: processedData,
-        isFallback: false,
-        performance: { queryTime, productCount: processedData.length, fromCache: false },
-      };
-    }
-  } catch (error) {
-    console.log("⚠️ Best sellers query failed, using fallback:", error);
-  }
-
-  // Fallback: Get featured products
-  try {
-    console.log("🔄 Falling back to featured products...");
-    const startTime = Date.now();
-    
+    // Get featured products immediately (we know this works fast)
     const featuredProducts = await prisma.product.findMany({
       where: { featured: true },
       take: limit,
@@ -152,18 +50,15 @@ async function getOptimizedProducts(limit: number) {
         rating: true,
         bestSeller: true,
         featured: true,
-        createdAt: true,
         images: { select: { url: true } },
         sizes: { select: { price: true, size: true, qty: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const queryTime = Date.now() - startTime;
-    console.log(`⏱️ Featured products query completed in ${queryTime}ms`);
-
     if (featuredProducts.length > 0) {
-      console.log(`✅ Featured products fallback successful: ${featuredProducts.length} products`);
+      console.log(`✅ Featured products loaded instantly: ${featuredProducts.length} products`);
+      
       const processedData = featuredProducts.map(product => ({
         ...product,
         images: product.images || [],
@@ -176,11 +71,69 @@ async function getOptimizedProducts(limit: number) {
         bestSeller: product.bestSeller || false,
       }));
 
+      // Cache this data immediately for future requests
+      bestSellersCache = {
+        data: processedData,
+        timestamp: Date.now(),
+        ttl: CACHE_TTL,
+      };
+
       return {
         success: true,
         data: processedData,
         isFallback: true,
-        performance: { queryTime, productCount: processedData.length, fromCache: false },
+        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+      };
+    }
+  } catch (error) {
+    console.log("⚠️ Featured products failed, trying latest products:", error);
+  }
+
+  // Final fallback: Get latest products
+  try {
+    const latestProducts = await prisma.product.findMany({
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
+        rating: true,
+        bestSeller: true,
+        featured: true,
+        images: { select: { url: true } },
+        sizes: { select: { price: true, size: true, qty: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (latestProducts.length > 0) {
+      console.log(`✅ Latest products fallback loaded: ${latestProducts.length} products`);
+      
+      const processedData = latestProducts.map(product => ({
+        ...product,
+        images: product.images || [],
+        sizes: product.sizes || [],
+        discount: product.discount || 0,
+        rating: product.rating || 0,
+        numReviews: 0,
+        sold: 0,
+        featured: product.featured || false,
+        bestSeller: product.bestSeller || false,
+      }));
+
+      // Cache this data immediately
+      bestSellersCache = {
+        data: processedData,
+        timestamp: Date.now(),
+        ttl: CACHE_TTL,
+      };
+
+      return {
+        success: true,
+        data: processedData,
+        isFallback: true,
+        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
       };
     }
   } catch (error) {

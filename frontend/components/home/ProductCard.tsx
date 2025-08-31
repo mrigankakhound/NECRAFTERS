@@ -99,8 +99,8 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
         <div
           className={`${
             shop
-              ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-              : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4"
           } mb-8`}
         >
           {products.map((product) => {
@@ -114,10 +114,10 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
               <Link
                 href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
-                className="group bg-white rounded-lg p-2 sm:p-3"
+                className="group bg-white rounded-lg p-4 sm:p-3"
                 prefetch={false}
               >
-                <div className="relative aspect-square mb-2 sm:mb-3 overflow-hidden rounded-md">
+                <div className="relative aspect-square mb-4 sm:mb-3 overflow-hidden rounded-md">
                   {mainImage ? (
                     <>
                       <Image
@@ -167,7 +167,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                 </div>
 
                 <div>
-                  <p className="font-semibold text-sm sm:text-base line-clamp-2">
+                  <p className="font-semibold text-base sm:text-base line-clamp-2">
                     {product.title}
                   </p>
                   <div className="flex items-center gap-1 sm:gap-2 mt-1">
@@ -188,7 +188,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                    <p className="text-base sm:text-lg font-semibold">
+                    <p className="text-lg sm:text-lg font-semibold">
                       ₹{discountedPrice > 0 ? discountedPrice.toFixed(2) : '0.00'}
                     </p>
                     {discount > 0 && originalPrice > 0 && (

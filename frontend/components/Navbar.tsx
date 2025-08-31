@@ -165,7 +165,7 @@ const Navbar = () => {
                 <img
                   src="/images/logo.png"
                   alt="NE CRAFTERS Logo"
-                  className="h-20 group-hover:scale-105 transition-transform duration-300"
+                  className="h-16 sm:h-20 group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </Link>
