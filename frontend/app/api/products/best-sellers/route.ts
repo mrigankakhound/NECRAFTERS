@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error || "Failed to fetch best seller products" },
+        { error: "Failed to fetch best seller products" },
         { status: 500 }
       );
     }
