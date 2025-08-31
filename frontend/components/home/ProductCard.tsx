@@ -28,9 +28,7 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
       setIsLoading(true);
       
       let endpoint = '';
-      if (heading === "BEST SELLERS") {
-        endpoint = '/api/products/best-sellers?limit=8';
-      } else if (heading === "NEW ARRIVALS") {
+      if (heading === "NEW ARRIVALS") {
         endpoint = '/api/products/new-arrivals?limit=4';
       } else {
         // For other sections, don't refresh
@@ -54,10 +52,11 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
 
   // Fetch products on mount only (no auto-refresh)
   useEffect(() => {
-    if (heading === "BEST SELLERS" || heading === "NEW ARRIVALS") {
-      // Only fetch fresh data on mount, no auto-refresh
+    if (heading === "NEW ARRIVALS") {
+      // Only fetch fresh data on mount for new arrivals
       fetchProducts();
     }
+    // Removed BEST SELLERS from auto-refresh to prevent double fetching
   }, [heading]);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
