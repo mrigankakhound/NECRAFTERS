@@ -1,106 +1,51 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 
-// Simple in-memory cache for best sellers (resets on server restart)
-let bestSellersCache: {
-  data: any[];
-  timestamp: number;
-  ttl: number;
-} | null = null;
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-// Function to clear cache
-export async function clearBestSellersCache() {
-  bestSellersCache = null;
-  return { success: true, message: "Cache cleared successfully" };
-}
-
-
-
-// Clear cache on server restart to ensure fresh data
-if (typeof window === 'undefined') {
-  bestSellersCache = null;
-}
 
 export async function getBestSellerProducts(limit: number = 10) {
-  // Check cache first - but only if we have enough products
-  if (bestSellersCache && 
-      (Date.now() - bestSellersCache.timestamp) < CACHE_TTL && 
-      bestSellersCache.data.length >= limit) {
-    return {
-      success: true,
-      data: bestSellersCache.data.slice(0, limit),
-      isFallback: false,
-      performance: {
-        queryTime: 0,
-        productCount: bestSellersCache.data.length,
-        fromCache: true,
-      },
-    };
-  }
-  
-  // If cache doesn't have enough products, clear it and fetch fresh data
-  if (bestSellersCache && bestSellersCache.data.length < limit) {
-    bestSellersCache = null;
-  }
-
-  // FIRST PRIORITY: Try to get actual best sellers
   try {
-    const startTime = Date.now();
-    
+    // Simple, direct query like featured products
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
-      take: Math.max(limit, 20), // Always fetch at least 20 to have buffer for cache
+      take: limit,
       select: {
-       id: true,
-       title: true,
-       slug: true,
-       discount: true,
-       rating: true,
-       bestSeller: true,
-       featured: true,
-       images: { select: { url: true } },
-       sizes: { select: { price: true, size: true, qty: true } },
-     },
-     orderBy: { createdAt: 'desc' },
-   });
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
+        rating: true,
+        bestSeller: true,
+        featured: true,
+        images: { select: { url: true } },
+        sizes: { select: { price: true, size: true, qty: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-   const queryTime = Date.now() - startTime;
+    if (bestSellers.length > 0) {
+      // Simple processing like featured products
+      const processedData = bestSellers.map(product => ({
+        ...product,
+        images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+        sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+        discount: product.discount || 0,
+        rating: product.rating || 0,
+        numReviews: 0,
+        sold: 0,
+        featured: product.featured || false,
+        bestSeller: product.bestSeller || false,
+      }));
 
-   if (bestSellers.length > 0) {
-     const processedData = bestSellers.map(product => ({
-       ...product,
-       images: product.images || [],
-       sizes: product.sizes || [],
-       discount: product.discount || 0,
-       rating: product.rating || 0,
-       numReviews: 0,
-       sold: 0,
-       featured: product.featured || false,
-       bestSeller: product.bestSeller || false,
-     }));
+      return {
+        success: true,
+        data: processedData,
+        isFallback: false,
+        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+      };
+    }
 
-     // Cache the actual best sellers
-     bestSellersCache = {
-       data: processedData,
-       timestamp: Date.now(),
-       ttl: CACHE_TTL,
-     };
-
-     return {
-       success: true,
-       data: processedData,
-       isFallback: false,
-       performance: { queryTime, productCount: processedData.length, fromCache: false },
-     };
-   }
- } catch (error) {
-   // Silently continue to fallback
- }
-
-  // SECOND PRIORITY: Fallback to featured products
-  try {
+    // If no best sellers, fallback to featured (same as before but simplified)
     const featuredProducts = await prisma.product.findMany({
       where: { featured: true },
       take: limit,
@@ -121,8 +66,8 @@ export async function getBestSellerProducts(limit: number = 10) {
     if (featuredProducts.length > 0) {
       const processedData = featuredProducts.map(product => ({
         ...product,
-        images: product.images || [],
-        sizes: product.sizes || [],
+        images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+        sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
         discount: product.discount || 0,
         rating: product.rating || 0,
         numReviews: 0,
@@ -131,13 +76,6 @@ export async function getBestSellerProducts(limit: number = 10) {
         bestSeller: product.bestSeller || false,
       }));
 
-      // Cache this data
-      bestSellersCache = {
-        data: processedData,
-        timestamp: Date.now(),
-        ttl: CACHE_TTL,
-      };
-
       return {
         success: true,
         data: processedData,
@@ -145,12 +83,8 @@ export async function getBestSellerProducts(limit: number = 10) {
         performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
       };
     }
-  } catch (error) {
-    // Silently continue to fallback
-  }
 
-  // Final fallback: Get latest products
-  try {
+    // Final fallback to latest products
     const latestProducts = await prisma.product.findMany({
       take: limit,
       select: {
@@ -167,44 +101,33 @@ export async function getBestSellerProducts(limit: number = 10) {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (latestProducts.length > 0) {
-      const processedData = latestProducts.map(product => ({
-        ...product,
-        images: product.images || [],
-        sizes: product.sizes || [],
-        discount: product.discount || 0,
-        rating: product.rating || 0,
-        numReviews: 0,
-        sold: 0,
-        featured: product.featured || false,
-        bestSeller: product.bestSeller || false,
-      }));
+    const processedData = latestProducts.map(product => ({
+      ...product,
+      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+      discount: product.discount || 0,
+      rating: product.rating || 0,
+      numReviews: 0,
+      sold: 0,
+      featured: product.featured || false,
+      bestSeller: product.bestSeller || false,
+    }));
 
-      // Cache this data immediately
-      bestSellersCache = {
-        data: processedData,
-        timestamp: Date.now(),
-        ttl: CACHE_TTL,
-      };
+    return {
+      success: true,
+      data: processedData,
+      isFallback: true,
+      performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+    };
 
-      return {
-        success: true,
-        data: processedData,
-        isFallback: true,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
-      };
-    }
   } catch (error) {
-    // Silently continue
+    console.error("Error fetching best seller products:", error);
+    return {
+      success: false,
+      error: "Failed to fetch best seller products",
+      data: [],
+    };
   }
-
-  // If we reach here, no products at all
-  return {
-    success: true,
-    data: [],
-    isFallback: true,
-    performance: { queryTime: 0, productCount: 0, fromCache: false },
-  };
 }
 
 export async function getFeaturedProducts(limit: number = 10, page: number = 1) {
