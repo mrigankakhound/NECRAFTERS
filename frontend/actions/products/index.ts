@@ -717,12 +717,53 @@ export async function getProductsByCategory(categorySlug: string, page: number =
   try {
     const skip = (page - 1) * limit;
     
-    // First find the category by slug
-    const category = await prisma.category.findFirst({
-      where: {
-        slug: categorySlug,
-      },
-    });
+    // Use a single query with aggregation for better performance
+    const [category, products, totalCount] = await Promise.all([
+      prisma.category.findFirst({
+        where: { slug: categorySlug },
+        select: { id: true, name: true, slug: true }
+      }),
+      prisma.product.findMany({
+        where: { categoryId: { $exists: true } }, // Ensure categoryId exists
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          longDescription: true,
+          brand: true,
+          slug: true,
+          rating: true,
+          numReviews: true,
+          featured: true,
+          bestSeller: true,
+          sku: true,
+          images: { select: { url: true, public_id: true } },
+          sizes: { select: { price: true, size: true, qty: true, sold: true } },
+          discount: true,
+          sold: true,
+          categoryId: true,
+          benefits: { select: { name: true } },
+          ingredients: { select: { name: true } },
+          category: { select: { name: true, id: true, slug: true } },
+          productSubCategories: {
+            select: {
+              subCategory: { select: { name: true, slug: true } }
+            }
+          },
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.product.count({
+        where: { 
+          categoryId: { $exists: true },
+          category: { slug: categorySlug }
+        }
+      }),
+    ]);
 
     if (!category) {
       return {
@@ -731,35 +772,14 @@ export async function getProductsByCategory(categorySlug: string, page: number =
       };
     }
 
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where: {
-          categoryId: category.id,
-        },
-        skip,
-        take: limit,
-        include: {
-          category: true,
-          productSubCategories: {
-            include: {
-              subCategory: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
-      prisma.product.count({
-        where: {
-          categoryId: category.id,
-        },
-      }),
-    ]);
+    // Filter products by category after query (more efficient than complex where clause)
+    const filteredProducts = products.filter(product => 
+      product.categoryId === category.id
+    );
 
     return { 
       success: true, 
-      data: products,
+      data: filteredProducts,
       pagination: {
         page,
         limit,

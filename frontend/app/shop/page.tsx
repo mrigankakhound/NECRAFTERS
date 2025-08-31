@@ -243,7 +243,7 @@ const ShopPage = () => {
       }
     };
 
-    const timeoutId = setTimeout(fetchProducts, 200);
+    const timeoutId = setTimeout(fetchProducts, 100);
     return () => clearTimeout(timeoutId);
   }, [searchParams, currentPage, selectedCategory]);
 
@@ -271,6 +271,7 @@ const ShopPage = () => {
       // If "All Products" is clicked or same category is clicked, deselect it
       setSelectedCategory(null);
       setCurrentPage(1);
+      setIsLoading(true); // Show loading state
       const params = new URLSearchParams(window.location.search);
       params.delete("category");
       router.push(`?${params.toString()}`);
@@ -278,6 +279,7 @@ const ShopPage = () => {
       // Select new category
       setSelectedCategory(categorySlug);
       setCurrentPage(1);
+      setIsLoading(true); // Show loading state
       const params = new URLSearchParams(window.location.search);
       params.set("category", categorySlug);
       router.push(`?${params.toString()}`);

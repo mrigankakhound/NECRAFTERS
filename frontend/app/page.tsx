@@ -37,6 +37,13 @@ const BestSellersSection = async () => {
         
         {bestSellers.data && bestSellers.data.length > 0 ? (
           <>
+            {/* Debug Info - Remove after fixing */}
+            <div className="text-center py-2 text-xs text-blue-600 mb-4 bg-blue-50 rounded p-2">
+              <p><strong>Debug Info:</strong> Found {bestSellers.data.length} products</p>
+              <p>isFallback: {bestSellers.isFallback ? 'Yes' : 'No'}</p>
+              <p>Performance: {bestSellers.performance?.fromCache ? 'From Cache' : 'Fresh Query'}</p>
+            </div>
+            
             {bestSellers.isFallback && (
               <div className="text-center py-2 text-gray-500 text-sm mb-4">
                 <p>Showing our latest products. Mark products as best sellers in admin to customize this section!</p>

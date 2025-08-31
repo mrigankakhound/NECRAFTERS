@@ -208,6 +208,9 @@ model Product {
   @@index([createdAt])
   @@index([bestSeller, createdAt])
   @@index([featured, createdAt])
+  @@index([categoryId])
+  @@index([categoryId, createdAt])
+  @@index([sold])
 }
 
 model Review {
