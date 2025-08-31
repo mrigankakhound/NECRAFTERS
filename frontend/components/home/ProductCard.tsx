@@ -99,8 +99,8 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
         <div
           className={`${
             shop
-              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
+              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
           } mb-8`}
         >
           {products.map((product) => {
@@ -114,10 +114,10 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
               <Link
                 href={`/product/${product.slug ?? product.id}`}
                 key={product.id}
-                className="group bg-white rounded-lg p-5 sm:p-3"
+                className="group bg-white rounded-lg p-6 sm:p-4"
                 prefetch={false}
               >
-                <div className="relative aspect-square mb-5 sm:mb-3 overflow-hidden rounded-md">
+                <div className="relative aspect-square mb-6 sm:mb-4 overflow-hidden rounded-md">
                   {mainImage ? (
                     <>
                       <Image
