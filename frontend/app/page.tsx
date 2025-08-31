@@ -6,6 +6,8 @@ import { getWebsiteBanners, getAppBanners } from '@/actions/banner.actions';
 import { getSpecialCombos } from '@/actions/special-combos';
 import { getCrazyDeals } from '@/actions/crazy-deals';
 import { getBestSellerProducts, getFeaturedProducts } from '@/actions/products';
+import { BestSellersProvider } from '@/components/providers/BestSellersProvider';
+
 import { getActiveFeaturedReviews } from '@/actions/featured-reviews';
 import { fetchWithTimeout } from '@/lib/utils';
 import BannerCarousel from '@/components/home/BannerCarousel';
@@ -147,44 +149,47 @@ const FeaturedReviewsSection = async () => {
 };
 
 export default async function Home() {
-  // Load critical data first (banners, special combos)
-  const [banners, specialCombos] = await Promise.allSettled([
+  // Load critical data first (banners, special combos, best sellers)
+  const [banners, specialCombos, bestSellers] = await Promise.allSettled([
     fetchWithTimeout(getWebsiteBanners(), 5000), // Reduced timeout
     fetchWithTimeout(getSpecialCombos(), 5000),  // Reduced timeout
+    getBestSellerProducts(8), // Load best sellers data for the store
   ]);
 
   // Extract data safely
   const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
   const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
+  const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
 
   return (
-    <div>
-      <HashScrollHandler />
-      
-      {/* 1. Banners */}
-      <BannerCarousel
-        banners={banners_data.data ?? []}
-        app_banners={[]} // Will be loaded separately
-      />
-      
-      {/* 2. Special Combos */}
-      <SpecialCombos offers={specialCombos_data.data ?? []} />
-      
-      {/* 3. Best Sellers */}
-      <Suspense fallback={
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-              BEST SELLERS
-            </h2>
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="md" text="Loading Best Sellers..." className="text-orange-600" />
+    <BestSellersProvider initialData={bestSellers_data.data || []}>
+      <div>
+        <HashScrollHandler />
+        
+        {/* 1. Banners */}
+        <BannerCarousel
+          banners={banners_data.data ?? []}
+          app_banners={[]} // Will be loaded separately
+        />
+        
+        {/* 2. Special Combos */}
+        <SpecialCombos offers={specialCombos_data.data ?? []} />
+        
+        {/* 3. Best Sellers */}
+        <Suspense fallback={
+          <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+            <div className="section-container">
+              <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                BEST SELLERS
+              </h2>
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size="md" text="Loading Best Sellers..." className="text-orange-600" />
+              </div>
             </div>
           </div>
-        </div>
-      }>
-        <BestSellersSection />
-      </Suspense>
+        }>
+          <BestSellersSection />
+        </Suspense>
 
       {/* 4. Gift Hampers */}
       <Suspense fallback={
@@ -249,7 +254,8 @@ export default async function Home() {
 
       {/* 10. Moments of NE Crafters */}
       <BlogImages />
-    </div>
+        </div>
+      </BestSellersProvider>
   );
 }
 
