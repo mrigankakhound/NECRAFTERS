@@ -87,6 +87,8 @@ async function getOptimizedProducts(limit: number) {
   try {
     // First try: Get best sellers with minimal fields
     console.log("🚀 Attempting optimized best sellers query...");
+    const startTime = Date.now();
+    
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
       take: limit,
@@ -98,12 +100,16 @@ async function getOptimizedProducts(limit: number) {
         rating: true,
         bestSeller: true,
         featured: true,
+        createdAt: true,
         // Only fetch essential image and size data
         images: { select: { url: true } },
         sizes: { select: { price: true, size: true, qty: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      // Remove orderBy for initial query - let MongoDB use the index efficiently
     });
+
+    const queryTime = Date.now() - startTime;
+    console.log(`⏱️ Best sellers query completed in ${queryTime}ms`);
 
     if (bestSellers.length > 0) {
       console.log(`✅ Best sellers query successful: ${bestSellers.length} products`);
@@ -123,7 +129,7 @@ async function getOptimizedProducts(limit: number) {
         success: true,
         data: processedData,
         isFallback: false,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+        performance: { queryTime, productCount: processedData.length, fromCache: false },
       };
     }
   } catch (error) {
@@ -133,6 +139,8 @@ async function getOptimizedProducts(limit: number) {
   // Fallback: Get featured products
   try {
     console.log("🔄 Falling back to featured products...");
+    const startTime = Date.now();
+    
     const featuredProducts = await prisma.product.findMany({
       where: { featured: true },
       take: limit,
@@ -144,11 +152,15 @@ async function getOptimizedProducts(limit: number) {
         rating: true,
         bestSeller: true,
         featured: true,
+        createdAt: true,
         images: { select: { url: true } },
         sizes: { select: { price: true, size: true, qty: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    const queryTime = Date.now() - startTime;
+    console.log(`⏱️ Featured products query completed in ${queryTime}ms`);
 
     if (featuredProducts.length > 0) {
       console.log(`✅ Featured products fallback successful: ${featuredProducts.length} products`);
@@ -168,7 +180,7 @@ async function getOptimizedProducts(limit: number) {
         success: true,
         data: processedData,
         isFallback: true,
-        performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+        performance: { queryTime, productCount: processedData.length, fromCache: false },
       };
     }
   } catch (error) {

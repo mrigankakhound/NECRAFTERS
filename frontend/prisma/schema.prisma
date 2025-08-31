@@ -201,6 +201,13 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Database indexes for better query performance
+  @@index([bestSeller])
+  @@index([featured])
+  @@index([createdAt])
+  @@index([bestSeller, createdAt])
+  @@index([featured, createdAt])
 }
 
 model Review {
