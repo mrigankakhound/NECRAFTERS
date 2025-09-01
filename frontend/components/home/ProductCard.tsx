@@ -3,11 +3,10 @@
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import Image from "next/image";
 import { Product } from "@prisma/client";
 import { useCart } from "@/store/useCart";
 import { toast } from "sonner";
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductCardProps {
   heading: string;
@@ -15,17 +14,14 @@ interface ProductCardProps {
   shop?: boolean;
   sectionId?: string;
   refreshInterval?: number;
-  isCached?: boolean; // New prop to show caching status
 }
 
-// Memoize the component to prevent unnecessary re-renders
-const ProductCard = memo(({ 
+const ProductCard = ({ 
   heading, 
   products: initialProducts, 
   shop, 
   sectionId, 
-  refreshInterval = 30000,
-  isCached = false 
+  refreshInterval = 30000 
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const [products, setProducts] = useState(initialProducts);
@@ -100,12 +96,11 @@ const ProductCard = memo(({
   return (
     <div id={sectionId} className="w-full sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        {/* Cache indicator for debugging */}
-        {isCached && (
-          <div className="text-xs text-gray-500 text-center mb-2">
-            📦 Using cached data (fallback mode)
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            {heading}
+          </h2>
+        </div>
       </div>
 
       <div className="relative">
@@ -124,16 +119,10 @@ const ProductCard = memo(({
               <Link href={`/product/${product.slug}`} className="block">
                 <div className="relative aspect-square overflow-hidden">
                   {product.images && product.images.length > 0 ? (
-                    <Image
+                    <img
                       src={product.images[0].url || ""}
                       alt={product.title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      priority={false} // Don't prioritize all images
-                      loading="lazy" // Lazy load for better performance
-                      placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -201,10 +190,20 @@ const ProductCard = memo(({
           ))}
         </div>
       </div>
+      {!shop && (
+        <div className="flex justify-center mt-8">
+          <Link href="/shop" className="w-full sm:w-auto">
+            <Button
+              variant={"outline"}
+              className="w-full sm:w-[347px] border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary font-medium tracking-wider px-[10px] py-[20px] transition-colors"
+            >
+              VIEW ALL
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
-});
-
-ProductCard.displayName = 'ProductCard';
+};
 
 export default ProductCard;
