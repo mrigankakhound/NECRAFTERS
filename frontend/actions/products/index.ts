@@ -108,17 +108,45 @@ export async function getProductBySlug(slug: string) {
   try {
     const product = await prisma.product.findFirst({
       where: { slug },
-      include: {
-        category: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        longDescription: true,
+        brand: true,
+        slug: true,
+        rating: true,
+        numReviews: true,
+        featured: true,
+        bestSeller: true,
+        sku: true,
         images: true,
         sizes: true,
+        discount: true,
+        sold: true,
+        categoryId: true,
         benefits: true,
         ingredients: true,
-        productSubCategories: {
-          include: {
-            subCategory: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
           },
         },
+        productSubCategories: {
+          select: {
+            subCategory: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
