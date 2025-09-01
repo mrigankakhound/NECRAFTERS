@@ -3,36 +3,45 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // EXACTLY like featured products - ONE SINGLE QUERY, no fallbacks
-    const bestSellers = await prisma.product.findMany({
-      where: { bestSeller: true },
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        rating: true,
-        bestSeller: true,
-        featured: true,
-        images: { select: { url: true } },
-        sizes: { select: { price: true, size: true, qty: true } },
-      },
-      orderBy: { createdAt: 'desc' },
+    // Use MongoDB aggregation to only fetch first image and size - MUCH FASTER
+    const bestSellers = await prisma.$runCommandRaw({
+      aggregate: "Product",
+      pipeline: [
+        { $match: { bestSeller: true } },
+        { $sort: { createdAt: -1 } },
+        { $limit: limit },
+        {
+          $project: {
+            id: "$_id",
+            title: 1,
+            slug: 1,
+            discount: 1,
+            rating: 1,
+            bestSeller: 1,
+            featured: 1,
+            // Only get first image
+            images: { $slice: ["$images", 1] },
+            // Only get first size
+            sizes: { $slice: ["$sizes", 1] },
+          }
+        }
+      ]
     });
 
-    // Simple processing exactly like featured products
-    const processedData = bestSellers.map(product => ({
-      ...product,
-      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
-      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+    // Process the results - MongoDB aggregation returns documents in a specific format
+    const processedData = (bestSellers as any).documents?.map((product: any) => ({
+      id: product.id,
+      title: product.title,
+      slug: product.slug,
       discount: product.discount || 0,
       rating: product.rating || 0,
+      bestSeller: product.bestSeller || false,
+      featured: product.featured || false,
+      images: product.images || [],
+      sizes: product.sizes || [],
       numReviews: 0,
       sold: 0,
-      featured: product.featured || false,
-      bestSeller: product.bestSeller || false,
-    }));
+    })) || [];
 
     return {
       success: true,
@@ -54,31 +63,27 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
   try {
     const skip = (page - 1) * limit;
     
-    const featuredProducts = await prisma.product.findMany({
-      where: {
-        featured: true,
-      },
-      skip,
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        discount: true,
-        images: {
-          select: {
-            url: true,
+    // Use MongoDB aggregation to only fetch first image and size - MUCH FASTER
+    const featuredProducts = await prisma.$runCommandRaw({
+      aggregate: "Product",
+      pipeline: [
+        { $match: { featured: true } },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            id: "$_id",
+            title: 1,
+            slug: 1,
+            discount: 1,
+            // Only get first image
+            images: { $slice: ["$images", 1] },
+            // Only get first size
+            sizes: { $slice: ["$sizes", 1] },
           }
-        },
-        sizes: {
-          select: {
-            price: true,
-          }
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+        }
+      ]
     });
 
     // Process the results to get only the first image and size
