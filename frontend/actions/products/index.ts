@@ -2,8 +2,21 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
+  const startTime = Date.now();
+  let queryStartTime: number;
+  let queryEndTime: number;
+  
   try {
+    console.log(`🚀 [${new Date().toISOString()}] getBestSellerProducts called with limit: ${limit}`);
+    
+    // Check database connection first
+    const connectionStart = Date.now();
+    await prisma.$connect();
+    const connectionTime = Date.now() - connectionStart;
+    console.log(`🔌 Database connection time: ${connectionTime}ms`);
+    
     // EXACTLY like featured products - ONE SINGLE QUERY, no fallbacks
+    queryStartTime = Date.now();
     const bestSellers = await prisma.product.findMany({
       where: { bestSeller: true },
       take: limit,
@@ -20,8 +33,13 @@ export async function getBestSellerProducts(limit: number = 10) {
       },
       orderBy: { createdAt: 'desc' },
     });
+    queryEndTime = Date.now();
+    
+    const queryTime = queryEndTime - queryStartTime;
+    console.log(`📊 Database query time: ${queryTime}ms, Found ${bestSellers.length} products`);
 
     // Simple processing exactly like featured products
+    const processingStart = Date.now();
     const processedData = bestSellers.map(product => ({
       ...product,
       images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
@@ -33,28 +51,48 @@ export async function getBestSellerProducts(limit: number = 10) {
       featured: product.featured || false,
       bestSeller: product.bestSeller || false,
     }));
+    const processingTime = Date.now() - processingStart;
+    console.log(`⚙️ Data processing time: ${processingTime}ms`);
+
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ Total function time: ${totalTime}ms`);
 
     return {
       success: true,
       data: processedData,
       isFallback: false,
-      performance: { queryTime: 0, productCount: processedData.length, fromCache: false },
+      performance: { 
+        queryTime, 
+        processingTime,
+        connectionTime,
+        totalTime,
+        productCount: processedData.length, 
+        fromCache: false 
+      },
     };
 
   } catch (error) {
-    console.error("Error fetching best seller products:", error);
+    const totalTime = Date.now() - startTime;
+    console.error(`❌ [${new Date().toISOString()}] Error in getBestSellerProducts after ${totalTime}ms:`, error);
     return {
       success: false,
       error: "Failed to fetch best seller products",
       data: [],
     };
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function getFeaturedProducts(limit: number = 10, page: number = 1) {
+  const startTime = Date.now();
+  
   try {
+    console.log(`🚀 [${new Date().toISOString()}] getFeaturedProducts called with limit: ${limit}, page: ${page}`);
+    
     const skip = (page - 1) * limit;
     
+    const queryStart = Date.now();
     const featuredProducts = await prisma.product.findMany({
       where: {
         featured: true,
@@ -81,21 +119,30 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
         createdAt: 'desc',
       },
     });
+    const queryTime = Date.now() - queryStart;
+    console.log(`📊 Featured products query time: ${queryTime}ms, Found ${featuredProducts.length} products`);
 
     // Process the results to get only the first image and size
+    const processingStart = Date.now();
     const processedFeaturedProducts = featuredProducts.map(product => ({
       ...product,
       images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
       sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
       discount: product.discount || 0,
     }));
+    const processingTime = Date.now() - processingStart;
+    console.log(`⚙️ Featured products processing time: ${processingTime}ms`);
+
+    const totalTime = Date.now() - startTime;
+    console.log(`✅ Featured products total time: ${totalTime}ms`);
 
     return {
       success: true,
       data: processedFeaturedProducts,
     };
   } catch (error) {
-    console.error("Error fetching featured products:", error);
+    const totalTime = Date.now() - startTime;
+    console.error(`❌ [${new Date().toISOString()}] Error in getFeaturedProducts after ${totalTime}ms:`, error);
     return {
       success: false,
       error: "Failed to fetch featured products",
