@@ -22,7 +22,8 @@ export default function TestPerformancePage() {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      setBestSellersResult({ error: error.message, timestamp: new Date().toISOString() });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setBestSellersResult({ error: errorMessage, timestamp: new Date().toISOString() });
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +43,8 @@ export default function TestPerformancePage() {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      setFeaturedResult({ error: error.message, timestamp: new Date().toISOString() });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setFeaturedResult({ error: errorMessage, timestamp: new Date().toISOString() });
     } finally {
       setIsLoading(false);
     }
