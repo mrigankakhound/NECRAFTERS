@@ -1,30 +1,189 @@
-import { Suspense } from "react";
-import { getBestSellerProducts } from "@/actions/products";
-import BestSellersSection from "@/components/home/BestSellersSection";
-import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
-import SpecialComboSection from "@/components/home/SpecialComboSection";
-import GiftHamperSection from "@/components/home/GiftHamperSection";
-import WhyNECraftersSection from "@/components/home/WhyNECraftersSection";
-import GloryMomentsSection from "@/components/home/GloryMomentsSection";
-import HeroSection from "@/components/home/HeroSection";
-import CrazyDealsSection from "@/components/home/CrazyDealsSection";
-import { Metadata } from "next";
+// Force dynamic rendering to avoid build-time database issues
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: "NE Crafters - Handcrafted Products",
-  description: "Discover unique handcrafted products from NE Crafters. Best sellers, featured products, and special combos.",
+import { Suspense } from 'react';
+import { getWebsiteBanners, getAppBanners } from '@/actions/banner.actions';
+import { getSpecialCombos } from '@/actions/special-combos';
+import { getCrazyDeals } from '@/actions/crazy-deals';
+import { getBestSellerProducts, getFeaturedProducts } from '@/actions/products';
+import { getActiveFeaturedReviews } from '@/actions/featured-reviews';
+import { fetchWithTimeout } from '@/lib/utils';
+import BannerCarousel from '@/components/home/BannerCarousel';
+import SpecialCombos from '@/components/home/SpecialCombos';
+import ProductCard from '@/components/home/ProductCard';
+import CrazyDealsSection from '@/components/home/CrazyDeals';
+import FeaturedReviews from '@/components/home/FeaturedReviews';
+import WhyNeCraftersDiagram from '@/components/home/WhyNeCraftersDiagram';
+import BlogImages from '@/components/home/BlogImages';
+import NeedOfWebsite from '@/components/home/NeedOfWebsite';
+import CategorySection from '@/components/home/CategorySection';
+import MainCategorySection from '@/components/home/MainCategorySection';
+import ReviewSection from '@/components/home/ReviewSection';
+import HashScrollHandler from '@/components/HashScrollHandler';
+import LoadingSpinner from '@/components/ui/loading-spinner';
+
+// Server-side BestSellersSection for initial load (SSR)
+const BestSellersSection = async () => {
+  try {
+    const bestSellers = await getBestSellerProducts(8);
+    
+    // Early return if no data to prevent unnecessary rendering
+    if (!bestSellers.success || !bestSellers.data || bestSellers.data.length === 0) {
+      return (
+        <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                BEST SELLERS
+              </h2>
+            </div>
+            <div className="text-center py-8 text-gray-500">
+              <p>No best sellers available at the moment.</p>
+              <p className="text-sm mt-2">Please check back later!</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+          </div>
+          
+          <ProductCard
+            shop
+            heading="BEST SELLERS"
+            products={bestSellers.data as any}
+            sectionId="best-sellers"
+          />
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('Error loading Best Sellers:', error);
+    // Fallback UI for errors
+    return (
+      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+          </div>
+          <div className="text-center py-8 text-gray-500">
+            <p>Unable to load best sellers at the moment.</p>
+            <p className="text-sm mt-2">Please check back later!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+};
+
+const GiftHampersSection = async () => {
+  const crazyDeals = await getCrazyDeals();
+  return (
+    <div id="gift-hamper" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+      <CrazyDealsSection offers={crazyDeals.data ?? []} />
+    </div>
+  );
+};
+
+const FeaturedProductsSection = async () => {
+  const featuredProducts = await getFeaturedProducts(4, 1);
+  return (
+    <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+      <div className="section-container">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+            FEATURED PRODUCTS
+          </h2>
+        </div>
+        
+        {featuredProducts.data && featuredProducts.data.length > 0 ? (
+          <ProductCard
+            shop
+            heading="FEATURED PRODUCTS"
+            products={featuredProducts.data as any}
+            sectionId="featured-products"
+          />
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p>No featured products available at the moment.</p>
+            <p className="text-sm mt-2">Please check back later!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const FeaturedReviewsSection = async () => {
+  const featuredReviews = await getActiveFeaturedReviews();
+  
+  // If no reviews or section is not active, don't render anything
+  if (!featuredReviews.success || !featuredReviews.data || featuredReviews.data.length === 0) {
+    return null;
+  }
+
+  // Map the data to match the FeaturedReview interface (convert null to undefined)
+  const mappedReviews = featuredReviews.data.map(review => ({
+    ...review,
+    description: review.description || undefined,
+    customerName: review.customerName || undefined,
+    reviewText: review.reviewText || undefined,
+    productName: review.productName || undefined,
+    image: {
+      url: review.image.url || undefined,
+      public_id: review.image.public_id || undefined
+    }
+  }));
+
+  return (
+    <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+      <FeaturedReviews reviews={mappedReviews} />
+    </div>
+  );
 };
 
 export default async function Home() {
+  // Load critical data first (banners, special combos)
+  const [banners, specialCombos] = await Promise.allSettled([
+    fetchWithTimeout(getWebsiteBanners(), 5000),
+    fetchWithTimeout(getSpecialCombos(), 5000),
+  ]);
+
+  // Extract data safely
+  const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
+  const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
+
   return (
-    <main className="min-h-screen">
-      <HeroSection />
+    <div>
+      <HashScrollHandler />
       
+      {/* 1. Banners */}
+      <BannerCarousel
+        banners={banners_data.data ?? []}
+        app_banners={[]} // Will be loaded separately
+      />
+      
+      {/* 2. Special Combos */}
+      <SpecialCombos offers={specialCombos_data.data ?? []} />
+      
+      {/* 3. Best Sellers */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Best Sellers..." className="text-orange-600" />
             </div>
           </div>
         </div>
@@ -32,11 +191,31 @@ export default async function Home() {
         <BestSellersSection />
       </Suspense>
 
+      {/* 4. Gift Hampers */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              GIFT HAMPER
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Gift Hampers..." className="text-orange-600" />
+            </div>
+          </div>
+        </div>
+      }>
+        <GiftHampersSection />
+      </Suspense>
+
+      {/* 5. Featured Products */}
+      <Suspense fallback={
+        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              FEATURED PRODUCTS
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Featured Products..." className="text-orange-600" />
             </div>
           </div>
         </div>
@@ -44,65 +223,52 @@ export default async function Home() {
         <FeaturedProductsSection />
       </Suspense>
 
+      {/* 6. Reviews of Food Enthusiasts (Admin Controlled) */}
       <Suspense fallback={
         <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
           <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              REVIEWS OF FOOD ENTHUSIASTS
+            </h2>
+            <div className="flex justify-center py-12">
+              <LoadingSpinner size="lg" text="Loading Reviews..." className="text-orange-600" />
             </div>
           </div>
         </div>
       }>
-        <SpecialComboSection />
+        <FeaturedReviewsSection />
       </Suspense>
 
-      <Suspense fallback={
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-            </div>
-          </div>
+      {/* 7. Why NE Crafters (Icons) */}
+      <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+        <div className="section-container">
+          <NeedOfWebsite />
         </div>
-      }>
-        <GiftHamperSection />
-      </Suspense>
+      </div>
 
-      <Suspense fallback={
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-            </div>
-          </div>
-        </div>
-      }>
-        <WhyNECraftersSection />
-      </Suspense>
+      {/* 8. Why NE Crafters (Image) */}
+      <WhyNeCraftersDiagram />
 
-      <Suspense fallback={
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-            </div>
-          </div>
-        </div>
-      }>
-        <GloryMomentsSection />
-      </Suspense>
+      {/* 9. What Our Customers Have to Say */}
+      <ReviewSection />
 
-      <Suspense fallback={
-        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-          <div className="section-container">
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-            </div>
-          </div>
-        </div>
-      }>
-        <CrazyDealsSection />
-      </Suspense>
-    </main>
+      {/* 10. Moments of NE Crafters */}
+      <BlogImages />
+    </div>
+  );
+}
+
+// Async component for non-critical sections
+async function AsyncSections() {
+  const [appBanners] = await Promise.allSettled([
+    fetchWithTimeout(getAppBanners(), 5000)
+  ]);
+
+  const app_banners_data = appBanners.status === 'fulfilled' ? appBanners.value : { data: [] };
+
+  return (
+    <>
+      {/* App banners can be loaded here if needed */}
+    </>
   );
 }

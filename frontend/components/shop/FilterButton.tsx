@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getCategories, getProductStats } from "@/actions/products/index";
+import { getCategories, getProductStats } from "@/actions/products";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -101,7 +101,7 @@ const FilterButton = ({ isLoading = false }: FilterButtonProps) => {
 
         if (statsResult.success && statsResult.data) {
           setSizes(statsResult.data.sizes);
-          const { min, max } = statsResult.data.priceRange;
+          const [min, max] = statsResult.data.priceRange;
           setPriceRange([min, max]);
           setCurrentPriceRange([min, max]);
           setMaxPrice(max);
