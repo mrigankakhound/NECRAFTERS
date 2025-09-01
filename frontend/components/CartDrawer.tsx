@@ -38,7 +38,7 @@ const CartDrawer = () => {
       
       if (result.success && result.data && result.data.length > 0) {
         setRecommendedProducts(
-          result.data.map((product) => ({
+          result.data.map((product: any) => ({
             id: product.id,
             title: product.title,
             images: product.images,
