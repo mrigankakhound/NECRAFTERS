@@ -86,13 +86,15 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
       ]
     });
 
-    // Process the results to get only the first image and size
-    const processedFeaturedProducts = featuredProducts.map(product => ({
-      ...product,
-      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
-      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+    // Process the results - MongoDB aggregation returns documents in a specific format
+    const processedFeaturedProducts = (featuredProducts as any).documents?.map((product: any) => ({
+      id: product.id,
+      title: product.title,
+      slug: product.slug,
       discount: product.discount || 0,
-    }));
+      images: product.images || [],
+      sizes: product.sizes || [],
+    })) || [];
 
     return {
       success: true,
