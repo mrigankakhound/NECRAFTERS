@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useAtom } from "jotai";
 import { favoritesMenuState } from "./store";
 import { useFavorites } from "@/store/useFavorites";
-import { useBestSellers } from "@/store/useBestSellers";
+import { getBestSellerProducts } from "@/actions/products";
 
 interface RecommendedProduct {
   id: string;
@@ -28,17 +28,17 @@ const FavoritesDrawer = () => {
   const [favoritesMenuOpen, setFavoritesMenuOpen] = useAtom(favoritesMenuState);
   const { items, removeFromFavorites, addToCart, addAllToCart } =
     useFavorites();
-  const { fetchBestSellers } = useBestSellers();
+
   const [recommendedProducts, setRecommendedProducts] = useState<
     RecommendedProduct[]
   >([]);
 
   useEffect(() => {
     const fetchRecommendedProducts = async () => {
-      const products = await fetchBestSellers(4);
-      if (products.length > 0) {
+      const result = await getBestSellerProducts(4);
+      if (result.success && result.data && result.data.length > 0) {
         setRecommendedProducts(
-          products.map((product) => ({
+          result.data.map((product) => ({
             id: product.id,
             title: product.title,
             images: product.images,
@@ -48,7 +48,7 @@ const FavoritesDrawer = () => {
       }
     };
     fetchRecommendedProducts();
-  }, [fetchBestSellers]);
+  }, []);
 
   const handleOnClickFavoritesMenu = () => {
     setFavoritesMenuOpen(true);

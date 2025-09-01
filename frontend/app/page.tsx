@@ -6,8 +6,6 @@ import { getWebsiteBanners, getAppBanners } from '@/actions/banner.actions';
 import { getSpecialCombos } from '@/actions/special-combos';
 import { getCrazyDeals } from '@/actions/crazy-deals';
 import { getBestSellerProducts, getFeaturedProducts } from '@/actions/products';
-import { BestSellersProvider } from '@/components/providers/BestSellersProvider';
-
 import { getActiveFeaturedReviews } from '@/actions/featured-reviews';
 import { fetchWithTimeout } from '@/lib/utils';
 import BannerCarousel from '@/components/home/BannerCarousel';
@@ -24,11 +22,9 @@ import ReviewSection from '@/components/home/ReviewSection';
 import HashScrollHandler from '@/components/HashScrollHandler';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 
-// Loading components for progressive loading
 const BestSellersSection = async () => {
-  try {
-    const bestSellers = await getBestSellerProducts(8); // Remove timeout wrapper
-    return (
+  const bestSellers = await getBestSellerProducts(8);
+  return (
     <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
         <div className="flex items-center justify-center gap-2 mb-4">
@@ -38,48 +34,21 @@ const BestSellersSection = async () => {
         </div>
         
         {bestSellers.data && bestSellers.data.length > 0 ? (
-          <>
-
-            
-            {bestSellers.isFallback && (
-              <div className="text-center py-2 text-gray-500 text-sm mb-4">
-                <p>Showing our latest products. Mark products as best sellers in admin to customize this section!</p>
-              </div>
-            )}
-            <ProductCard
-              shop
-              heading="BEST SELLERS"
-              products={bestSellers.data as any}
-              sectionId="best-sellers"
-            />
-          </>
+          <ProductCard
+            shop
+            heading="BEST SELLERS"
+            products={bestSellers.data as any}
+            sectionId="best-sellers"
+          />
         ) : (
           <div className="text-center py-8 text-gray-500">
-            <p>No products available at the moment.</p>
+            <p>No best sellers available at the moment.</p>
             <p className="text-sm mt-2">Please check back later!</p>
           </div>
         )}
       </div>
     </div>
-    );
-  } catch (error) {
-    console.error('Error loading best sellers:', error);
-    return (
-      <div id="best-sellers" className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-        <div className="section-container">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-              BEST SELLERS
-            </h2>
-          </div>
-          <div className="text-center py-8 text-gray-500">
-            <p>Unable to load best sellers at the moment.</p>
-            <p className="text-sm mt-2">Please check back later!</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  );
 };
 
 const GiftHampersSection = async () => {
@@ -149,47 +118,44 @@ const FeaturedReviewsSection = async () => {
 };
 
 export default async function Home() {
-  // Load critical data first (banners, special combos, best sellers)
-  const [banners, specialCombos, bestSellers] = await Promise.allSettled([
-    fetchWithTimeout(getWebsiteBanners(), 5000), // Reduced timeout
-    fetchWithTimeout(getSpecialCombos(), 5000),  // Reduced timeout
-    getBestSellerProducts(8), // Load best sellers data for the store
+  // Load critical data first (banners, special combos)
+  const [banners, specialCombos] = await Promise.allSettled([
+    fetchWithTimeout(getWebsiteBanners(), 5000),
+    fetchWithTimeout(getSpecialCombos(), 5000),
   ]);
 
   // Extract data safely
   const banners_data = banners.status === 'fulfilled' ? banners.value : { data: [] };
   const specialCombos_data = specialCombos.status === 'fulfilled' ? specialCombos.value : { data: [] };
-  const bestSellers_data = bestSellers.status === 'fulfilled' ? bestSellers.value : { data: [] };
 
   return (
-    <BestSellersProvider initialData={bestSellers_data.data || []}>
-      <div>
-        <HashScrollHandler />
-        
-        {/* 1. Banners */}
-        <BannerCarousel
-          banners={banners_data.data ?? []}
-          app_banners={[]} // Will be loaded separately
-        />
-        
-        {/* 2. Special Combos */}
-        <SpecialCombos offers={specialCombos_data.data ?? []} />
-        
-        {/* 3. Best Sellers */}
-        <Suspense fallback={
-          <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
-            <div className="section-container">
-              <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                BEST SELLERS
-              </h2>
-              <div className="flex justify-center py-8">
-                <LoadingSpinner size="md" text="Loading Best Sellers..." className="text-orange-600" />
-              </div>
+    <div>
+      <HashScrollHandler />
+      
+      {/* 1. Banners */}
+      <BannerCarousel
+        banners={banners_data.data ?? []}
+        app_banners={[]} // Will be loaded separately
+      />
+      
+      {/* 2. Special Combos */}
+      <SpecialCombos offers={specialCombos_data.data ?? []} />
+      
+      {/* 3. Best Sellers */}
+      <Suspense fallback={
+        <div className="w-full px-4 sm:container sm:mx-auto mb-[20px]">
+          <div className="section-container">
+            <h2 className="text-2xl font-bold sm:text-4xl lg:text-5xl text-center w-full relative py-6 sm:py-8 lg:py-10 uppercase font-capriola bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+              BEST SELLERS
+            </h2>
+            <div className="flex justify-center py-8">
+              <LoadingSpinner size="md" text="Loading Best Sellers..." className="text-orange-600" />
             </div>
           </div>
-        }>
-          <BestSellersSection />
-        </Suspense>
+        </div>
+      }>
+        <BestSellersSection />
+      </Suspense>
 
       {/* 4. Gift Hampers */}
       <Suspense fallback={
@@ -254,8 +220,7 @@ export default async function Home() {
 
       {/* 10. Moments of NE Crafters */}
       <BlogImages />
-        </div>
-      </BestSellersProvider>
+    </div>
   );
 }
 

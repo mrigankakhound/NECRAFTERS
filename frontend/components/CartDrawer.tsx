@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useAtom } from "jotai";
 import { cartMenuState } from "./store";
 import { useCart, CartItem } from "@/store/useCart";
-import { useBestSellers } from "@/store/useBestSellers";
+import { getBestSellerProducts } from "@/actions/products";
 
 interface RecommendedProduct {
   id: string;
@@ -27,18 +27,18 @@ interface RecommendedProduct {
 const CartDrawer = () => {
   const [cartMenuOpen, setCartMenuOpen] = useAtom(cartMenuState);
   const { items, removeFromCart, updateQuantity } = useCart();
-  const { fetchBestSellers } = useBestSellers();
+
   const [recommendedProducts, setRecommendedProducts] = useState<
     RecommendedProduct[]
   >([]);
 
   useEffect(() => {
     const fetchRecommendedProducts = async () => {
-      const products = await fetchBestSellers(4);
+      const result = await getBestSellerProducts(4);
       
-      if (products.length > 0) {
+      if (result.success && result.data && result.data.length > 0) {
         setRecommendedProducts(
-          products.map((product) => ({
+          result.data.map((product) => ({
             id: product.id,
             title: product.title,
             images: product.images,
@@ -48,7 +48,7 @@ const CartDrawer = () => {
       }
     };
     fetchRecommendedProducts();
-  }, [fetchBestSellers]);
+  }, []);
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
