@@ -7,22 +7,31 @@ import Image from "next/image";
 import { Product } from "@prisma/client";
 import { useCart } from "@/store/useCart";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 interface ProductCardProps {
   heading: string;
   products: Product[];
   shop?: boolean;
   sectionId?: string;
-  refreshInterval?: number; // Add refresh interval prop
+  refreshInterval?: number;
+  isCached?: boolean; // New prop to show caching status
 }
 
-const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refreshInterval = 30000 }: ProductCardProps) => {
+// Memoize the component to prevent unnecessary re-renders
+const ProductCard = memo(({ 
+  heading, 
+  products: initialProducts, 
+  shop, 
+  sectionId, 
+  refreshInterval = 30000,
+  isCached = false 
+}: ProductCardProps) => {
   const { addToCart } = useCart();
   const [products, setProducts] = useState(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Real-time product updates
+  // Real-time product updates only for specific sections
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
@@ -91,134 +100,111 @@ const ProductCard = ({ heading, products: initialProducts, shop, sectionId, refr
   return (
     <div id={sectionId} className="w-full sm:container sm:mx-auto mb-[20px]">
       <div className="section-container">
-        {/* Removed refresh button - no longer needed */}
+        {/* Cache indicator for debugging */}
+        {isCached && (
+          <div className="text-xs text-gray-500 text-center mb-2">
+            📦 Using cached data (fallback mode)
+          </div>
+        )}
       </div>
 
       <div className="relative">
         <div
           className={`${
             shop
-              ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4"
-              : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4"
-          } mb-8 px-2 sm:px-4`}
+              ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4"
+              : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4"
+          }`}
         >
-          {products.map((product) => {
-            const mainImage = product.images?.[0]?.url;
-            const secondImageCandidate = product.images?.[1]?.url;
-            const originalPrice = product.sizes?.[0]?.price || 0;
-            const discount = product.discount || 0;
-            const discountedPrice = originalPrice * (1 - discount / 100);
-
-            return (
-              <Link
-                href={`/product/${product.slug ?? product.id}`}
-                key={product.id}
-                className="group bg-white rounded-lg p-4 sm:p-6 w-full"
-                prefetch={false}
-              >
-                <div className="relative aspect-square mb-6 sm:mb-4 overflow-hidden rounded-md">
-                  {mainImage ? (
-                    <>
-                      <Image
-                        src={mainImage}
-                        alt={product.title}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          // Fallback to placeholder if image fails
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = document.createElement('div');
-                          fallback.className = 'w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center';
-                          fallback.innerHTML = '<div class="text-4xl">🛍️</div>';
-                          target.parentNode?.appendChild(fallback);
-                        }}
-                      />
-                      {secondImageCandidate && secondImageCandidate !== mainImage && (
-                        <Image
-                          src={secondImageCandidate}
-                          alt={`${product.title} - Hover`}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                          className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
-                        />
-                      )}
-                    </>
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="group relative bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200"
+            >
+              <Link href={`/product/${product.slug}`} className="block">
+                <div className="relative aspect-square overflow-hidden">
+                  {product.images && product.images.length > 0 ? (
+                    <Image
+                      src={product.images[0].url || ""}
+                      alt={product.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      priority={false} // Don't prioritize all images
+                      loading="lazy" // Lazy load for better performance
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                    />
                   ) : (
-                    // Fallback when no image
-                    <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                      <div className="text-4xl">🛍️</div>
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400 text-sm">No image</span>
                     </div>
                   )}
                   
-                  {/* Add to Cart Button - appears on hover */}
-                  <div className="absolute inset-0 flex items-end justify-center p-2 sm:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button
-                      onClick={(e) => handleAddToCart(e, product)}
-                      className="w-full bg-black/80 hover:bg-black text-white backdrop-blur-sm transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                      size="sm"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Add to Cart
-                    </Button>
-                  </div>
+                  {/* Discount badge */}
+                  {product.discount && product.discount > 0 && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      -{product.discount}%
+                    </div>
+                  )}
+                  
+                  {/* Rating badge */}
+                  {product.rating && product.rating > 0 && (
+                    <div className="absolute top-2 right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-current" />
+                      {product.rating.toFixed(1)}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <p className="font-semibold text-base sm:text-base line-clamp-2">
+                <div className="p-2 sm:p-3">
+                  <h3 className="font-semibold text-xs sm:text-sm tracking-wide line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
                     {product.title}
-                  </p>
-                  <div className="flex items-center gap-1 sm:gap-2 mt-1">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                            i < Math.floor(product.rating)
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+                  </h3>
+                  
+                  {/* Price display */}
+                  {product.sizes && product.sizes.length > 0 && (
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex flex-col">
+                        {product.discount && product.discount > 0 ? (
+                          <>
+                            <span className="text-xs text-gray-500 line-through">
+                              ₹{product.sizes[0].price.toFixed(2)}
+                            </span>
+                            <span className="text-sm font-bold text-green-600">
+                              ₹{(product.sizes[0].price * (1 - product.discount / 100)).toFixed(2)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold">
+                            ₹{product.sizes[0].price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-500">
-                      ({product.numReviews})
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                    <p className="text-base sm:text-lg font-semibold">
-                      ₹{discountedPrice > 0 ? discountedPrice.toFixed(2) : '0.00'}
-                    </p>
-                    {discount > 0 && originalPrice > 0 && (
-                      <>
-                        <p className="text-sm sm:text-base text-gray-500 line-through">
-                          ₹{originalPrice.toFixed(2)}
-                        </p>
-                        <p className="text-sm sm:text-base text-red-500">-{discount}%</p>
-                      </>
-                    )}
-                  </div>
+                  )}
                 </div>
               </Link>
-            );
-          })}
+
+              {/* Add to Cart Button */}
+              <div className="p-2 sm:p-3 pt-0">
+                <Button
+                  onClick={(e) => handleAddToCart(e, product)}
+                  className="w-full bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-2 h-auto"
+                  size="sm"
+                >
+                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  Add to Cart
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-      {!shop && (
-        <div className="flex justify-center mt-8">
-          <Link href="/shop" className="w-full sm:w-auto">
-            <Button
-              variant={"outline"}
-              className="w-full sm:w-[347px] border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary font-medium tracking-wider px-[10px] py-[20px] transition-colors"
-            >
-              VIEW ALL
-            </Button>
-          </Link>
-        </div>
-      )}
     </div>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 export default ProductCard;
