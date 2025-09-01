@@ -3,33 +3,74 @@ import { prisma } from "@/lib/prisma";
 
 export async function getBestSellerProducts(limit: number = 10) {
   try {
-    // Use MongoDB aggregation to only fetch first image and size - MUCH FASTER
-    const bestSellers = await prisma.$runCommandRaw({
-      aggregate: "Product",
-      pipeline: [
-        { $match: { bestSeller: true } },
-        { $sort: { createdAt: -1 } },
-        { $limit: limit },
-        {
-          $project: {
-            id: "$_id",
-            title: 1,
-            slug: 1,
-            discount: 1,
-            rating: 1,
-            bestSeller: 1,
-            featured: 1,
-            // Only get first image
-            images: { $slice: ["$images", 1] },
-            // Only get first size
-            sizes: { $slice: ["$sizes", 1] },
+    // First try MongoDB aggregation for performance
+    try {
+      const bestSellers = await prisma.$runCommandRaw({
+        aggregate: "Product",
+        pipeline: [
+          { $match: { bestSeller: true } },
+          { $sort: { createdAt: -1 } },
+          { $limit: limit },
+          {
+            $project: {
+              id: "$_id",
+              title: 1,
+              slug: 1,
+              discount: 1,
+              rating: 1,
+              bestSeller: 1,
+              featured: 1,
+              images: { $slice: ["$images", 1] },
+              sizes: { $slice: ["$sizes", 1] },
+            }
           }
-        }
-      ]
+        ]
+      });
+
+      const processedData = (bestSellers as any).documents?.map((product: any) => ({
+        id: product.id,
+        title: product.title,
+        slug: product.slug,
+        discount: product.discount || 0,
+        rating: product.rating || 0,
+        bestSeller: product.bestSeller || false,
+        featured: product.featured || false,
+        images: product.images || [],
+        sizes: product.sizes || [],
+        numReviews: 0,
+        sold: 0,
+      })) || [];
+
+      if (processedData.length > 0) {
+        return {
+          success: true,
+          data: processedData,
+          isFallback: false,
+        };
+      }
+    } catch (aggregationError) {
+      console.log("MongoDB aggregation failed, falling back to standard query:", aggregationError);
+    }
+
+    // Fallback to standard Prisma query if aggregation fails or returns no results
+    const fallbackBestSellers = await prisma.product.findMany({
+      where: { bestSeller: true },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
+        rating: true,
+        bestSeller: true,
+        featured: true,
+        images: true,
+        sizes: true,
+      },
     });
 
-    // Process the results - MongoDB aggregation returns documents in a specific format
-    const processedData = (bestSellers as any).documents?.map((product: any) => ({
+    const processedFallbackData = fallbackBestSellers.map(product => ({
       id: product.id,
       title: product.title,
       slug: product.slug,
@@ -37,16 +78,16 @@ export async function getBestSellerProducts(limit: number = 10) {
       rating: product.rating || 0,
       bestSeller: product.bestSeller || false,
       featured: product.featured || false,
-      images: product.images || [],
-      sizes: product.sizes || [],
+      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
       numReviews: 0,
       sold: 0,
-    })) || [];
+    }));
 
     return {
       success: true,
-      data: processedData,
-      isFallback: false,
+      data: processedFallbackData,
+      isFallback: true,
     };
 
   } catch (error) {
@@ -63,42 +104,75 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
   try {
     const skip = (page - 1) * limit;
     
-    // Use MongoDB aggregation to only fetch first image and size - MUCH FASTER
-    const featuredProducts = await prisma.$runCommandRaw({
-      aggregate: "Product",
-      pipeline: [
-        { $match: { featured: true } },
-        { $sort: { createdAt: -1 } },
-        { $skip: skip },
-        { $limit: limit },
-        {
-          $project: {
-            id: "$_id",
-            title: 1,
-            slug: 1,
-            discount: 1,
-            // Only get first image
-            images: { $slice: ["$images", 1] },
-            // Only get first size
-            sizes: { $slice: ["$sizes", 1] },
+    // First try MongoDB aggregation for performance
+    try {
+      const featuredProducts = await prisma.$runCommandRaw({
+        aggregate: "Product",
+        pipeline: [
+          { $match: { featured: true } },
+          { $sort: { createdAt: -1 } },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              id: "$_id",
+              title: 1,
+              slug: 1,
+              discount: 1,
+              images: { $slice: ["$images", 1] },
+              sizes: { $slice: ["$sizes", 1] },
+            }
           }
-        }
-      ]
+        ]
+      });
+
+      const processedFeaturedProducts = (featuredProducts as any).documents?.map((product: any) => ({
+        id: product.id,
+        title: product.title,
+        slug: product.slug,
+        discount: product.discount || 0,
+        images: product.images || [],
+        sizes: product.sizes || [],
+      })) || [];
+
+      if (processedFeaturedProducts.length > 0) {
+        return {
+          success: true,
+          data: processedFeaturedProducts,
+        };
+      }
+    } catch (aggregationError) {
+      console.log("MongoDB aggregation failed, falling back to standard query:", aggregationError);
+    }
+
+    // Fallback to standard Prisma query if aggregation fails or returns no results
+    const fallbackFeaturedProducts = await prisma.product.findMany({
+      where: { featured: true },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        discount: true,
+        images: true,
+        sizes: true,
+      },
     });
 
-    // Process the results - MongoDB aggregation returns documents in a specific format
-    const processedFeaturedProducts = (featuredProducts as any).documents?.map((product: any) => ({
+    const processedFallbackData = fallbackFeaturedProducts.map(product => ({
       id: product.id,
       title: product.title,
       slug: product.slug,
       discount: product.discount || 0,
-      images: product.images || [],
-      sizes: product.sizes || [],
-    })) || [];
+      images: product.images && product.images.length > 0 ? product.images.slice(0, 1) : [],
+      sizes: product.sizes && product.sizes.length > 0 ? product.sizes.slice(0, 1) : [],
+    }));
 
     return {
       success: true,
-      data: processedFeaturedProducts,
+      data: processedFallbackData,
     };
   } catch (error) {
     console.error("Error fetching featured products:", error);
