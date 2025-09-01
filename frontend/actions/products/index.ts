@@ -1,8 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 
-
-
 export async function getBestSellerProducts(limit: number = 10) {
   try {
     // EXACTLY like featured products - ONE SINGLE QUERY, no fallbacks
@@ -106,6 +104,46 @@ export async function getFeaturedProducts(limit: number = 10, page: number = 1) 
   }
 }
 
+export async function getProductBySlug(slug: string) {
+  try {
+    const product = await prisma.product.findFirst({
+      where: { slug },
+      include: {
+        category: true,
+        images: true,
+        sizes: true,
+        benefits: true,
+        ingredients: true,
+        productSubCategories: {
+          include: {
+            subCategory: true,
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      return {
+        success: false,
+        error: "Product not found",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      data: product,
+    };
+  } catch (error) {
+    console.error("Error fetching product by slug:", error);
+    return {
+      success: false,
+      error: "Failed to fetch product",
+      data: null,
+    };
+  }
+}
+
 export async function getNewArrivals(limit?: number) {
   try {
     const products = await prisma.product.findMany({
@@ -154,6 +192,7 @@ export async function searchProducts(query: string) {
     return { success: false, error: "Failed to search products" };
   }
 }
+
 export async function getAllProducts(page: number = 1, limit: number = 20) {
   try {
     const skip = (page - 1) * limit;
